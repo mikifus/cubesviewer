@@ -177,9 +177,67 @@ angular.module('cv.studio').controller("CubesViewerStudioViewController", ['$roo
         }
 
 	};
-});
+})
+	.directive('menutree', function() {
+		return {
+			templateUrl: 'studio/menu-tree-render.html',
+			scope: {
+				views: '='
+			},
+			controller: ['$rootScope', '$scope', 'reststoreService', function($rootScope, $scope, reststoreService){
+				$scope.reststoreService = reststoreService;
+			}]
+		}
+	});
 
 
+function get_hierarchy_menu(views_list) {
+	var ret = [];
+	var d = [];
+	var menu = {};
+	$(views_list).each(function (idx, view) {
+		var view_params = JSON.parse(view.data);
+		if (view_params.menu_path) {
+			var parent = menu;
+			$(view_params.menu_path.split('/')).each(function (idx, name) {
+				if (!parent[name]) {
+					parent[name] = {};
+				}
+				parent = parent[name];
+			});
+			if (!parent['views']) {
+				parent['views'] = [];
+			}
+			parent['views'].push(view);
+		} else {
+			d.push(view)
+		}
+	});
+
+	ret = construct_menu(menu);
+
+	$(d).each(function (i) {
+		ret.push(i)
+	});
+
+	return ret;
+}
+
+function construct_menu(menu) {
+	var r = [];
+	for (var key in menu) {
+		if (key != 'views' && menu.hasOwnProperty(key)) {
+			var item = {'name': key};
+			item['submenu'] = construct_menu(menu[key]);
+			item['display'] = 'none';
+			if (menu[key]['views']) {
+				item['views'] = menu[key]['views'];
+			}
+			r.push(item);
+		}
+	}
+	return r;
+}
 
 angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootScope', '$scope', '$uibModal', '$element', '$timeout', 'cvOptions', 'cubesService', 'studioViewsService', 'viewsService', 'reststoreService',
                                                                        function ($rootScope, $scope, $uibModal, $element, $timeout, cvOptions, cubesService, studioViewsService, viewsService, reststoreService) {
@@ -297,6 +355,12 @@ angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootSco
 	};
 
 	$scope.initialize();
+
+    $scope.$watch('reststoreService.savedViews', function (newValue, oldValue) {
+	    if (newValue != oldValue) {
+           $scope.sharedViews = get_hierarchy_menu(reststoreService.savedViews);
+       }
+    });
 
 }]);
 

@@ -28,13 +28,11 @@
 
             <li class="dropdown-header">Personal views</li>
 
-            <!-- <li ng-show="true" class="disabled"><a>Loading...</a></li>  -->
             <li ng-repeat="sv in reststoreService.savedViews | orderBy:'sv.name'" ng-if="sv.owner == cvOptions.user" ng-click="reststoreService.addSavedView(sv.id)"><a style="max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;"><i class="fa fa-fw"></i> {{ sv.name }}</a></li>
 
             <li class="dropdown-header">Shared by others</li>
 
-            <!-- <li ng-show="true" class="disabled"><a>Loading...</a></li>  -->
-            <li ng-repeat="sv in reststoreService.savedViews | orderBy:'sv.name'" ng-if="sv.shared && sv.owner != cvOptions.user" ng-click="reststoreService.addSavedView(sv.id)"><a style="max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;"><i class="fa fa-fw"></i> {{ sv.name }}</a></li>
+            <menutree views="sharedViews"></menutree>
 
           </ul>
         </div>
