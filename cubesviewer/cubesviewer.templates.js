@@ -53,6 +53,27 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
   );
 
 
+  $templateCache.put('studio/menu-tree-render.html',
+    "<li class=\"dropdown-submenu\" ng-repeat=\"view in views\">\n" +
+    "    <span ng-if=\"view.submenu\"\n" +
+    "          style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i\n" +
+    "            class=\"fa fa-fw\"></i> {{ view.name }}</span>\n" +
+    "    <a ng-if=\"view.data && view.shared && view.owner != cvOptions.user\"\n" +
+    "       ng-click=\"reststoreService.addSavedView(view.id)\"\n" +
+    "       style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i\n" +
+    "            class=\"fa fa-fw\"></i> {{ view.name }}</a>\n" +
+    "    <ul class=\"dropdown-menu submenu\" ng-if=\"view.submenu\">\n" +
+    "        <recurv views=\"view.submenu\"></recurv>\n" +
+    "        <li ng-repeat=\"view in view.views\"><a\n" +
+    "                style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"\n" +
+    "                ng-click=\"reststoreService.addSavedView(view.id)\"><i\n" +
+    "                class=\"fa fa-fw\"></i> {{ view.name }}</a></li>\n" +
+    "    </ul>\n" +
+    "</li>\n" +
+    "\n"
+  );
+
+
   $templateCache.put('studio/panel.html',
     "<div class=\"cv-bootstrap cv-gui-viewcontainer\" ng-controller=\"CubesViewerStudioViewController\">\n" +
     "\n" +
@@ -222,7 +243,8 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "            <li class=\"dropdown-header\">Shared by others</li>\n" +
     "\n" +
     "            <!-- <li ng-show=\"true\" class=\"disabled\"><a>Loading...</a></li>  -->\n" +
-    "            <li ng-repeat=\"sv in reststoreService.savedViews | orderBy:'sv.name'\" ng-if=\"sv.shared && sv.owner != cvOptions.user\" ng-click=\"reststoreService.addSavedView(sv.id)\"><a style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i class=\"fa fa-fw\"></i> {{ sv.name }}</a></li>\n" +
+    "            <!--<li ng-repeat=\"sv in reststoreService.savedViews | orderBy:'sv.name'\" ng-if=\"sv.shared && sv.owner != cvOptions.user\" ng-click=\"reststoreService.addSavedView(sv.id)\"><a style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i class=\"fa fa-fw\"></i> {{ sv.name }}</a></li>-->\n" +
+    "              <recurv views=\"sharedViews\"></recurv>\n" +
     "\n" +
     "          </ul>\n" +
     "        </div>\n" +
@@ -469,6 +491,30 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "        </div>\n" +
     "    </div>\n" +
     "\n" +
+    "    <div ng-if=\"view.params.charttype == 'lines-avg'\">\n" +
+    "        <h3><i class=\"fa fa-fw fa-area-chart\"></i> Chart\n" +
+    "            <i ng-show=\"view.pendingRequests > 0\" class=\"fa fa-circle-o-notch fa-spin fa-fw margin-bottom text-info pull-right\"></i>\n" +
+    "        </h3>\n" +
+    "        <div ng-if=\"view.pendingRequests > 0\" class=\"loadingbar-content\">\n" +
+    "            <span class=\"loadingbar-expand\"></span>\n" +
+    "        </div>\n" +
+    "        <div ng-controller=\"CubesViewerViewsCubeChartLinesAVGController\">\n" +
+    "            <div ng-include=\"'views/cube/chart/chart-common.html'\"></div>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div ng-if=\"view.params.charttype == 'variance'\">\n" +
+    "        <h3><i class=\"fa fa-fw fa-area-chart\"></i> Chart\n" +
+    "            <i ng-show=\"view.pendingRequests > 0\" class=\"fa fa-circle-o-notch fa-spin fa-fw margin-bottom text-info pull-right\"></i>\n" +
+    "        </h3>\n" +
+    "        <div ng-if=\"view.pendingRequests > 0\" class=\"loadingbar-content\">\n" +
+    "            <span class=\"loadingbar-expand\"></span>\n" +
+    "        </div>\n" +
+    "        <div ng-controller=\"CubesViewerViewsCubeChartLinesVarianceController\">\n" +
+    "            <div ng-include=\"'views/cube/chart/chart-common.html'\"></div>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "\n" +
     "</div>\n"
   );
 
@@ -643,6 +689,8 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "          <li ng-click=\"selectChartType('lines')\"><a href=\"\"><i class=\"fa fa-fw fa-line-chart\"></i> Lines</a></li>\n" +
     "          <li ng-click=\"selectChartType('lines-stacked')\"><a href=\"\"><i class=\"fa fa-fw fa-area-chart\"></i> Areas</a></li>\n" +
     "          <li ng-click=\"selectChartType('radar')\"><a href=\"\"><i class=\"fa fa-fw fa-bullseye\"></i> Radar</a></li>\n" +
+    "          <li ng-click=\"selectChartType('lines-avg')\"><a href=\"\"><i class=\"fa fa-fw fa-bullseye\"></i> Lines AVG</a></li>\n" +
+    "          <li ng-click=\"selectChartType('variance')\"><a href=\"\"><i class=\"fa fa-fw fa-bullseye\"></i> Lines Variance</a></li>\n" +
     "\n" +
     "          <!-- <div class=\"divider\"></div>  -->\n" +
     "\n" +

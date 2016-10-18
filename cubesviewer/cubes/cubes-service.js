@@ -209,7 +209,19 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
             if (orders.length) {
                 args.order = orders.join(',');
             }
+
+            args.aggregates = [view.params.yaxis];
         }
+
+        // Include variance
+		if (view.params.charttype == 'variance') {
+			var aggregate_name = view.params.yaxis + '.variance';
+			view.cube.aggregates.forEach(function(ag){
+				if (ag.name == aggregate_name) {
+					args.aggregates.push(aggregate_name)
+				}
+			});
+		}
 
 		return args;
 

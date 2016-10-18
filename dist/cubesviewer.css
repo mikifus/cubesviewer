@@ -6826,6 +6826,14 @@ button.cv-bootstrap .close {
 .cv-view-panel .dropdown-menu li {
   cursor: pointer;
 }
+.cv-gui-panel .cv-gui-catalog-menu li ul.submenu,
+.cv-gui-panel .cv-gui-catalog-menu li ul.views {
+  display: none;
+}
+.cv-gui-panel .cv-gui-catalog-menu li:hover > ul.submenu,
+.cv-gui-panel .cv-gui-catalog-menu li:hover > ul.views {
+  display: block;
+}
 .cv-gui-title {
   font-weight: bold;
 }
@@ -7050,4 +7058,10 @@ CV Logo
   height: 30px;
   display: inline-block;
   vertical-align: middle;
+}
+.nvd3 .nv-quantile .nv-series {
+  cursor: pointer;
+}
+.nvd3 .nv-quantile .disabled circle {
+  fill-opacity: 0;
 }

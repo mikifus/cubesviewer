@@ -1219,6 +1219,56 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
 		var cuts = this.buildQueryCuts(view);
 		if (cuts.length > 0) args.cut = new cubes.Cell(view.cube, cuts);
 
+        //Order
+        if (includeXAxis && view.params.xaxis) {
+            var orders = [];
+            try {
+                var dimension = view.params.xaxis.split('@')[0];
+                var hierarchy_combo = view.params.xaxis.split('@')[1];
+                var hierarchy_name;
+                if (!hierarchy_combo) {
+                    dimension = dimension.split(':')[0];
+                    hierarchy_name = $.grep(view.cube.dimensions, function (e) {
+                        return e['name'] === dimension
+                    })[0]['default_hierarchy_name'];
+                } else {
+                    hierarchy_name = hierarchy_combo.split(':')[0];
+                }
+
+
+                var levels = $.grep(view.cube.dimensions, function (e) {
+                    return e['name'] === dimension
+                })[0].hierarchies[hierarchy_name].levels;
+                for (var j = 0; j < levels.length; j++) {
+                    if (dimension == levels[j].name) {
+                        orders.push(levels[j].name);
+                    } else {
+                        orders.push(dimension + '.' + levels[j].name);
+                    }
+                }
+            }
+            catch (e) {
+
+            }
+
+            if (orders.length) {
+                args.order = orders.join(',');
+            }
+
+            args.aggregates = [view.params.yaxis];
+        }
+
+        // Include variance
+
+		if (view.params.charttype == 'variance') {
+			var aggregate_name = view.params.yaxis + '.variance';
+			view.cube.aggregates.forEach(function(ag){
+				if (ag.name == aggregate_name) {
+					args.aggregates.push(aggregate_name)
+				}
+			});
+		}
+
 		return args;
 
 	};
@@ -2842,7 +2892,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeExploreControlle
 
 	// Sort data according to current view
 	$scope._sortData = function(data, includeXAxis) {
-		//data.sort(cubesviewer._drilldownSortFunction(view.id, includeXAxis));
+		data.sort(cubesviewer._drilldownSortFunction(view.id, includeXAxis));
 	};
 
 
@@ -2959,7 +3009,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeFilterDimensionC
 	$scope.searchString = "";
 	$scope.selectedValues = null;
 	$scope.filterInverted = null;
-	$scope.filterShowAll = false;
+	$scope.filterShowAll = true;
 
 	$scope.currentDataId = null;
 
@@ -5556,6 +5606,331 @@ function cubesviewerViewCubeDynamicChart() {
  */
 
 /*
+ * Series chart object. Contains view functions for the 'chart' mode.
+ * This is an optional component, part of the cube view.
+ */
+
+"use strict";
+
+angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesAVGController", ['$rootScope', '$scope', '$element', '$timeout', 'cvOptions', 'cubesService', 'viewsService',
+                                                     function ($rootScope, $scope, $element, $timeout, cvOptions, cubesService, viewsService) {
+
+	$scope.chart = null;
+
+	$scope.initialize = function() {
+		if (! "lineInterpolation" in $scope.view.params.chartoptions) {
+			$scope.view.params.chartoptions.lineInterpolation = "linear";
+		}
+	};
+
+	$scope.$on('gridDataUpdated', function() {
+		$scope.chartCtrl.cleanupNvd3();
+		$timeout(function() {
+			$scope.drawChartLinesAVG();
+		}, 0);
+	});
+
+
+	/**
+	 * Draws a lines chart with AVG line.
+	 */
+	$scope.drawChartLinesAVG = function () {
+
+		var view = $scope.view;
+		var dataRows = $scope.view.grid.data;
+		var columnDefs = view.grid.columnDefs;
+
+		var container = $($element).find("svg").get(0);
+
+		var xAxisLabel = ( (view.params.xaxis != null) ? view.cube.dimensionParts(view.params.xaxis).label : "None")
+
+		var d = [];
+	    var serieCount = 0;
+	    $(dataRows).each(function(idx, e) {
+	    	var serie = [];
+	    	for (var i = 1; i < columnDefs.length; i++) {
+	    		if (columnDefs[i].field in e) {
+	    			var value = e[columnDefs[i].field];
+	    			serie.push( { "x": i, "y":  (value != undefined) ? value : 0 } );
+	    		} else  {
+	    			if (view.params.charttype == "lines-stacked") {
+	    				serie.push( { "x": i, "y":  0 } );
+	    			}
+	    		}
+	    	}
+	    	var series = { "values": serie, "key": e["key"] != "" ? e["key"] : view.params.yaxis };
+	    	if (view.params["chart-disabledseries"]) {
+	    		if (view.params["chart-disabledseries"]["key"] == (view.params.drilldown.join(","))) {
+	    			series.disabled = !! view.params["chart-disabledseries"]["disabled"][series.key];
+	    		}
+	    	}
+	    	d.push(series);
+	    	serieCount++;
+	    });
+	    d.sort(function(a,b) { return a.key < b.key ? -1 : (a.key > b.key ? +1 : 0) });
+
+	    var ag = $.grep(view.cube.aggregates, function(ag) { return ag.ref == view.params.yaxis })[0];
+	    var colFormatter = $scope.columnFormatFunction(ag);
+
+		nv.addGraph(function () {
+			var chart = nv.models.lineChartAVG()
+				.useInteractiveGuideline(true)
+				.interpolate($scope.view.params.chartoptions.lineInterpolation)
+				.showLegend(!!view.params.chartoptions.showLegend)
+				.margin({left: 120});
+
+			chart.xAxis
+				.axisLabel(xAxisLabel)
+				.tickFormat(function (d, i) {
+					return (columnDefs[d].name);
+				});
+
+			chart.yAxis.tickFormat(function (d, i) {
+				return colFormatter(d);
+			});
+
+			d3.select(container)
+				.datum(d)
+				.call(chart);
+
+
+			// Handler for state change
+			chart.dispatch.on('stateChange', function (newState) {
+				view.params["chart-disabledseries"] = {
+					"key": view.params.drilldown.join(","),
+					"disabled": {}
+				};
+				for (var i = 0; i < newState.disabled.length; i++) {
+					view.params["chart-disabledseries"]["disabled"][d[i]["key"]] = newState.disabled[i];
+				}
+			});
+
+			$scope.chartCtrl.chart = chart;
+
+			return chart;
+		});
+
+	};
+
+	$scope.initialize();
+
+}]);
+
+
+;/*
+ * CubesViewer
+ * Copyright (c) 2012-2016 Jose Juan Montes, see AUTHORS for more details
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+/*
+ * Series chart object. Contains view functions for the 'chart' mode.
+ * This is an optional component, part of the cube view.
+ */
+
+"use strict";
+
+angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesVarianceController", ['$rootScope', '$scope', '$element', '$timeout', 'cvOptions', 'cubesService', 'viewsService',
+                                                     function ($rootScope, $scope, $element, $timeout, cvOptions, cubesService, viewsService) {
+
+	$scope.chart = null;
+
+	$scope.initialize = function() {
+		console.log($scope);
+		if (! "lineInterpolation" in $scope.view.params.chartoptions) {
+			$scope.view.params.chartoptions.lineInterpolation = "linear";
+		}
+	};
+
+	$scope.$on('gridDataUpdated', function() {
+		$scope.chartCtrl.cleanupNvd3();
+		$timeout(function() {
+			$scope.drawChartLinesVariance();
+		}, 0);
+	});
+
+
+	/**
+	 * Draws a lines chart with variance.
+	 */
+	$scope.drawChartLinesVariance = function () {
+
+		var view = $scope.view;
+		var dataRows = $scope.view.grid.data;
+		var columnDefs = view.grid.columnDefs;
+
+		var container = $($element).find("svg").get(0);
+
+		var xAxisLabel = ( (view.params.xaxis != null) ? view.cube.dimensionParts(view.params.xaxis).label : "None")
+
+		var d = [];
+	    var serieCount = 0;
+		var quantile_maxValue = nv.models.quantile().maxValue;
+		var y_max_value = 0;
+		var y_min_value = 0;
+		var variance_name = view.params.yaxis + '.variance';
+
+	    $(dataRows).each(function(idx, e) {
+	    	var serie = [];
+	    	for (var i = 1; i < columnDefs.length; i++) {
+	    		if (columnDefs[i].field in e) {
+	    			var value = e[columnDefs[i].field];
+				    var variance = Math.sqrt(e['_cell'][variance_name]);
+	    			serie.push( { "x": i, "y":  (value != undefined) ? value : 0, "variance": variance } );
+				    var d_var_max = variance * quantile_maxValue;
+	                y_max_value = y_max_value < value + d_var_max ? value + d_var_max : y_max_value;
+	                y_min_value = y_min_value > value - d_var_max ? value - d_var_max : y_min_value;
+	    		}
+	    	}
+	    	var series = { "values": serie, "key": e["key"] != "" ? e["key"] : view.params.yaxis, "fillOpacity": .2 };
+	    	if (view.params["chart-disabledseries"]) {
+	    		if (view.params["chart-disabledseries"]["key"] == (view.params.drilldown.join(","))) {
+	    			series.disabled = !! view.params["chart-disabledseries"]["disabled"][series.key];
+	    		}
+	    	}
+	    	d.push(series);
+	    	serieCount++;
+	    });
+	    d.sort(function(a,b) { return a.key < b.key ? -1 : (a.key > b.key ? +1 : 0) });
+
+	    var ag = $.grep(view.cube.aggregates, function(ag) { return ag.ref == view.params.yaxis })[0];
+	    var colFormatter = $scope.columnFormatFunction(ag);
+
+	    if (view.params.charttype != "lines-stacked") {
+
+		    nv.addGraph(function() {
+		    	var chart = nv.models.lineChartVariance()
+		    		.useInteractiveGuideline(true)
+		    		.interpolate($scope.view.params.chartoptions.lineInterpolation)
+		    		.showLegend(!!view.params.chartoptions.showLegend)
+		    		.margin({left: 120});
+
+		    	chart.xAxis
+		    		.axisLabel(xAxisLabel)
+		    		.tickFormat(function(d,i) {
+		    			return (columnDefs[d].name);
+				    });
+
+	    		chart.yAxis.tickFormat(function(d,i) {
+		        	return colFormatter(d);
+		        });
+
+			    chart.forceY([y_min_value, y_max_value]);
+
+		    	d3.select(container)
+		    		.datum(d)
+		    		.call(chart);
+
+		    	  // Handler for state change
+		          chart.dispatch.on('stateChange', function(newState) {
+		        	  view.params["chart-disabledseries"] = {
+		        			  "key": view.params.drilldown.join(","),
+		        			  "disabled": {}
+		        	  };
+		        	  for (var i = 0; i < newState.disabled.length; i++) {
+		        		  view.params["chart-disabledseries"]["disabled"][d[i]["key"]] =  newState.disabled[i];
+		        	  }
+		          });
+
+		        $scope.chartCtrl.chart = chart;
+		    	return chart;
+		    });
+
+	    } else {
+
+		    nv.addGraph(function() {
+	    	  var chart = nv.models.stackedAreaChart()
+	    	  				.showLegend(!!view.params.chartoptions.showLegend)
+	    	  				.interpolate($scope.view.params.chartoptions.lineInterpolation)
+	    	  				.margin({left: 130})
+	    	                .clipEdge(true)
+	    	                .useInteractiveGuideline(true);
+
+	    	  if (	view.params["chart-stackedarea-style"] ) {
+	    		  chart.style ( view.params["chart-stackedarea-style"] );
+	    	  }
+
+	    	  chart.xAxis
+	    	  	  .axisLabel(xAxisLabel)
+	    	      .showMaxMin(false)
+	    	      .tickFormat(function(d, i) {
+	    	    	  return (columnDefs[d].name);
+			      });
+
+	    	  chart.yAxis.tickFormat(function(d,i) {
+	    		  return colFormatter(d);
+	    	  });
+
+	    	  d3.select(container)
+	    	  	  .datum(d)
+	    	      .call(chart);
+
+	    	  // Handler for state change
+	          chart.dispatch.on('stateChange', function(newState) {
+	        	  view.params["chart-stackedarea-style"] = newState.style;
+	        	  view.params["chart-disabledseries"] = {
+	        			  "key": view.params.drilldown.join(","),
+	        			  "disabled": {}
+	        	  };
+	        	  for (var i = 0; i < newState.disabled.length; i++) {
+	        		  view.params["chart-disabledseries"]["disabled"][d[i]["key"]] =  newState.disabled[i];
+	        	  }
+	        	  view.updateUndo();
+	          });
+
+	          $scope.chartCtrl.chart = chart;
+	    	  return chart;
+	    	});
+	    }
+
+	};
+
+	$scope.initialize();
+
+}]);
+
+
+;/*
+ * CubesViewer
+ * Copyright (c) 2012-2016 Jose Juan Montes, see AUTHORS for more details
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+/*
  * This addon adds export to CSV capability to CubesViewer cube view.
  * It offers an "export facts" menu option for all cube view modes,
  * and a "export table" option in Explore and Series mode.
@@ -5994,9 +6369,68 @@ angular.module('cv.studio').controller("CubesViewerStudioViewController", ['$roo
         }
 
 	};
-});
+})
+	.directive('recurv', function() {
+		return {
+			templateUrl: 'studio/menu-tree-render.html',
+			scope: {
+				views: '='
+			},
+			controller: ['$rootScope', '$scope', 'reststoreService', function($rootScope, $scope, reststoreService){
+				$scope.reststoreService = reststoreService;
+			}]
+		}
+	});
 
 
+function get_hierarchy_menu(views_list) {
+	var ret = [];
+	var d = [];
+	var menu = {};
+	$(views_list).each(function (idx, view) {
+		var view_params = JSON.parse(view.data);
+		if (view_params.menu_path) {
+			var parent = menu;
+			$(view_params.menu_path.split('/')).each(function (idx, name) {
+				if (!parent[name]) {
+					parent[name] = {};
+				}
+				parent = parent[name];
+			});
+			if (!parent['views']) {
+				parent['views'] = [];
+			}
+			parent['views'].push(view);
+		} else {
+			d.push(view)
+		}
+	});
+
+	ret = construct_menu(menu);
+
+	$(d).each(function (i) {
+		ret.push(i)
+	});
+
+	return ret;
+}
+
+function construct_menu(menu) {
+	var r = [];
+	for (var key in menu) {
+		console.log(key);
+		if (key != 'views' && menu.hasOwnProperty(key)) {
+			var item = {'name': key};
+			item['submenu'] = construct_menu(menu[key]);
+			item['display'] = 'none';
+			if (menu[key]['views']) {
+				item['views'] = menu[key]['views'];
+			}
+			r.push(item);
+		}
+	}
+	return r;
+}
 
 angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootScope', '$scope', '$uibModal', '$element', '$timeout', 'cvOptions', 'cubesService', 'studioViewsService', 'viewsService', 'reststoreService',
                                                                        function ($rootScope, $scope, $uibModal, $element, $timeout, cvOptions, cubesService, studioViewsService, viewsService, reststoreService) {
@@ -6114,6 +6548,12 @@ angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootSco
 	};
 
 	$scope.initialize();
+
+    $scope.$watch('reststoreService.savedViews', function (newValue, oldValue) {
+	    if (newValue != oldValue) {
+           $scope.sharedViews = get_hierarchy_menu(reststoreService.savedViews);
+       }
+    });
 
 }]);
 
@@ -6701,6 +7141,27 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
   );
 
 
+  $templateCache.put('studio/menu-tree-render.html',
+    "<li class=\"dropdown-submenu\" ng-repeat=\"view in views\">\n" +
+    "    <span ng-if=\"view.submenu\"\n" +
+    "          style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i\n" +
+    "            class=\"fa fa-fw\"></i> {{ view.name }}</span>\n" +
+    "    <a ng-if=\"view.data && view.shared && view.owner != cvOptions.user\"\n" +
+    "       ng-click=\"reststoreService.addSavedView(view.id)\"\n" +
+    "       style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i\n" +
+    "            class=\"fa fa-fw\"></i> {{ view.name }}</a>\n" +
+    "    <ul class=\"dropdown-menu submenu\" ng-if=\"view.submenu\">\n" +
+    "        <recurv views=\"view.submenu\"></recurv>\n" +
+    "        <li ng-repeat=\"view in view.views\"><a\n" +
+    "                style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"\n" +
+    "                ng-click=\"reststoreService.addSavedView(view.id)\"><i\n" +
+    "                class=\"fa fa-fw\"></i> {{ view.name }}</a></li>\n" +
+    "    </ul>\n" +
+    "</li>\n" +
+    "\n"
+  );
+
+
   $templateCache.put('studio/panel.html',
     "<div class=\"cv-bootstrap cv-gui-viewcontainer\" ng-controller=\"CubesViewerStudioViewController\">\n" +
     "\n" +
@@ -6870,7 +7331,8 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "            <li class=\"dropdown-header\">Shared by others</li>\n" +
     "\n" +
     "            <!-- <li ng-show=\"true\" class=\"disabled\"><a>Loading...</a></li>  -->\n" +
-    "            <li ng-repeat=\"sv in reststoreService.savedViews | orderBy:'sv.name'\" ng-if=\"sv.shared && sv.owner != cvOptions.user\" ng-click=\"reststoreService.addSavedView(sv.id)\"><a style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i class=\"fa fa-fw\"></i> {{ sv.name }}</a></li>\n" +
+    "            <!--<li ng-repeat=\"sv in reststoreService.savedViews | orderBy:'sv.name'\" ng-if=\"sv.shared && sv.owner != cvOptions.user\" ng-click=\"reststoreService.addSavedView(sv.id)\"><a style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i class=\"fa fa-fw\"></i> {{ sv.name }}</a></li>-->\n" +
+    "              <recurv views=\"sharedViews\"></recurv>\n" +
     "\n" +
     "          </ul>\n" +
     "        </div>\n" +
@@ -7117,6 +7579,30 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "        </div>\n" +
     "    </div>\n" +
     "\n" +
+    "    <div ng-if=\"view.params.charttype == 'lines-avg'\">\n" +
+    "        <h3><i class=\"fa fa-fw fa-area-chart\"></i> Chart\n" +
+    "            <i ng-show=\"view.pendingRequests > 0\" class=\"fa fa-circle-o-notch fa-spin fa-fw margin-bottom text-info pull-right\"></i>\n" +
+    "        </h3>\n" +
+    "        <div ng-if=\"view.pendingRequests > 0\" class=\"loadingbar-content\">\n" +
+    "            <span class=\"loadingbar-expand\"></span>\n" +
+    "        </div>\n" +
+    "        <div ng-controller=\"CubesViewerViewsCubeChartLinesAVGController\">\n" +
+    "            <div ng-include=\"'views/cube/chart/chart-common.html'\"></div>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div ng-if=\"view.params.charttype == 'variance'\">\n" +
+    "        <h3><i class=\"fa fa-fw fa-area-chart\"></i> Chart\n" +
+    "            <i ng-show=\"view.pendingRequests > 0\" class=\"fa fa-circle-o-notch fa-spin fa-fw margin-bottom text-info pull-right\"></i>\n" +
+    "        </h3>\n" +
+    "        <div ng-if=\"view.pendingRequests > 0\" class=\"loadingbar-content\">\n" +
+    "            <span class=\"loadingbar-expand\"></span>\n" +
+    "        </div>\n" +
+    "        <div ng-controller=\"CubesViewerViewsCubeChartLinesVarianceController\">\n" +
+    "            <div ng-include=\"'views/cube/chart/chart-common.html'\"></div>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "\n" +
     "</div>\n"
   );
 
@@ -7291,6 +7777,8 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "          <li ng-click=\"selectChartType('lines')\"><a href=\"\"><i class=\"fa fa-fw fa-line-chart\"></i> Lines</a></li>\n" +
     "          <li ng-click=\"selectChartType('lines-stacked')\"><a href=\"\"><i class=\"fa fa-fw fa-area-chart\"></i> Areas</a></li>\n" +
     "          <li ng-click=\"selectChartType('radar')\"><a href=\"\"><i class=\"fa fa-fw fa-bullseye\"></i> Radar</a></li>\n" +
+    "          <li ng-click=\"selectChartType('lines-avg')\"><a href=\"\"><i class=\"fa fa-fw fa-bullseye\"></i> Lines AVG</a></li>\n" +
+    "          <li ng-click=\"selectChartType('variance')\"><a href=\"\"><i class=\"fa fa-fw fa-bullseye\"></i> Lines Variance</a></li>\n" +
     "\n" +
     "          <!-- <div class=\"divider\"></div>  -->\n" +
     "\n" +
