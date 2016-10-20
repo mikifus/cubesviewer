@@ -251,6 +251,13 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
 			}
 		});
 
+		// Ranges
+		$(view.params.rangefilters).each(function(idx, e) {
+			var dimParts = view.cube.dimensionParts(e.dimension);
+			var cutDim = dimParts.dimension.name + ( dimParts.hierarchy.name != "default" ? "@" + dimParts.hierarchy.name : "" );
+			cuts.push(cutDim + ":" + [e.range_from, e.range_to].join("-"));
+		});
+
 		return cuts;
 	};
 

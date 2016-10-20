@@ -51,6 +51,11 @@ cubes.Dimension.prototype.isDateDimension = function()  {
 
 };
 
+cubes.Dimension.prototype.isRangeFilter = function()  {
+	// Inform that dimension can be used as a range filter.
+	return (( ("cv-rangefilter" in this.info)) && (this.info["cv-rangefilter"] == true));
+};
+
 /**
  * List date dimensions.
  *

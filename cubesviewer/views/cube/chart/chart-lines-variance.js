@@ -34,7 +34,6 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesVarian
 	$scope.chart = null;
 
 	$scope.initialize = function() {
-		console.log($scope);
 		if (! "lineInterpolation" in $scope.view.params.chartoptions) {
 			$scope.view.params.chartoptions.lineInterpolation = "linear";
 		}

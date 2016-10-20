@@ -21,6 +21,7 @@ module.exports = function(grunt) {
               'cubesviewer/views/cube/explore/explore.js',
               'cubesviewer/views/cube/filter/dimension.js',
               'cubesviewer/views/cube/filter/datefilter.js',
+              'cubesviewer/views/cube/filter/range.js',
               'cubesviewer/views/cube/facts/facts.js',
               'cubesviewer/views/cube/series/series.js',
               'cubesviewer/views/cube/series/operations.js',

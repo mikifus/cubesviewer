@@ -41,6 +41,7 @@ cubesviewer.CubeView = function(cvOptions, id, type) {
 	view.requestFailed = false;
 	view.pendingRequests = 0;
 	view.dimensionFilter = null;
+	view.dimensionRangeFilter = null;
 
 	view._invalidatedData = true;
 	view._invalidatedDefs = true;
@@ -336,6 +337,31 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
 
 	};
 
+	// Select a range
+	$scope.selectRange = function(dimension, range_from, range_to) {
+		var view = $scope.view;
+		if (dimension) {
+			if (range_from || range_to) {
+
+				view.params.rangefilters = $.grep(view.params.rangefilters, function (e) {
+					return view.cube.dimensionParts(e.dimension).cutDimension == view.cube.dimensionParts(dimension).cutDimension;
+				}, true);
+				view.params.rangefilters.push({
+					"dimension": view.cube.dimensionParts(dimension).cutDimension,
+					"range_from": range_from,
+					"range_to": range_to
+				});
+			} else {
+				view.params.rangefilters = $.grep(view.params.rangefilters, function (e) {
+					return view.cube.dimensionParts(e.dimension).cutDimension == view.cube.dimensionParts(dimension).cutDimension;
+				}, true);
+			}
+		} else {
+			view.params.rangefilters = [];
+		}
+		$scope.refreshView();
+	};
+
 
 	/*
 	 * Filters current selection
@@ -373,6 +399,11 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
 		} else {
 			$scope.view.dimensionFilter = parts.drilldownDimension;
 		}
+	};
+
+	$scope.showDimensionRangeFilter = function(dimension) {
+		var parts = $scope.view.cube.dimensionParts(dimension);
+		$scope.view.dimensionRangeFilter = parts.drilldownDimension;
 	};
 
 	/*

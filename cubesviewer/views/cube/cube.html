@@ -89,6 +89,13 @@
                         <button ng-hide="view.getControlsHidden()" type="button" ng-click="showDimensionFilter(view.cube.dimensionPartsFromCut(cut).drilldownDimension)" class="btn btn-secondary btn-xs hidden-print" style="margin-left: 3px;"><i class="fa fa-fw fa-search"></i></button>
                         <button ng-hide="view.getControlsHidden()" type="button" ng-click="selectCut(cut.dimension, '', cut.invert)" class="btn btn-danger btn-xs hidden-print" style="margin-left: 1px;"><i class="fa fa-fw fa-trash"></i></button>
                     </div>
+
+                    <div ng-repeat="cut in view.params.rangefilters" class="label label-secondary cv-infopiece cv-view-viewinfo-rangefilter" style="color: black; background-color: #ffcccc;">
+                        <span style="max-width: 480px;"><i class="fa fa-fw fa-filter" title="Filter"></i> <b class="hidden-xs hidden-sm">Range filter:</b> <span title="{{ view.cube.dimensionParts(cut.dimension).label }}">{{ view.cube.dimensionParts(cut.dimension).label }}</span> <span title="{{ cut.range_from }}-{{ cut.range_to}}">{{ cut.range_from }}-{{ cut.range_to}}</span></span>
+                        <button type="button" class="btn btn-info btn-xs" style="visibility: hidden; margin-left: -20px;"><i class="fa fa-fw fa-info"></i></button>
+                        <button ng-hide="view.getControlsHidden()" type="button" ng-click="showDimensionRangeFilter(view.cube.dimensionParts(cut.dimension).drilldownDimension)" class="btn btn-secondary btn-xs hidden-print" style="margin-left: 3px;"><i class="fa fa-fw fa-search"></i></button>
+                        <button ng-hide="view.getControlsHidden()" type="button" ng-click="selectRange(cut.dimension)" class="btn btn-danger btn-xs hidden-print" style="margin-left: 1px;"><i class="fa fa-fw fa-trash"></i></button>
+                    </div>
                 </div>
 
                 <div ng-include="'views/cube/filter/datefilter.html'"></div>
@@ -118,6 +125,7 @@
 
         <div class="cv-view-viewdialogs">
             <div ng-if="view.dimensionFilter" ng-include="'views/cube/filter/dimension.html'"></div>
+            <div ng-if="view.dimensionRangeFilter" ng-include="'views/cube/filter/range.html'"></div>
         </div>
 
         <div class="cv-view-viewdata">
