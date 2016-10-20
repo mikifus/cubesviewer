@@ -55,22 +55,21 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
 
   $templateCache.put('studio/menu-tree-render.html',
     "<li class=\"dropdown-submenu\" ng-repeat=\"view in views\">\n" +
-    "    <span ng-if=\"view.submenu\"\n" +
+    "    <a ng-if=\"view.submenu\"\n" +
     "          style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i\n" +
-    "            class=\"fa fa-fw\"></i> {{ view.name }}</span>\n" +
+    "            class=\"fa fa-fw\"></i> {{ view.name }}</a>\n" +
     "    <a ng-if=\"view.data && view.shared && view.owner != cvOptions.user\"\n" +
     "       ng-click=\"reststoreService.addSavedView(view.id)\"\n" +
     "       style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i\n" +
     "            class=\"fa fa-fw\"></i> {{ view.name }}</a>\n" +
     "    <ul class=\"dropdown-menu submenu\" ng-if=\"view.submenu\">\n" +
-    "        <recurv views=\"view.submenu\"></recurv>\n" +
+    "        <menutree views=\"view.submenu\"></menutree>\n" +
     "        <li ng-repeat=\"view in view.views\"><a\n" +
     "                style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"\n" +
     "                ng-click=\"reststoreService.addSavedView(view.id)\"><i\n" +
     "                class=\"fa fa-fw\"></i> {{ view.name }}</a></li>\n" +
     "    </ul>\n" +
-    "</li>\n" +
-    "\n"
+    "</li>"
   );
 
 
@@ -226,7 +225,14 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "\n" +
     "          </ul>\n" +
     "        </div>\n" +
-    "\n" +
+    "        <script type=\"text/ng-template\" id=\"categoryTree\">\n" +
+    "            <a ng-if=\"view.data\" ng-click=\"reststoreService.addSavedView(view.id)\" style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i class=\"fa fa-fw\"></i> {{ view.name }}</a>\n" +
+    "            <a ng-if=\"view.submenu\" style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i class=\"fa fa-fw\"></i> {{ view.name }}</a>\n" +
+    "            <ul class=\"dropdown-menu submenu\" ng-if=\"view.submenu\">\n" +
+    "                <li ng-repeat=\"view in view.submenu\" ng-include=\"'categoryTree'\" class=\"dropdown-submenu\"></li>\n" +
+    "                <li ng-repeat=\"view in view.views | orderBy:'view.name'\" ng-click=\"reststoreService.addSavedView(view.id)\"><a style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i class=\"fa fa-fw\"></i> {{ view.name }}</a></li>\n" +
+    "            </ul>\n" +
+    "        </script>\n" +
     "\n" +
     "        <div ng-if=\"cvOptions.backendUrl\" class=\"dropdown m-b\" style=\"display: inline-block; \">\n" +
     "          <button class=\"btn btn-primary dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\" data-submenu>\n" +
@@ -237,14 +243,13 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "\n" +
     "            <li class=\"dropdown-header\">Personal views</li>\n" +
     "\n" +
-    "            <!-- <li ng-show=\"true\" class=\"disabled\"><a>Loading...</a></li>  -->\n" +
     "            <li ng-repeat=\"sv in reststoreService.savedViews | orderBy:'sv.name'\" ng-if=\"sv.owner == cvOptions.user\" ng-click=\"reststoreService.addSavedView(sv.id)\"><a style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i class=\"fa fa-fw\"></i> {{ sv.name }}</a></li>\n" +
     "\n" +
     "            <li class=\"dropdown-header\">Shared by others</li>\n" +
     "\n" +
-    "            <!-- <li ng-show=\"true\" class=\"disabled\"><a>Loading...</a></li>  -->\n" +
-    "            <!--<li ng-repeat=\"sv in reststoreService.savedViews | orderBy:'sv.name'\" ng-if=\"sv.shared && sv.owner != cvOptions.user\" ng-click=\"reststoreService.addSavedView(sv.id)\"><a style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i class=\"fa fa-fw\"></i> {{ sv.name }}</a></li>-->\n" +
-    "              <recurv views=\"sharedViews\"></recurv>\n" +
+    "            <li ng-repeat=\"view in sharedViews\" ng-include=\"'categoryTree'\" ng-class=\"{'dropdown-submenu': view.submenu}\"></li>\n" +
+    "\n" +
+    "            <!--<menutree views=\"sharedViews\"></menutree>-->\n" +
     "\n" +
     "          </ul>\n" +
     "        </div>\n" +
@@ -612,35 +617,16 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "        </ul>\n" +
     "    </li>\n" +
     "\n" +
-    "    <!--\n" +
     "    <li class=\"dropdown-submenu\">\n" +
     "        <a tabindex=\"0\"><i class=\"fa fa-fw fa-arrows-h\"></i> Range filter</a>\n" +
     "        <ul class=\"dropdown-menu\">\n" +
     "\n" +
-    "          <li on-repeat-done ng-repeat-start=\"dimension in view.cube.dimensions\" ng-if=\"dimension.levels.length == 1\" ng-click=\"showDimensionFilter(dimension.name);\">\n" +
+    "          <li ng-repeat=\"dimension in view.cube.dimensions\" ng-if=\"dimension.isRangeFilter()\" ng-click=\"showDimensionRangeFilter(dimension.name);\">\n" +
     "            <a href=\"\">{{ dimension.label }}</a>\n" +
-    "          </li>\n" +
-    "          <li ng-repeat-end ng-if=\"dimension.levels.length != 1\" class=\"dropdown-submenu\">\n" +
-    "            <a tabindex=\"0\">{{ dimension.label }}</a>\n" +
-    "\n" +
-    "            <ul ng-if=\"dimension.hierarchies_count() != 1\" class=\"dropdown-menu\">\n" +
-    "                <li ng-repeat=\"(hikey,hi) in dimension.hierarchies\" class=\"dropdown-submenu\">\n" +
-    "                    <a tabindex=\"0\" href=\"\" onclick=\"return false;\">{{ hi.label }}</a>\n" +
-    "                    <ul class=\"dropdown-menu\">\n" +
-    "                        <li ng-repeat=\"level in hi.levels\" ng-click=\"showDimensionFilter(dimension.name + '@' + hi.name + ':' + level.name )\"><a href=\"\">{{ level.label }}</a></li>\n" +
-    "                    </ul>\n" +
-    "                </li>\n" +
-    "            </ul>\n" +
-    "\n" +
-    "            <ul ng-if=\"dimension.hierarchies_count() == 1\" class=\"dropdown-menu\">\n" +
-    "                <li ng-repeat=\"level in dimension.default_hierarchy().levels\" ng-click=\"showDimensionFilter(level);\"><a href=\"\">{{ level.label }}</a></li>\n" +
-    "            </ul>\n" +
-    "\n" +
     "          </li>\n" +
     "\n" +
     "        </ul>\n" +
     "    </li>\n" +
-    "     -->\n" +
     "\n" +
     "    <div class=\"divider\"></div>\n" +
     "\n" +
@@ -917,6 +903,13 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "                        <button ng-hide=\"view.getControlsHidden()\" type=\"button\" ng-click=\"showDimensionFilter(view.cube.dimensionPartsFromCut(cut).drilldownDimension)\" class=\"btn btn-secondary btn-xs hidden-print\" style=\"margin-left: 3px;\"><i class=\"fa fa-fw fa-search\"></i></button>\n" +
     "                        <button ng-hide=\"view.getControlsHidden()\" type=\"button\" ng-click=\"selectCut(cut.dimension, '', cut.invert)\" class=\"btn btn-danger btn-xs hidden-print\" style=\"margin-left: 1px;\"><i class=\"fa fa-fw fa-trash\"></i></button>\n" +
     "                    </div>\n" +
+    "\n" +
+    "                    <div ng-repeat=\"cut in view.params.rangefilters\" class=\"label label-secondary cv-infopiece cv-view-viewinfo-rangefilter\" style=\"color: black; background-color: #ffcccc;\">\n" +
+    "                        <span style=\"max-width: 480px;\"><i class=\"fa fa-fw fa-filter\" title=\"Filter\"></i> <b class=\"hidden-xs hidden-sm\">Range filter:</b> <span title=\"{{ view.cube.dimensionParts(cut.dimension).label }}\">{{ view.cube.dimensionParts(cut.dimension).label }}</span> <span title=\"{{ cut.range_from }}-{{ cut.range_to}}\">{{ cut.range_from }}-{{ cut.range_to}}</span></span>\n" +
+    "                        <button type=\"button\" class=\"btn btn-info btn-xs\" style=\"visibility: hidden; margin-left: -20px;\"><i class=\"fa fa-fw fa-info\"></i></button>\n" +
+    "                        <button ng-hide=\"view.getControlsHidden()\" type=\"button\" ng-click=\"showDimensionRangeFilter(view.cube.dimensionParts(cut.dimension).drilldownDimension)\" class=\"btn btn-secondary btn-xs hidden-print\" style=\"margin-left: 3px;\"><i class=\"fa fa-fw fa-search\"></i></button>\n" +
+    "                        <button ng-hide=\"view.getControlsHidden()\" type=\"button\" ng-click=\"selectRange(cut.dimension)\" class=\"btn btn-danger btn-xs hidden-print\" style=\"margin-left: 1px;\"><i class=\"fa fa-fw fa-trash\"></i></button>\n" +
+    "                    </div>\n" +
     "                </div>\n" +
     "\n" +
     "                <div ng-include=\"'views/cube/filter/datefilter.html'\"></div>\n" +
@@ -946,6 +939,7 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "\n" +
     "        <div class=\"cv-view-viewdialogs\">\n" +
     "            <div ng-if=\"view.dimensionFilter\" ng-include=\"'views/cube/filter/dimension.html'\"></div>\n" +
+    "            <div ng-if=\"view.dimensionRangeFilter\" ng-include=\"'views/cube/filter/range.html'\"></div>\n" +
     "        </div>\n" +
     "\n" +
     "        <div class=\"cv-view-viewdata\">\n" +
@@ -1185,6 +1179,42 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "      </div>\n" +
     "\n" +
     "\n" +
+    "</div>\n"
+  );
+
+
+  $templateCache.put('views/cube/filter/range.html',
+    "<div ng-controller=\"CubesViewerViewsCubeRangeFilterDimensionController\">\n" +
+    "\n" +
+    "    <div class=\"panel panel-default panel-outline hidden-print\" ng-hide=\"view.getControlsHidden()\" style=\"border-color: #ffcccc;\">\n" +
+    "        <div class=\"panel-heading clearfix\" style=\"border-color: #ffcccc;\">\n" +
+    "            <button class=\"btn btn-xs btn-danger pull-right\" ng-click=\"closeDimensionFilter()\"><i class=\"fa fa-fw fa-close\"></i></button>\n" +
+    "            <h4 style=\"margin: 2px 0px 0px 0px;\"><i class=\"fa fa-fw fa-filter\"></i> Dimension range filter: <b>{{ parts.label }}</b></h4>\n" +
+    "        </div>\n" +
+    "        <div class=\"panel-body\">\n" +
+    "\n" +
+    "            <div >\n" +
+    "            <form >\n" +
+    "\n" +
+    "              <div class=\"form-group has-feedback\" style=\"display: inline-block; margin-bottom: 0; vertical-align: middle; margin-bottom: 2px;\">\n" +
+    "                <input type=\"text\" class=\"form-control\" ng-model=\"rangeFrom\" ng-model-options=\"{ debounce: 300 }\" placeholder=\"From\" style=\"width: 8em;\">\n" +
+    "                <i class=\"fa fa-fw fa-times-circle form-control-feedback\" ng-click=\"rangeFrom = ''\" style=\"cursor: pointer; pointer-events: inherit;\"></i>\n" +
+    "              </div>\n" +
+    "\n" +
+    "              <div class=\"form-group has-feedback\" style=\"display: inline-block; margin-bottom: 0; vertical-align: middle; margin-bottom: 2px;\">\n" +
+    "                <input type=\"text\" class=\"form-control\" ng-model=\"rangeTo\" ng-model-options=\"{ debounce: 300 }\" placeholder=\"To\" style=\"width: 8em;\">\n" +
+    "                <i class=\"fa fa-fw fa-times-circle form-control-feedback\" ng-click=\"rangeTo = ''\" style=\"cursor: pointer; pointer-events: inherit;\"></i>\n" +
+    "              </div>\n" +
+    "\n" +
+    "              <div class=\"form-group\" style=\"display: inline-block; margin-bottom: 0; vertical-align: middle; margin-bottom: 2px;\">\n" +
+    "                <button ng-click=\"applyFilter()\" class=\"btn btn-success\" type=\"button\"><i class=\"fa fa-fw fa-filter\"></i> Apply</button>\n" +
+    "              </div>\n" +
+    "            </form>\n" +
+    "            </div>\n" +
+    "\n" +
+    "            <div class=\"clearfix\"></div>\n" +
+    "        </div>\n" +
+    "      </div>\n" +
     "</div>\n"
   );
 

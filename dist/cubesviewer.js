@@ -898,6 +898,11 @@ cubes.Dimension.prototype.isDateDimension = function()  {
 
 };
 
+cubes.Dimension.prototype.isRangeFilter = function()  {
+	// Inform that dimension can be used as a range filter.
+	return (( ("cv-rangefilter" in this.info)) && (this.info["cv-rangefilter"] == true));
+};
+
 /**
  * List date dimensions.
  *
@@ -1259,7 +1264,6 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
         }
 
         // Include variance
-
 		if (view.params.charttype == 'variance') {
 			var aggregate_name = view.params.yaxis + '.variance';
 			view.cube.aggregates.forEach(function(ag){
@@ -1295,6 +1299,13 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
 			if (datefilterval != null) {
 				cuts.push(e.dimension + ":" + datefilterval);
 			}
+		});
+
+		// Ranges
+		$(view.params.rangefilters).each(function(idx, e) {
+			var dimParts = view.cube.dimensionParts(e.dimension);
+			var cutDim = dimParts.dimension.name + ( dimParts.hierarchy.name != "default" ? "@" + dimParts.hierarchy.name : "" );
+			cuts.push(cutDim + ":" + [e.range_from, e.range_to].join("-"));
 		});
 
 		return cuts;
@@ -2057,6 +2068,7 @@ cubesviewer.CubeView = function(cvOptions, id, type) {
 	view.requestFailed = false;
 	view.pendingRequests = 0;
 	view.dimensionFilter = null;
+	view.dimensionRangeFilter = null;
 
 	view._invalidatedData = true;
 	view._invalidatedDefs = true;
@@ -2352,6 +2364,31 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
 
 	};
 
+	// Select a range
+	$scope.selectRange = function(dimension, range_from, range_to) {
+		var view = $scope.view;
+		if (dimension) {
+			if (range_from || range_to) {
+
+				view.params.rangefilters = $.grep(view.params.rangefilters, function (e) {
+					return view.cube.dimensionParts(e.dimension).cutDimension == view.cube.dimensionParts(dimension).cutDimension;
+				}, true);
+				view.params.rangefilters.push({
+					"dimension": view.cube.dimensionParts(dimension).cutDimension,
+					"range_from": range_from,
+					"range_to": range_to
+				});
+			} else {
+				view.params.rangefilters = $.grep(view.params.rangefilters, function (e) {
+					return view.cube.dimensionParts(e.dimension).cutDimension == view.cube.dimensionParts(dimension).cutDimension;
+				}, true);
+			}
+		} else {
+			view.params.rangefilters = [];
+		}
+		$scope.refreshView();
+	};
+
 
 	/*
 	 * Filters current selection
@@ -2389,6 +2426,11 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
 		} else {
 			$scope.view.dimensionFilter = parts.drilldownDimension;
 		}
+	};
+
+	$scope.showDimensionRangeFilter = function(dimension) {
+		var parts = $scope.view.cube.dimensionParts(dimension);
+		$scope.view.dimensionRangeFilter = parts.drilldownDimension;
 	};
 
 	/*
@@ -2892,7 +2934,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeExploreControlle
 
 	// Sort data according to current view
 	$scope._sortData = function(data, includeXAxis) {
-		data.sort(cubesviewer._drilldownSortFunction(view.id, includeXAxis));
+		//data.sort(cubesviewer._drilldownSortFunction(view.id, includeXAxis));
 	};
 
 
@@ -3306,6 +3348,81 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeFilterDateContro
 
 }]);
 
+
+;/*
+ * CubesViewer
+ * Copyright (c) 2012-2016 Jose Juan Montes, see AUTHORS for more details
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+
+
+/**
+ */
+
+"use strict";
+
+angular.module('cv.views.cube').controller("CubesViewerViewsCubeRangeFilterDimensionController", ['$rootScope', '$scope', '$filter', 'cvOptions', 'cubesService', 'viewsService',
+                                                     function ($rootScope, $scope, $filter, cvOptions, cubesService, viewsService) {
+
+	$scope.parts = null;
+	$scope.rangeFrom = '';
+	$scope.rangeTo = '';
+
+	$scope.currentDataId = null;
+
+	$scope.initialize = function() {};
+
+	$scope.$watch("view.dimensionRangeFilter", function() {
+		$scope.parts = $scope.view.cube.dimensionParts($scope.view.dimensionRangeFilter);
+		$scope.view.params.rangefilters.forEach(function(rangefilter){
+			if (rangefilter.dimension == $scope.parts.dimension.name) {
+				$scope.rangeFrom = rangefilter.range_from;
+				$scope.rangeTo = rangefilter.range_to;
+			}
+		});
+	});
+
+	$scope.$on("ViewRefresh", function(view) {
+		//$scope.loadDimensionValues();
+	});
+
+	$scope.closeDimensionFilter = function() {
+		$scope.view.dimensionRangeFilter = null;
+	};
+
+	/*
+	 * Updates info after loading data.
+	 */
+	$scope.applyFilter = function() {
+		if ($scope.rangeFrom || $scope.rangeTo) {
+			// Cut dimension
+			var cutDimension = $scope.parts.dimension.name + ( $scope.parts.hierarchy.name != "default" ? "@" + $scope.parts.hierarchy.name : "" ) + ':' + $scope.parts.level.name;
+			$scope.selectRange(cutDimension, $scope.rangeFrom, $scope.rangeTo);
+		}
+	};
+
+
+	$scope.initialize();
+
+}]);
 
 ;/*
  * CubesViewer
@@ -5753,7 +5870,6 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesVarian
 	$scope.chart = null;
 
 	$scope.initialize = function() {
-		console.log($scope);
 		if (! "lineInterpolation" in $scope.view.params.chartoptions) {
 			$scope.view.params.chartoptions.lineInterpolation = "linear";
 		}
@@ -6370,7 +6486,7 @@ angular.module('cv.studio').controller("CubesViewerStudioViewController", ['$roo
 
 	};
 })
-	.directive('recurv', function() {
+	.directive('menutree', function() {
 		return {
 			templateUrl: 'studio/menu-tree-render.html',
 			scope: {
@@ -6418,7 +6534,6 @@ function get_hierarchy_menu(views_list) {
 function construct_menu(menu) {
 	var r = [];
 	for (var key in menu) {
-		console.log(key);
 		if (key != 'views' && menu.hasOwnProperty(key)) {
 			var item = {'name': key};
 			item['submenu'] = construct_menu(menu[key]);
@@ -7143,22 +7258,21 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
 
   $templateCache.put('studio/menu-tree-render.html',
     "<li class=\"dropdown-submenu\" ng-repeat=\"view in views\">\n" +
-    "    <span ng-if=\"view.submenu\"\n" +
+    "    <a ng-if=\"view.submenu\"\n" +
     "          style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i\n" +
-    "            class=\"fa fa-fw\"></i> {{ view.name }}</span>\n" +
+    "            class=\"fa fa-fw\"></i> {{ view.name }}</a>\n" +
     "    <a ng-if=\"view.data && view.shared && view.owner != cvOptions.user\"\n" +
     "       ng-click=\"reststoreService.addSavedView(view.id)\"\n" +
     "       style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i\n" +
     "            class=\"fa fa-fw\"></i> {{ view.name }}</a>\n" +
     "    <ul class=\"dropdown-menu submenu\" ng-if=\"view.submenu\">\n" +
-    "        <recurv views=\"view.submenu\"></recurv>\n" +
+    "        <menutree views=\"view.submenu\"></menutree>\n" +
     "        <li ng-repeat=\"view in view.views\"><a\n" +
     "                style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"\n" +
     "                ng-click=\"reststoreService.addSavedView(view.id)\"><i\n" +
     "                class=\"fa fa-fw\"></i> {{ view.name }}</a></li>\n" +
     "    </ul>\n" +
-    "</li>\n" +
-    "\n"
+    "</li>"
   );
 
 
@@ -7314,7 +7428,14 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "\n" +
     "          </ul>\n" +
     "        </div>\n" +
-    "\n" +
+    "        <script type=\"text/ng-template\" id=\"categoryTree\">\n" +
+    "            <a ng-if=\"view.data\" ng-click=\"reststoreService.addSavedView(view.id)\" style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i class=\"fa fa-fw\"></i> {{ view.name }}</a>\n" +
+    "            <a ng-if=\"view.submenu\" style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i class=\"fa fa-fw\"></i> {{ view.name }}</a>\n" +
+    "            <ul class=\"dropdown-menu submenu\" ng-if=\"view.submenu\">\n" +
+    "                <li ng-repeat=\"view in view.submenu\" ng-include=\"'categoryTree'\" class=\"dropdown-submenu\"></li>\n" +
+    "                <li ng-repeat=\"view in view.views | orderBy:'view.name'\" ng-click=\"reststoreService.addSavedView(view.id)\"><a style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i class=\"fa fa-fw\"></i> {{ view.name }}</a></li>\n" +
+    "            </ul>\n" +
+    "        </script>\n" +
     "\n" +
     "        <div ng-if=\"cvOptions.backendUrl\" class=\"dropdown m-b\" style=\"display: inline-block; \">\n" +
     "          <button class=\"btn btn-primary dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\" data-submenu>\n" +
@@ -7325,14 +7446,13 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "\n" +
     "            <li class=\"dropdown-header\">Personal views</li>\n" +
     "\n" +
-    "            <!-- <li ng-show=\"true\" class=\"disabled\"><a>Loading...</a></li>  -->\n" +
     "            <li ng-repeat=\"sv in reststoreService.savedViews | orderBy:'sv.name'\" ng-if=\"sv.owner == cvOptions.user\" ng-click=\"reststoreService.addSavedView(sv.id)\"><a style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i class=\"fa fa-fw\"></i> {{ sv.name }}</a></li>\n" +
     "\n" +
     "            <li class=\"dropdown-header\">Shared by others</li>\n" +
     "\n" +
-    "            <!-- <li ng-show=\"true\" class=\"disabled\"><a>Loading...</a></li>  -->\n" +
-    "            <!--<li ng-repeat=\"sv in reststoreService.savedViews | orderBy:'sv.name'\" ng-if=\"sv.shared && sv.owner != cvOptions.user\" ng-click=\"reststoreService.addSavedView(sv.id)\"><a style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i class=\"fa fa-fw\"></i> {{ sv.name }}</a></li>-->\n" +
-    "              <recurv views=\"sharedViews\"></recurv>\n" +
+    "            <li ng-repeat=\"view in sharedViews\" ng-include=\"'categoryTree'\" ng-class=\"{'dropdown-submenu': view.submenu}\"></li>\n" +
+    "\n" +
+    "            <!--<menutree views=\"sharedViews\"></menutree>-->\n" +
     "\n" +
     "          </ul>\n" +
     "        </div>\n" +
@@ -7700,35 +7820,16 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "        </ul>\n" +
     "    </li>\n" +
     "\n" +
-    "    <!--\n" +
     "    <li class=\"dropdown-submenu\">\n" +
     "        <a tabindex=\"0\"><i class=\"fa fa-fw fa-arrows-h\"></i> Range filter</a>\n" +
     "        <ul class=\"dropdown-menu\">\n" +
     "\n" +
-    "          <li on-repeat-done ng-repeat-start=\"dimension in view.cube.dimensions\" ng-if=\"dimension.levels.length == 1\" ng-click=\"showDimensionFilter(dimension.name);\">\n" +
+    "          <li ng-repeat=\"dimension in view.cube.dimensions\" ng-if=\"dimension.isRangeFilter()\" ng-click=\"showDimensionRangeFilter(dimension.name);\">\n" +
     "            <a href=\"\">{{ dimension.label }}</a>\n" +
-    "          </li>\n" +
-    "          <li ng-repeat-end ng-if=\"dimension.levels.length != 1\" class=\"dropdown-submenu\">\n" +
-    "            <a tabindex=\"0\">{{ dimension.label }}</a>\n" +
-    "\n" +
-    "            <ul ng-if=\"dimension.hierarchies_count() != 1\" class=\"dropdown-menu\">\n" +
-    "                <li ng-repeat=\"(hikey,hi) in dimension.hierarchies\" class=\"dropdown-submenu\">\n" +
-    "                    <a tabindex=\"0\" href=\"\" onclick=\"return false;\">{{ hi.label }}</a>\n" +
-    "                    <ul class=\"dropdown-menu\">\n" +
-    "                        <li ng-repeat=\"level in hi.levels\" ng-click=\"showDimensionFilter(dimension.name + '@' + hi.name + ':' + level.name )\"><a href=\"\">{{ level.label }}</a></li>\n" +
-    "                    </ul>\n" +
-    "                </li>\n" +
-    "            </ul>\n" +
-    "\n" +
-    "            <ul ng-if=\"dimension.hierarchies_count() == 1\" class=\"dropdown-menu\">\n" +
-    "                <li ng-repeat=\"level in dimension.default_hierarchy().levels\" ng-click=\"showDimensionFilter(level);\"><a href=\"\">{{ level.label }}</a></li>\n" +
-    "            </ul>\n" +
-    "\n" +
     "          </li>\n" +
     "\n" +
     "        </ul>\n" +
     "    </li>\n" +
-    "     -->\n" +
     "\n" +
     "    <div class=\"divider\"></div>\n" +
     "\n" +
@@ -8005,6 +8106,13 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "                        <button ng-hide=\"view.getControlsHidden()\" type=\"button\" ng-click=\"showDimensionFilter(view.cube.dimensionPartsFromCut(cut).drilldownDimension)\" class=\"btn btn-secondary btn-xs hidden-print\" style=\"margin-left: 3px;\"><i class=\"fa fa-fw fa-search\"></i></button>\n" +
     "                        <button ng-hide=\"view.getControlsHidden()\" type=\"button\" ng-click=\"selectCut(cut.dimension, '', cut.invert)\" class=\"btn btn-danger btn-xs hidden-print\" style=\"margin-left: 1px;\"><i class=\"fa fa-fw fa-trash\"></i></button>\n" +
     "                    </div>\n" +
+    "\n" +
+    "                    <div ng-repeat=\"cut in view.params.rangefilters\" class=\"label label-secondary cv-infopiece cv-view-viewinfo-rangefilter\" style=\"color: black; background-color: #ffcccc;\">\n" +
+    "                        <span style=\"max-width: 480px;\"><i class=\"fa fa-fw fa-filter\" title=\"Filter\"></i> <b class=\"hidden-xs hidden-sm\">Range filter:</b> <span title=\"{{ view.cube.dimensionParts(cut.dimension).label }}\">{{ view.cube.dimensionParts(cut.dimension).label }}</span> <span title=\"{{ cut.range_from }}-{{ cut.range_to}}\">{{ cut.range_from }}-{{ cut.range_to}}</span></span>\n" +
+    "                        <button type=\"button\" class=\"btn btn-info btn-xs\" style=\"visibility: hidden; margin-left: -20px;\"><i class=\"fa fa-fw fa-info\"></i></button>\n" +
+    "                        <button ng-hide=\"view.getControlsHidden()\" type=\"button\" ng-click=\"showDimensionRangeFilter(view.cube.dimensionParts(cut.dimension).drilldownDimension)\" class=\"btn btn-secondary btn-xs hidden-print\" style=\"margin-left: 3px;\"><i class=\"fa fa-fw fa-search\"></i></button>\n" +
+    "                        <button ng-hide=\"view.getControlsHidden()\" type=\"button\" ng-click=\"selectRange(cut.dimension)\" class=\"btn btn-danger btn-xs hidden-print\" style=\"margin-left: 1px;\"><i class=\"fa fa-fw fa-trash\"></i></button>\n" +
+    "                    </div>\n" +
     "                </div>\n" +
     "\n" +
     "                <div ng-include=\"'views/cube/filter/datefilter.html'\"></div>\n" +
@@ -8034,6 +8142,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "\n" +
     "        <div class=\"cv-view-viewdialogs\">\n" +
     "            <div ng-if=\"view.dimensionFilter\" ng-include=\"'views/cube/filter/dimension.html'\"></div>\n" +
+    "            <div ng-if=\"view.dimensionRangeFilter\" ng-include=\"'views/cube/filter/range.html'\"></div>\n" +
     "        </div>\n" +
     "\n" +
     "        <div class=\"cv-view-viewdata\">\n" +
@@ -8273,6 +8382,42 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "      </div>\n" +
     "\n" +
     "\n" +
+    "</div>\n"
+  );
+
+
+  $templateCache.put('views/cube/filter/range.html',
+    "<div ng-controller=\"CubesViewerViewsCubeRangeFilterDimensionController\">\n" +
+    "\n" +
+    "    <div class=\"panel panel-default panel-outline hidden-print\" ng-hide=\"view.getControlsHidden()\" style=\"border-color: #ffcccc;\">\n" +
+    "        <div class=\"panel-heading clearfix\" style=\"border-color: #ffcccc;\">\n" +
+    "            <button class=\"btn btn-xs btn-danger pull-right\" ng-click=\"closeDimensionFilter()\"><i class=\"fa fa-fw fa-close\"></i></button>\n" +
+    "            <h4 style=\"margin: 2px 0px 0px 0px;\"><i class=\"fa fa-fw fa-filter\"></i> Dimension range filter: <b>{{ parts.label }}</b></h4>\n" +
+    "        </div>\n" +
+    "        <div class=\"panel-body\">\n" +
+    "\n" +
+    "            <div >\n" +
+    "            <form >\n" +
+    "\n" +
+    "              <div class=\"form-group has-feedback\" style=\"display: inline-block; margin-bottom: 0; vertical-align: middle; margin-bottom: 2px;\">\n" +
+    "                <input type=\"text\" class=\"form-control\" ng-model=\"rangeFrom\" ng-model-options=\"{ debounce: 300 }\" placeholder=\"From\" style=\"width: 8em;\">\n" +
+    "                <i class=\"fa fa-fw fa-times-circle form-control-feedback\" ng-click=\"rangeFrom = ''\" style=\"cursor: pointer; pointer-events: inherit;\"></i>\n" +
+    "              </div>\n" +
+    "\n" +
+    "              <div class=\"form-group has-feedback\" style=\"display: inline-block; margin-bottom: 0; vertical-align: middle; margin-bottom: 2px;\">\n" +
+    "                <input type=\"text\" class=\"form-control\" ng-model=\"rangeTo\" ng-model-options=\"{ debounce: 300 }\" placeholder=\"To\" style=\"width: 8em;\">\n" +
+    "                <i class=\"fa fa-fw fa-times-circle form-control-feedback\" ng-click=\"rangeTo = ''\" style=\"cursor: pointer; pointer-events: inherit;\"></i>\n" +
+    "              </div>\n" +
+    "\n" +
+    "              <div class=\"form-group\" style=\"display: inline-block; margin-bottom: 0; vertical-align: middle; margin-bottom: 2px;\">\n" +
+    "                <button ng-click=\"applyFilter()\" class=\"btn btn-success\" type=\"button\"><i class=\"fa fa-fw fa-filter\"></i> Apply</button>\n" +
+    "              </div>\n" +
+    "            </form>\n" +
+    "            </div>\n" +
+    "\n" +
+    "            <div class=\"clearfix\"></div>\n" +
+    "        </div>\n" +
+    "      </div>\n" +
     "</div>\n"
   );
 

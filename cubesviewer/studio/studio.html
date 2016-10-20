@@ -17,7 +17,14 @@
 
           </ul>
         </div>
-
+        <script type="text/ng-template" id="categoryTree">
+            <a ng-if="view.data" ng-click="reststoreService.addSavedView(view.id)" style="max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;"><i class="fa fa-fw"></i> {{ view.name }}</a>
+            <a ng-if="view.submenu" style="max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;"><i class="fa fa-fw"></i> {{ view.name }}</a>
+            <ul class="dropdown-menu submenu" ng-if="view.submenu">
+                <li ng-repeat="view in view.submenu" ng-include="'categoryTree'" class="dropdown-submenu"></li>
+                <li ng-repeat="view in view.views | orderBy:'view.name'" ng-click="reststoreService.addSavedView(view.id)"><a style="max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;"><i class="fa fa-fw"></i> {{ view.name }}</a></li>
+            </ul>
+        </script>
 
         <div ng-if="cvOptions.backendUrl" class="dropdown m-b" style="display: inline-block; ">
           <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" data-submenu>
@@ -32,7 +39,9 @@
 
             <li class="dropdown-header">Shared by others</li>
 
-            <menutree views="sharedViews"></menutree>
+            <li ng-repeat="view in sharedViews" ng-include="'categoryTree'" ng-class="{'dropdown-submenu': view.submenu}"></li>
+
+            <!--<menutree views="sharedViews"></menutree>-->
 
           </ul>
         </div>

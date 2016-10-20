@@ -177,18 +177,7 @@ angular.module('cv.studio').controller("CubesViewerStudioViewController", ['$roo
         }
 
 	};
-})
-	.directive('menutree', function() {
-		return {
-			templateUrl: 'studio/menu-tree-render.html',
-			scope: {
-				views: '='
-			},
-			controller: ['$rootScope', '$scope', 'reststoreService', function($rootScope, $scope, reststoreService){
-				$scope.reststoreService = reststoreService;
-			}]
-		}
-	});
+});
 
 
 function get_hierarchy_menu(views_list) {

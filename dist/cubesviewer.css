@@ -6826,12 +6826,17 @@ button.cv-bootstrap .close {
 .cv-view-panel .dropdown-menu li {
   cursor: pointer;
 }
-.cv-gui-panel .cv-gui-catalog-menu li ul.submenu,
-.cv-gui-panel .cv-gui-catalog-menu li ul.views {
+.cv-gui-panel .cv-gui-catalog-menu li {
+  position: relative;
+}
+.cv-gui-panel .cv-gui-catalog-menu li ul {
   display: none;
 }
-.cv-gui-panel .cv-gui-catalog-menu li:hover > ul.submenu,
-.cv-gui-panel .cv-gui-catalog-menu li:hover > ul.views {
+.cv-gui-panel .cv-gui-catalog-menu li ul.submenu {
+  top: 0;
+  left: 100%;
+}
+.cv-gui-panel .cv-gui-catalog-menu li:hover > ul {
   display: block;
 }
 .cv-gui-title {

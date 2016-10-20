@@ -137,35 +137,20 @@
 
 .cv-gui-panel {
     .cv-gui-catalog-menu {
-         li {
-             ul.submenu, ul.views {
-                 display: none;
-             }
+        li {
+            position: relative;
+            ul {
+                display: none;
 
-             &:hover {
-                 &>ul.submenu,
-                 &>ul.views {
+                &.submenu {
+                    top: 0;
+                    left: 100%;
+                }
+            }
+
+            &:hover {
+                & > ul {
                     display: block;
-                 }
-             }
-         }
-
-        menutree {
-            &>li {
-                &>a {
-                    display: block;
-                    padding: 3px 20px;
-                    clear: both;
-                    font-weight: normal;
-                    line-height: 1.42857143;
-                    color: #333333;
-                    white-space: nowrap;
-
-                    &:hover {
-                        text-decoration: none;
-                        color: #262626;
-                        background-color: #f5f5f5;
-                    }
                 }
             }
         }
