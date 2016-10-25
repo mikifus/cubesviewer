@@ -5,7 +5,7 @@
   <ul class="dropdown-menu dropdown-menu-right cv-view-menu-drilldown">
 
       <!-- if ((grayout_drill) && ((($.grep(view.params.drilldown, function(ed) { return ed == dimension.name; })).length > 0))) { -->
-      <li on-repeat-done ng-repeat-start="dimension in view.cube.dimensions" ng-if="dimension.levels.length == 1" ng-click="selectDrill(dimension.name, true);">
+      <li on-repeat-done ng-repeat-start="dimension in view.getEnabledDrilldowns()" ng-if="dimension.levels.length == 1" ng-click="selectDrill(dimension.name, true);">
         <a href="">{{ dimension.label }}</a>
       </li>
       <li ng-repeat-end ng-if="dimension.levels.length != 1" class="dropdown-submenu">

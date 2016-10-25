@@ -214,14 +214,19 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
         }
 
         // Include variance
-		if (view.params.charttype == 'variance') {
-			var aggregate_name = view.params.yaxis + '.variance';
-			view.cube.aggregates.forEach(function(ag){
-				if (ag.name == aggregate_name) {
-					args.aggregates.push(aggregate_name)
-				}
-			});
-		}
+        if (view.params.charttype == 'variance') {
+            var aggregate_name = view.params.yaxis + '.variance';
+            view.cube.aggregates.forEach(function (ag) {
+                if (ag.name == aggregate_name) {
+                    if (args.aggregates) {
+                        args.aggregates.push(aggregate_name);
+                    }
+                    else {
+                        args.aggregates = [aggregate_name];
+                    }
+                }
+            });
+        }
 
 		return args;
 

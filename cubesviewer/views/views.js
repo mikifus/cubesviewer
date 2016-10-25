@@ -70,7 +70,95 @@ cubesviewer.View = function(cvOptions, id, type) {
 		view.params.controlsHidden = controlsHidden;
 	};
 
-	return view;
+    view.getEnabledDrilldowns = function () {
+        return view.getEnabledDimensions('selectDrill');
+    };
+
+    view.setEnabledDrilldowns = function (dimensions) {
+        view.setEnabledDimensions(dimensions, 'selectDrill');
+    };
+
+    view.getEnabledFilters = function () {
+        return view.getEnabledDimensions('cv-view-show-dimensionfilter');
+    };
+
+    view.setEnabledFilters = function (dimensions) {
+        view.setEnabledDimensions(dimensions, 'cv-view-show-dimensionfilter');
+    };
+
+    view.getEnabledHorizontalDimensions = function () {
+        return view.getEnabledDimensions('cv-view-series-setxaxis');
+    };
+
+    view.setEnabledHorizontalDimensions = function (dimensions) {
+        view.setEnabledDimensions(dimensions, 'cv-view-series-setxaxis');
+    };
+
+    view.getEnabledMeasures = function () {
+        var enabled_measures = [];
+        if (view.params.enabled_controls) {
+            enabled_measures = view.params.enabled_controls['measures'];
+        }
+
+        if (!enabled_measures || enabled_measures.length == 0) {
+            return view.cube.measures;
+        } else {
+            return $.grep(view.cube.measures, function (d) {
+                return enabled_measures.indexOf(d.name) != -1;
+            });
+        }
+    };
+
+    view.setEnabledMeasures = function(dimensions) {
+        view.setEnabledDimensions(dimensions, 'measures');
+    };
+
+    view.getEnabledAggregates = function () {
+        var enabled_aggregates = [];
+        if (view.params.enabled_controls) {
+            enabled_aggregates = view.params.enabled_controls['cv-view-series-setyaxis'];
+        }
+
+        if (!enabled_aggregates || enabled_aggregates.length == 0) {
+            return view.cube.aggregates;
+        } else {
+            return $.grep(view.cube.aggregates, function (d) {
+                return enabled_aggregates.indexOf(d.name) != -1;
+            });
+        }
+    };
+
+    view.setEnabledAggregates = function(dimensions) {
+        view.setEnabledDimensions(dimensions, 'cv-view-series-setyaxis');
+    };
+
+    view.getEnabledDimensions = function (label) {
+        var enabled_dimensions = [];
+        if (view.params.enabled_controls) {
+            enabled_dimensions = view.params.enabled_controls[label];
+        }
+
+        if (!enabled_dimensions || enabled_dimensions.length == 0) {
+            return view.cube.dimensions;
+        } else {
+            return $.grep(view.cube.dimensions, function (d) {
+                return enabled_dimensions.indexOf(d.name) != -1;
+            });
+        }
+    };
+
+    view.setEnabledDimensions = function (dimensions, label) {
+        var ret = [];
+        dimensions.forEach(function (d) {
+            if (d.selected) ret.push(d.name);
+        });
+        if (!view.params['enabled_controls']) {
+            view.params['enabled_controls'] = {};
+        }
+        view.params.enabled_controls[label] = ret;
+    };
+
+    return view;
 
 };
 

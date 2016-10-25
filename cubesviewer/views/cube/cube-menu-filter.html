@@ -11,7 +11,7 @@
         <a tabindex="0"><i class="fa fa-fw fa-bars"></i> Dimension filter</a>
         <ul class="dropdown-menu">
 
-          <li on-repeat-done ng-repeat-start="dimension in view.cube.dimensions" ng-if="dimension.levels.length == 1" ng-click="showDimensionFilter(dimension.name);">
+          <li on-repeat-done ng-repeat-start="dimension in view.getEnabledFilters()" ng-if="dimension.levels.length == 1 && !dimension.isRangeFilter()" ng-click="showDimensionFilter(dimension.name);">
             <a href="">{{ dimension.label }}</a>
           </li>
           <li ng-repeat-end ng-if="dimension.levels.length != 1" class="dropdown-submenu">
@@ -40,7 +40,7 @@
     <li class="dropdown-submenu">
         <a tabindex="0"><i class="fa fa-fw fa-calendar"></i> Date filter</a>
         <ul class="dropdown-menu">
-          <li ng-repeat="dimension in view.cube.dimensions" ng-if="dimension.isDateDimension()">
+          <li ng-repeat="dimension in view.getEnabledFilters()" ng-if="dimension.isDateDimension()">
             <a href="" ng-click="selectDateFilter(dimension.name + ((dimension.info['cv-datefilter-hierarchy']) ? '@' + dimension.info['cv-datefilter-hierarchy'] : ''), true)">
                 {{ dimension.label + ((dimension.hierarchy(dimension.info["cv-datefilter-hierarchy"])) ? " / " + dimension.hierarchy(dimension.info["cv-datefilter-hierarchy"]).label : "") }}
             </a>
@@ -56,7 +56,7 @@
         <a tabindex="0"><i class="fa fa-fw fa-arrows-h"></i> Range filter</a>
         <ul class="dropdown-menu">
 
-          <li ng-repeat="dimension in view.cube.dimensions" ng-if="dimension.isRangeFilter()" ng-click="showDimensionRangeFilter(dimension.name);">
+          <li ng-repeat="dimension in view.getEnabledFilters()" ng-if="dimension.isRangeFilter()" ng-click="showDimensionRangeFilter(dimension.name);">
             <a href="">{{ dimension.label }}</a>
           </li>
 

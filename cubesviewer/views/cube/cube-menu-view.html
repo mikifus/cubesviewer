@@ -70,7 +70,7 @@
         <a tabindex="0"><i class="fa fa-fw fa-long-arrow-right"></i> Horizontal dimension</a>
         <ul class="dropdown-menu">
 
-          <li on-repeat-done ng-repeat-start="dimension in view.cube.dimensions" ng-if="dimension.levels.length == 1" ng-click="selectXAxis(dimension.name)">
+          <li on-repeat-done ng-repeat-start="dimension in view.getEnabledHorizontalDimensions()" ng-if="dimension.levels.length == 1" ng-click="selectXAxis(dimension.name)">
             <a href="">{{ dimension.label }}</a>
           </li>
           <li ng-repeat-end ng-if="dimension.levels.length != 1" class="dropdown-submenu">
@@ -104,7 +104,7 @@
         <a tabindex="0"><i class="fa fa-fw fa-crosshairs"></i> Measure</a>
         <ul class="dropdown-menu">
 
-          <li ng-repeat="measure in view.cube.measures" ng-if="view.cube.measureAggregates(measure.name).length > 0" class="dropdown-submenu">
+          <li ng-repeat="measure in view.getEnabledMeasures()" ng-if="view.cube.measureAggregates(measure.name).length > 0" class="dropdown-submenu">
             <a href="">{{ measure.label }}</a>
             <ul class="dropdown-menu">
                 <li ng-repeat="aggregate in view.cube.measureAggregates(measure.name)" >
@@ -113,8 +113,8 @@
             </ul>
           </li>
 
-          <div class="divider" ng-if="view.cube.measureAggregates(null).length > 0"></div>
-          <li ng-repeat="aggregate in view.cube.measureAggregates(null)" ng-if="view.cube.measureAggregates(null).length > 0" >
+          <div class="divider" ng-if="view.getEnabledAggregates().length > 0"></div>
+          <li ng-repeat="aggregate in view.getEnabledAggregates()" ng-if="view.getEnabledAggregates().length > 0" >
             <a href="" ng-click="selectMeasure(aggregate.ref)">{{ aggregate.label }}</a>
           </li>
 

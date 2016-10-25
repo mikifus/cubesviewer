@@ -1,0 +1,87 @@
+<div class="modal-header">
+    <button type="button" ng-click="close();" class="close" data-dismiss="modal" aria-label="Close"><span
+            aria-hidden="true"><i class="fa fa-fw fa-close"></i></span></button>
+    <h4 class="modal-title" id="myModalLabel"><i class="fa fa-pencil"></i> Setup controls</h4>
+</div>
+<div class="modal-body">
+    <form>
+        <div class="form-group">
+            <h4>Menu path</h4>
+            <input type="text" class="form-control" id="menu_path" placeholder="folder/subfolder" ng-model="menuPath">
+        </div>
+        <div class="form-group">
+            <h4>Tooltip template</h4>
+            <input type="text" class="form-control" id="tooltip_template" ng-model="tooltipTemplate">
+            <p class="help-block">Use aggregate names in %name% fashion. Ex: (Fail: %fail_sum%).</p>
+        </div>
+        <div class="form-group">
+            <h4>Help</h4>
+            <textarea class="form-control" rows="5" ng-model="help"></textarea>
+        </div>
+        <div class="form-group">
+            <h4>Hide controls</h4>
+        </div>
+        <div class="panel panel-default panel-outline">
+            <div class="panel-heading clearfix">
+                <h5>Drilldowns</h5>
+            </div>
+            <div class="panel-body">
+                <div ng-repeat="d in drilldowns" style="display: inline-block; margin-right: 1em;">
+                    <label>
+                        <input type="checkbox" ng-model="d.selected" />
+                        <span title="{{ d.label }}">{{ ::d.label }}</span>
+                    </label>
+                </div>
+            </div>
+            <div class="panel-heading clearfix">
+                <h5>Filters</h5>
+            </div>
+            <div class="panel-body">
+                <div ng-repeat="d in filters" style="display: inline-block; margin-right: 1em;">
+                    <label>
+                        <input type="checkbox" ng-model="d.selected" />
+                        <span title="{{ d.label }}">{{ ::d.label }}</span>
+                    </label>
+                </div>
+            </div>
+            <div class="panel-heading clearfix">
+                <h5>Horizontal dimension</h5>
+            </div>
+            <div class="panel-body">
+                <div ng-repeat="d in horizontalDimensions" style="display: inline-block; margin-right: 1em;">
+                    <label>
+                        <input type="checkbox" ng-model="d.selected" />
+                        <span title="{{ d.label }}">{{ ::d.label }}</span>
+                    </label>
+                </div>
+            </div>
+            <div class="panel-heading clearfix">
+                <h5>Measures</h5>
+            </div>
+            <div class="panel-body">
+                <div ng-repeat="d in measures" style="display: inline-block; margin-right: 1em;">
+                    <label>
+                        <input type="checkbox" ng-model="d.selected" />
+                        <span title="{{ d.label }}">{{ ::d.label }}</span>
+                    </label>
+                </div>
+            </div>
+            <div class="panel-heading clearfix">
+                <h5>Aggregates</h5>
+            </div>
+            <div class="panel-body">
+                <div ng-repeat="d in aggregates" style="display: inline-block; margin-right: 1em;">
+                    <label>
+                        <input type="checkbox" ng-model="d.selected" />
+                        <span title="{{ d.label }}">{{ ::d.label }}</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="modal-footer">
+    <button type="button" ng-click="close();" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+    <button type="button" ng-click="save();" class="btn btn-primary" data-dismiss="modal">Save</button>
+</div>
+

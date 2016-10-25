@@ -307,6 +307,28 @@ angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootSco
 	};
 
 	/*
+	 * Show setup controls for a view.
+	 */
+	$scope.showSetupControlsView = function(view) {
+
+		var modalInstance = $uibModal.open({
+	    	animation: true,
+	    	templateUrl: 'studio/setup-controls.html',
+	    	controller: 'CubesViewerSetupControlsController',
+	    	appendTo: angular.element($($element).find('.cv-gui-modals')[0]),
+	    	size: "md",
+		    resolve: {
+		        view: function () { return view; },
+	    		element: function() { return $($element).find('.cv-gui-modals')[0] }
+		    }
+	    });
+
+	    modalInstance.result.then(function (selectedItem) {
+	    }, function () {});
+
+	};
+
+	/*
 	 * Clones a view.
 	 * This uses the serialization facility.
 	 */
@@ -385,6 +407,66 @@ angular.module('cv.studio').controller("CubesViewerRenameController", ['$rootSco
 
 }]);
 
+angular.module('cv.studio').controller("CubesViewerSetupControlsController", ['$rootScope', '$scope', '$uibModalInstance', 'cvOptions', 'cubesService', 'studioViewsService', 'view',
+    function ($rootScope, $scope, $uibModalInstance, cvOptions, cubesService, studioViewsService, view) {
+
+        $scope.cvVersion = cubesviewer.version;
+        $scope.cvOptions = cvOptions;
+        $scope.cubesService = cubesService;
+        $scope.studioViewsService = studioViewsService;
+
+        $scope.menuPath = view.params.menu_path;
+        $scope.tooltipTemplate = view.params.tooltip_template;
+        $scope.help = view.help;
+        $scope.view = view;
+
+        $scope.drilldowns = [];
+        $scope.filters = [];
+        $scope.horizontalDimensions = [];
+        $scope.measures = [];
+        $scope.aggregates = [];
+
+        var enabled_drilldowns = view.getEnabledDrilldowns();
+        var enabled_filters = view.getEnabledFilters();
+        var enabled_h_dim = view.getEnabledHorizontalDimensions();
+        var enabled_measures = view.getEnabledMeasures();
+        var enabled_aggregates = view.getEnabledAggregates();
+
+        view.cube.dimensions.forEach(function (d) {
+            $scope.drilldowns.push({'selected': enabled_drilldowns.indexOf(d) != -1, 'label': d.label, 'name': d.name});
+            $scope.filters.push({'selected': enabled_filters.indexOf(d) != -1, 'label': d.label, 'name': d.name});
+            $scope.horizontalDimensions.push({'selected': enabled_h_dim.indexOf(d) != -1, 'label': d.label, 'name': d.name});
+            $scope.measures.push({'selected': enabled_measures.indexOf(d) != -1, 'label': d.label, 'name': d.name});
+        });
+
+        view.cube.measures.forEach(function (d) {
+            $scope.measures.push({'selected': enabled_measures.indexOf(d) != -1, 'label': d.label, 'name': d.name});
+        });
+
+        view.cube.aggregates.forEach(function (d) {
+            $scope.aggregates.push({'selected': enabled_aggregates.indexOf(d) != -1, 'label': d.label, 'name': d.name});
+        });
+
+        /*
+         * Add a serialized view.
+         */
+        $scope.save = function () {
+            view.params.menu_path = $scope.menuPath;
+            view.params.tooltip_template = $scope.tooltipTemplate;
+
+            view.setEnabledDrilldowns($scope.drilldowns);
+            view.setEnabledFilters($scope.filters);
+            view.setEnabledMeasures($scope.measures);
+            view.setEnabledAggregates($scope.aggregates);
+
+            $uibModalInstance.close(view);
+        };
+
+        $scope.close = function () {
+            $uibModalInstance.dismiss('cancel');
+        };
+
+    }]);
 
 
 // Disable Debug Info (for production)
