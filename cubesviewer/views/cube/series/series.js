@@ -221,7 +221,7 @@ cubesviewer._seriesAddRows = function($scope, data) {
 		var row = $.grep(rows, function(ed) { return ed["key"] == rowKey; });
 		if (row.length > 0) {
 			row[0][colKey] = value;
-			row[0]["_cell"] = e;
+			row[0]["_cells"][colKey] = e;
 		} else {
 			var newrow = {};
 			newrow["key"] = rowKey;
@@ -231,7 +231,8 @@ cubesviewer._seriesAddRows = function($scope, data) {
 				newrow["key" + (i - baseidx)] = key[i];
 			}
 
-			newrow["_cell"] = e;
+			newrow["_cells"] = {};
+			newrow["_cells"][colKey] = e;
 			rows.push ( newrow );
 		}
 

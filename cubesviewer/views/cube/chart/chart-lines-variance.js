@@ -66,14 +66,19 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesVarian
 		var y_max_value = 0;
 		var y_min_value = 0;
 		var variance_name = view.params.yaxis + '.variance';
+        var tooltip_values = $scope.getTooltipTemplateAggregates();
 
-	    $(dataRows).each(function(idx, e) {
+        $(dataRows).each(function(idx, e) {
 	    	var serie = [];
 	    	for (var i = 1; i < columnDefs.length; i++) {
 	    		if (columnDefs[i].field in e) {
 	    			var value = e[columnDefs[i].field];
-				    var variance = Math.sqrt(e['_cell'][variance_name]);
-	    			serie.push( { "x": i, "y":  (value != undefined) ? value : 0, "variance": variance } );
+				    var variance = Math.sqrt(e['_cells'][columnDefs[i].field][variance_name]);
+                    var data = { "x": i, "y":  (value != undefined) ? value : 0, "variance": variance };
+                    tooltip_values.forEach(function(v){
+                        data[v] = e['_cells'][columnDefs[i].field][v];
+                    });
+	    			serie.push(data);
 				    var d_var_max = variance * quantile_maxValue;
 	                y_max_value = y_max_value < value + d_var_max ? value + d_var_max : y_max_value;
 	                y_min_value = y_min_value > value - d_var_max ? value - d_var_max : y_min_value;
@@ -113,6 +118,8 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesVarian
 		        });
 
 			    chart.forceY([y_min_value, y_max_value]);
+
+                $scope.modify_tooltip(chart);
 
 		    	d3.select(container)
 		    		.datum(d)

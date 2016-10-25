@@ -228,6 +228,23 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
             });
         }
 
+        // Include tooltip template values
+		if (view.params.tooltip_template) {
+            if (!args.aggregates) {
+                args.aggregates = [];
+            }
+            var re = new RegExp('%(\\w+)%', 'g');
+
+            var match;
+            do {
+                match = re.exec(view.params.tooltip_template);
+                if (match) {
+                    args.aggregates.push(match[1]);
+                }
+
+            } while (match);
+        }
+
 		return args;
 
 	};

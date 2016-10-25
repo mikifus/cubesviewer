@@ -53,23 +53,17 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
   );
 
 
-  $templateCache.put('studio/menu-tree-render.html',
-    "<li class=\"dropdown-submenu\" ng-repeat=\"view in views\">\n" +
-    "    <a ng-if=\"view.submenu\"\n" +
-    "          style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i\n" +
-    "            class=\"fa fa-fw\"></i> {{ view.name }}</a>\n" +
-    "    <a ng-if=\"view.data && view.shared && view.owner != cvOptions.user\"\n" +
-    "       ng-click=\"reststoreService.addSavedView(view.id)\"\n" +
-    "       style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i\n" +
-    "            class=\"fa fa-fw\"></i> {{ view.name }}</a>\n" +
-    "    <ul class=\"dropdown-menu submenu\" ng-if=\"view.submenu\">\n" +
-    "        <menutree views=\"view.submenu\"></menutree>\n" +
-    "        <li ng-repeat=\"view in view.views\"><a\n" +
-    "                style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"\n" +
-    "                ng-click=\"reststoreService.addSavedView(view.id)\"><i\n" +
-    "                class=\"fa fa-fw\"></i> {{ view.name }}</a></li>\n" +
-    "    </ul>\n" +
-    "</li>"
+  $templateCache.put('studio/help.html',
+    "  <div class=\"modal-header\">\n" +
+    "    <button type=\"button\" ng-click=\"close();\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\"><span aria-hidden=\"true\"><i class=\"fa fa-fw fa-close\"></i></span></button>\n" +
+    "    <h4 class=\"modal-title\" id=\"myModalLabel\"><i class=\"fa fa-question\"></i> Help</h4>\n" +
+    "  </div>\n" +
+    "  <div class=\"modal-body\">\n" +
+    "    {{help}}\n" +
+    "  </div>\n" +
+    "  <div class=\"modal-footer\">\n" +
+    "    <button type=\"button\" ng-click=\"close();\" class=\"btn btn-secondary\" data-dismiss=\"modal\">Close</button>\n" +
+    "  </div>\n"
   );
 
 
@@ -201,6 +195,97 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "  </div>\n" +
     "</div>\n" +
     "\n" +
+    "\n"
+  );
+
+
+  $templateCache.put('studio/setup-controls.html',
+    "<div class=\"modal-header\">\n" +
+    "    <button type=\"button\" ng-click=\"close();\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\"><span\n" +
+    "            aria-hidden=\"true\"><i class=\"fa fa-fw fa-close\"></i></span></button>\n" +
+    "    <h4 class=\"modal-title\" id=\"myModalLabel\"><i class=\"fa fa-pencil\"></i> Setup controls</h4>\n" +
+    "</div>\n" +
+    "<div class=\"modal-body\">\n" +
+    "    <form>\n" +
+    "        <div class=\"form-group\">\n" +
+    "            <h4>Menu path</h4>\n" +
+    "            <input type=\"text\" class=\"form-control\" id=\"menu_path\" placeholder=\"folder/subfolder\" ng-model=\"menuPath\">\n" +
+    "        </div>\n" +
+    "        <div class=\"form-group\">\n" +
+    "            <h4>Tooltip template</h4>\n" +
+    "            <input type=\"text\" class=\"form-control\" id=\"tooltip_template\" ng-model=\"tooltipTemplate\">\n" +
+    "            <p class=\"help-block\">Use aggregate names in %name% fashion. Ex: (Fail: %fail_sum%).</p>\n" +
+    "        </div>\n" +
+    "        <div class=\"form-group\">\n" +
+    "            <h4>Help</h4>\n" +
+    "            <textarea class=\"form-control\" rows=\"5\" ng-model=\"help\"></textarea>\n" +
+    "        </div>\n" +
+    "        <div class=\"form-group\">\n" +
+    "            <h4>Hide controls</h4>\n" +
+    "        </div>\n" +
+    "        <div class=\"panel panel-default panel-outline\">\n" +
+    "            <div class=\"panel-heading clearfix\">\n" +
+    "                <h5>Drilldowns</h5>\n" +
+    "            </div>\n" +
+    "            <div class=\"panel-body\">\n" +
+    "                <div ng-repeat=\"d in drilldowns\" style=\"display: inline-block; margin-right: 1em;\">\n" +
+    "                    <label>\n" +
+    "                        <input type=\"checkbox\" ng-model=\"d.selected\" />\n" +
+    "                        <span title=\"{{ d.label }}\">{{ ::d.label }}</span>\n" +
+    "                    </label>\n" +
+    "                </div>\n" +
+    "            </div>\n" +
+    "            <div class=\"panel-heading clearfix\">\n" +
+    "                <h5>Filters</h5>\n" +
+    "            </div>\n" +
+    "            <div class=\"panel-body\">\n" +
+    "                <div ng-repeat=\"d in filters\" style=\"display: inline-block; margin-right: 1em;\">\n" +
+    "                    <label>\n" +
+    "                        <input type=\"checkbox\" ng-model=\"d.selected\" />\n" +
+    "                        <span title=\"{{ d.label }}\">{{ ::d.label }}</span>\n" +
+    "                    </label>\n" +
+    "                </div>\n" +
+    "            </div>\n" +
+    "            <div class=\"panel-heading clearfix\">\n" +
+    "                <h5>Horizontal dimension</h5>\n" +
+    "            </div>\n" +
+    "            <div class=\"panel-body\">\n" +
+    "                <div ng-repeat=\"d in horizontalDimensions\" style=\"display: inline-block; margin-right: 1em;\">\n" +
+    "                    <label>\n" +
+    "                        <input type=\"checkbox\" ng-model=\"d.selected\" />\n" +
+    "                        <span title=\"{{ d.label }}\">{{ ::d.label }}</span>\n" +
+    "                    </label>\n" +
+    "                </div>\n" +
+    "            </div>\n" +
+    "            <div class=\"panel-heading clearfix\">\n" +
+    "                <h5>Measures</h5>\n" +
+    "            </div>\n" +
+    "            <div class=\"panel-body\">\n" +
+    "                <div ng-repeat=\"d in measures\" style=\"display: inline-block; margin-right: 1em;\">\n" +
+    "                    <label>\n" +
+    "                        <input type=\"checkbox\" ng-model=\"d.selected\" />\n" +
+    "                        <span title=\"{{ d.label }}\">{{ ::d.label }}</span>\n" +
+    "                    </label>\n" +
+    "                </div>\n" +
+    "            </div>\n" +
+    "            <div class=\"panel-heading clearfix\">\n" +
+    "                <h5>Aggregates</h5>\n" +
+    "            </div>\n" +
+    "            <div class=\"panel-body\">\n" +
+    "                <div ng-repeat=\"d in aggregates\" style=\"display: inline-block; margin-right: 1em;\">\n" +
+    "                    <label>\n" +
+    "                        <input type=\"checkbox\" ng-model=\"d.selected\" />\n" +
+    "                        <span title=\"{{ d.label }}\">{{ ::d.label }}</span>\n" +
+    "                    </label>\n" +
+    "                </div>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "    </form>\n" +
+    "</div>\n" +
+    "<div class=\"modal-footer\">\n" +
+    "    <button type=\"button\" ng-click=\"close();\" class=\"btn btn-secondary\" data-dismiss=\"modal\">Cancel</button>\n" +
+    "    <button type=\"button\" ng-click=\"save();\" class=\"btn btn-primary\" data-dismiss=\"modal\">Save</button>\n" +
+    "</div>\n" +
     "\n"
   );
 
@@ -532,7 +617,7 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "  <ul class=\"dropdown-menu dropdown-menu-right cv-view-menu-drilldown\">\n" +
     "\n" +
     "      <!-- if ((grayout_drill) && ((($.grep(view.params.drilldown, function(ed) { return ed == dimension.name; })).length > 0))) { -->\n" +
-    "      <li on-repeat-done ng-repeat-start=\"dimension in view.cube.dimensions\" ng-if=\"dimension.levels.length == 1\" ng-click=\"selectDrill(dimension.name, true);\">\n" +
+    "      <li on-repeat-done ng-repeat-start=\"dimension in view.getEnabledDrilldowns()\" ng-if=\"dimension.levels.length == 1\" ng-click=\"selectDrill(dimension.name, true);\">\n" +
     "        <a href=\"\">{{ dimension.label }}</a>\n" +
     "      </li>\n" +
     "      <li ng-repeat-end ng-if=\"dimension.levels.length != 1\" class=\"dropdown-submenu\">\n" +
@@ -576,7 +661,7 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "        <a tabindex=\"0\"><i class=\"fa fa-fw fa-bars\"></i> Dimension filter</a>\n" +
     "        <ul class=\"dropdown-menu\">\n" +
     "\n" +
-    "          <li on-repeat-done ng-repeat-start=\"dimension in view.cube.dimensions\" ng-if=\"dimension.levels.length == 1\" ng-click=\"showDimensionFilter(dimension.name);\">\n" +
+    "          <li on-repeat-done ng-repeat-start=\"dimension in view.getEnabledFilters()\" ng-if=\"dimension.levels.length == 1 && !dimension.isRangeFilter()\" ng-click=\"showDimensionFilter(dimension.name);\">\n" +
     "            <a href=\"\">{{ dimension.label }}</a>\n" +
     "          </li>\n" +
     "          <li ng-repeat-end ng-if=\"dimension.levels.length != 1\" class=\"dropdown-submenu\">\n" +
@@ -605,7 +690,7 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "    <li class=\"dropdown-submenu\">\n" +
     "        <a tabindex=\"0\"><i class=\"fa fa-fw fa-calendar\"></i> Date filter</a>\n" +
     "        <ul class=\"dropdown-menu\">\n" +
-    "          <li ng-repeat=\"dimension in view.cube.dimensions\" ng-if=\"dimension.isDateDimension()\">\n" +
+    "          <li ng-repeat=\"dimension in view.getEnabledFilters()\" ng-if=\"dimension.isDateDimension()\">\n" +
     "            <a href=\"\" ng-click=\"selectDateFilter(dimension.name + ((dimension.info['cv-datefilter-hierarchy']) ? '@' + dimension.info['cv-datefilter-hierarchy'] : ''), true)\">\n" +
     "                {{ dimension.label + ((dimension.hierarchy(dimension.info[\"cv-datefilter-hierarchy\"])) ? \" / \" + dimension.hierarchy(dimension.info[\"cv-datefilter-hierarchy\"]).label : \"\") }}\n" +
     "            </a>\n" +
@@ -621,7 +706,7 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "        <a tabindex=\"0\"><i class=\"fa fa-fw fa-arrows-h\"></i> Range filter</a>\n" +
     "        <ul class=\"dropdown-menu\">\n" +
     "\n" +
-    "          <li ng-repeat=\"dimension in view.cube.dimensions\" ng-if=\"dimension.isRangeFilter()\" ng-click=\"showDimensionRangeFilter(dimension.name);\">\n" +
+    "          <li ng-repeat=\"dimension in view.getEnabledFilters()\" ng-if=\"dimension.isRangeFilter()\" ng-click=\"showDimensionRangeFilter(dimension.name);\">\n" +
     "            <a href=\"\">{{ dimension.label }}</a>\n" +
     "          </li>\n" +
     "\n" +
@@ -646,6 +731,9 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "    <li ng-click=\"viewsService.studioViewsService.studioScope.showRenameView(view)\"><a><i class=\"fa fa-fw fa-pencil\"></i> Rename...</a></li>\n" +
     "    <li ng-click=\"viewsService.studioViewsService.studioScope.cloneView(view)\"><a><i class=\"fa fa-fw fa-clone\"></i> Clone</a></li>\n" +
     "\n" +
+    "    <div class=\"divider\"></div>\n" +
+    "    <li ng-click=\"viewsService.studioViewsService.studioScope.showSetupControlsView(view)\"><a><i class=\"fa fa-fw fa-pencil\"></i> Setup controls</a></li>\n" +
+    "\n" +
     "    <div ng-if=\"cvOptions.backendUrl\" class=\"divider\"></div>\n" +
     "    <li ng-if=\"cvOptions.backendUrl\" ng-click=\"reststoreService.saveView(view)\"><a><i class=\"fa fa-fw fa-save\"></i> Save</a></li>\n" +
     "    <li ng-if=\"cvOptions.backendUrl\" ng-click=\"reststoreService.shareView(view, ! view.shared)\"><a><i class=\"fa fa-fw fa-share\"></i> {{ view.shared ? \"Unshare\" : \"Share\" }}</a></li>\n" +
@@ -653,6 +741,8 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "\n" +
     "    <div class=\"divider\"></div>\n" +
     "    <li ng-click=\"viewsService.studioViewsService.studioScope.showSerializeView(view)\"><a><i class=\"fa fa-fw fa-code\"></i> Serialize...</a></li>\n" +
+    "    <div class=\"divider\"></div>\n" +
+    "    <li ng-click=\"viewsService.studioViewsService.studioScope.showHelpView(view)\"><a><i class=\"fa fa-fw fa-question\"></i> Help</a></li>\n" +
     "    <div class=\"divider\"></div>\n" +
     "    <li ng-click=\"viewsService.studioViewsService.closeView(view)\"><a><i class=\"fa fa-fw fa-close\"></i> Close</a></li>\n" +
     "  </ul>\n"
@@ -732,7 +822,7 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "        <a tabindex=\"0\"><i class=\"fa fa-fw fa-long-arrow-right\"></i> Horizontal dimension</a>\n" +
     "        <ul class=\"dropdown-menu\">\n" +
     "\n" +
-    "          <li on-repeat-done ng-repeat-start=\"dimension in view.cube.dimensions\" ng-if=\"dimension.levels.length == 1\" ng-click=\"selectXAxis(dimension.name)\">\n" +
+    "          <li on-repeat-done ng-repeat-start=\"dimension in view.getEnabledHorizontalDimensions()\" ng-if=\"dimension.levels.length == 1\" ng-click=\"selectXAxis(dimension.name)\">\n" +
     "            <a href=\"\">{{ dimension.label }}</a>\n" +
     "          </li>\n" +
     "          <li ng-repeat-end ng-if=\"dimension.levels.length != 1\" class=\"dropdown-submenu\">\n" +
@@ -766,7 +856,7 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "        <a tabindex=\"0\"><i class=\"fa fa-fw fa-crosshairs\"></i> Measure</a>\n" +
     "        <ul class=\"dropdown-menu\">\n" +
     "\n" +
-    "          <li ng-repeat=\"measure in view.cube.measures\" ng-if=\"view.cube.measureAggregates(measure.name).length > 0\" class=\"dropdown-submenu\">\n" +
+    "          <li ng-repeat=\"measure in view.getEnabledMeasures()\" ng-if=\"view.cube.measureAggregates(measure.name).length > 0\" class=\"dropdown-submenu\">\n" +
     "            <a href=\"\">{{ measure.label }}</a>\n" +
     "            <ul class=\"dropdown-menu\">\n" +
     "                <li ng-repeat=\"aggregate in view.cube.measureAggregates(measure.name)\" >\n" +
@@ -775,8 +865,8 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "            </ul>\n" +
     "          </li>\n" +
     "\n" +
-    "          <div class=\"divider\" ng-if=\"view.cube.measureAggregates(null).length > 0\"></div>\n" +
-    "          <li ng-repeat=\"aggregate in view.cube.measureAggregates(null)\" ng-if=\"view.cube.measureAggregates(null).length > 0\" >\n" +
+    "          <div class=\"divider\" ng-if=\"view.getEnabledAggregates().length > 0\"></div>\n" +
+    "          <li ng-repeat=\"aggregate in view.getEnabledAggregates()\" ng-if=\"view.getEnabledAggregates().length > 0\" >\n" +
     "            <a href=\"\" ng-click=\"selectMeasure(aggregate.ref)\">{{ aggregate.label }}</a>\n" +
     "          </li>\n" +
     "\n" +

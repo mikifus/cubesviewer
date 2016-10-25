@@ -60,6 +60,8 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesContro
 
 		var xAxisLabel = ( (view.params.xaxis != null) ? view.cube.dimensionParts(view.params.xaxis).label : "None")
 
+		var tooltip_values = $scope.getTooltipTemplateAggregates();
+
 
 	    // TODO: Check there's only one value column
 
@@ -71,7 +73,11 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesContro
 	    	for (var i = 1; i < columnDefs.length; i++) {
 	    		if (columnDefs[i].field in e) {
 	    			var value = e[columnDefs[i].field];
-	    			serie.push( { "x": i, "y":  (value != undefined) ? value : 0 } );
+	    			var data = {"x": i, "y":  (value != undefined) ? value : 0};
+                    tooltip_values.forEach(function(v){
+                        data[v] = e['_cells'][columnDefs[i].field][v];
+                    });
+	    			serie.push(data);
 	    		} else  {
 	    			if (view.params.charttype == "lines-stacked") {
 	    				serie.push( { "x": i, "y":  0 } );
@@ -117,6 +123,8 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesContro
 	    		chart.yAxis.tickFormat(function(d,i) {
 		        	return colFormatter(d);
 		        });
+
+				$scope.modify_tooltip(chart);
 
 		    	d3.select(container)
 		    		.datum(d)

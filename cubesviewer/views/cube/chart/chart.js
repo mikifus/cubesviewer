@@ -242,6 +242,45 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartController"
 		img.src = url;
 	};
 
+	 $scope.modify_tooltip = function (chart) {
+		 var view = $scope.view;
+		 if (view.params.tooltip_template) {
+			 var tooltipContentGenerator = chart.interactiveLayer.tooltip.contentGenerator();
+			 chart.interactiveLayer.tooltip.contentGenerator(function (i) {
+				 var idx = i.value;
+				 $.each(i.series, function (_, serie) {
+					 var tooltip_template = view.params.tooltip_template;
+					 for (var key in serie.data) {
+						 if (serie.data.hasOwnProperty(key)) {
+							 tooltip_template = tooltip_template.replace('%' + key + '%', serie.data[key]);
+						 }
+					 }
+					 serie['key'] += '&nbsp;&nbsp;<span style="color: #777;">(' + tooltip_template + ')</span>';
+				 });
+
+				 return tooltipContentGenerator(i);
+			 });
+		 }
+	 };
+
+	 $scope.getTooltipTemplateAggregates = function() {
+		 var ret = [];
+		 var view = $scope.view;
+		 if (view.params.tooltip_template) {
+            var re = new RegExp('%([\\.\\w]+)%', 'g');
+
+            var match;
+            do {
+                match = re.exec(view.params.tooltip_template);
+                if (match) {
+                    ret.push(match[1]);
+                }
+
+            } while (match);
+        }
+
+        return ret;
+	 };
 
 	$scope.$on("$destroy", function() {
 		chartCtrl.cleanupNvd3();
