@@ -61,7 +61,8 @@ angular.module('cv.studio').service("reststoreService", ['$rootScope', '$http', 
             "id": view.savedId,
             "name": view.params.name,
             "shared": view.shared,
-            "data":  viewsService.serializeView(view)
+            "data":  viewsService.serializeView(view),
+            "help": view.help
         };
 
         $http({
@@ -90,7 +91,8 @@ angular.module('cv.studio').service("reststoreService", ['$rootScope', '$http', 
                 if (sview != null) {
                     sview.name = view.params.name;
                     sview.shared = view.shared;
-                    sview.data = viewsService.serializeView(view)
+                    sview.data = viewsService.serializeView(view);
+                    sview.help = view.help;
                 }
             }
             reststoreService.viewList();
@@ -204,10 +206,12 @@ angular.module('cv.studio').service("reststoreService", ['$rootScope', '$http', 
         	view.savedId = savedview.id;
         	view.owner = savedview.owner;
         	view.shared = savedview.shared;
+            view.help = savedview.help;
         } else {
         	view.savedId = 0;
         	view.owner = cvOptions.user;
         	view.shared = false;
+            view.help = "";
         }
 
     };

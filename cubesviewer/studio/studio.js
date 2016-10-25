@@ -329,6 +329,29 @@ angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootSco
 	};
 
 	/*
+	 * Show help for a view.
+	 */
+	$scope.showHelpView = function(view) {
+
+		var modalInstance = $uibModal.open({
+	    	animation: true,
+	    	templateUrl: 'studio/help.html',
+	    	controller: 'CubesViewerHelpController',
+	    	appendTo: angular.element($($element).find('.cv-gui-modals')[0]),
+	    	size: "md",
+		    resolve: {
+		        view: function () { return view; },
+	    		element: function() { return $($element).find('.cv-gui-modals')[0] },
+		    }
+	    });
+
+	    modalInstance.result.then(function (selectedItem) {
+	    }, function () {
+	    });
+
+	};
+
+	/*
 	 * Clones a view.
 	 * This uses the serialization facility.
 	 */
@@ -458,6 +481,7 @@ angular.module('cv.studio').controller("CubesViewerSetupControlsController", ['$
             view.setEnabledFilters($scope.filters);
             view.setEnabledMeasures($scope.measures);
             view.setEnabledAggregates($scope.aggregates);
+			view.help = $scope.help;
 
             $uibModalInstance.close(view);
         };
@@ -467,6 +491,15 @@ angular.module('cv.studio').controller("CubesViewerSetupControlsController", ['$
         };
 
     }]);
+
+angular.module('cv.studio').controller("CubesViewerHelpController", ['$rootScope', '$scope', '$uibModalInstance', 'cvOptions', 'cubesService', 'studioViewsService', 'view',
+                                                                       function ($rootScope, $scope, $uibModalInstance, cvOptions, cubesService, studioViewsService, view) {
+	$scope.help = view.help;
+
+	$scope.close = function() {
+		$uibModalInstance.dismiss('cancel');
+	};
+}]);
 
 
 // Disable Debug Info (for production)

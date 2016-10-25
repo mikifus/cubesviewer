@@ -56,6 +56,8 @@ cubesviewer.View = function(cvOptions, id, type) {
 	view.owner = cvOptions.user;
 	view.shared = false;
 
+    view.help = "";
+
 
 	/**
 	 * Returns a boolean indicating whether controls are hidden for this view.
