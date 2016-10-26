@@ -112,6 +112,32 @@
         content: "\f054";
     }
 
+    .cv-gui-panel {
+        .cv-gui-catalog-menu {
+            li {
+                position: relative;
+
+                a:hover {
+                    color: @btn-primary-color;
+                    background-color: @btn-primary-bg;
+                }
+                ul {
+                    display: none;
+
+                    &.submenu {
+                        top: 0;
+                        left: 100%;
+                    }
+                }
+
+                &:hover {
+                    & > ul {
+                        display: block;
+                    }
+                }
+            }
+        }
+    }
 }
 
 
@@ -133,28 +159,6 @@
 
 .cv-view-panel .dropdown-menu li {
     cursor: pointer;
-}
-
-.cv-gui-panel {
-    .cv-gui-catalog-menu {
-        li {
-            position: relative;
-            ul {
-                display: none;
-
-                &.submenu {
-                    top: 0;
-                    left: 100%;
-                }
-            }
-
-            &:hover {
-                & > ul {
-                    display: block;
-                }
-            }
-        }
-    }
 }
 
 .cv-gui-title {

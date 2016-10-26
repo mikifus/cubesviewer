@@ -180,26 +180,28 @@ angular.module('cv.studio').controller("CubesViewerStudioViewController", ['$roo
 });
 
 
-function get_hierarchy_menu(views_list) {
+function get_hierarchy_menu(views_list, owner_function) {
 	var ret = [];
 	var d = [];
 	var menu = {};
 	$(views_list).each(function (idx, view) {
-		var view_params = JSON.parse(view.data);
-		if (view_params.menu_path) {
-			var parent = menu;
-			$(view_params.menu_path.split('/')).each(function (idx, name) {
-				if (!parent[name]) {
-					parent[name] = {};
+		if (owner_function(view.owner)) {
+			var view_params = JSON.parse(view.data);
+			if (view_params.menu_path) {
+				var parent = menu;
+				$(view_params.menu_path.split('/')).each(function (idx, name) {
+					if (!parent[name]) {
+						parent[name] = {};
+					}
+					parent = parent[name];
+				});
+				if (!parent['views']) {
+					parent['views'] = [];
 				}
-				parent = parent[name];
-			});
-			if (!parent['views']) {
-				parent['views'] = [];
+				parent['views'].push(view);
+			} else {
+				d.push(view)
 			}
-			parent['views'].push(view);
-		} else {
-			d.push(view)
 		}
 	});
 
@@ -238,6 +240,9 @@ angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootSco
 	$scope.reststoreService = reststoreService;
 
 	$scope.studioViewsService.studioScope = $scope;
+
+	$scope.savedViews = [];
+	$scope.sharedViews = [];
 
 	$scope.initialize = function() {
 	};
@@ -392,7 +397,12 @@ angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootSco
 
     $scope.$watch('reststoreService.savedViews', function (newValue, oldValue) {
 	    if (newValue != oldValue) {
-           $scope.sharedViews = get_hierarchy_menu(reststoreService.savedViews);
+           $scope.savedViews = get_hierarchy_menu(reststoreService.savedViews, function(owner){
+			   return owner == cvOptions.user;
+		   });
+           $scope.sharedViews = get_hierarchy_menu(reststoreService.savedViews, function(owner){
+			   return owner != cvOptions.user;
+		   });
        }
     });
 

@@ -21,7 +21,7 @@
             <a ng-if="view.data" ng-click="reststoreService.addSavedView(view.id)" style="max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;"><i class="fa fa-fw"></i> {{ view.name }}</a>
             <a ng-if="view.submenu" style="max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;"><i class="fa fa-fw"></i> {{ view.name }}</a>
             <ul class="dropdown-menu submenu" ng-if="view.submenu">
-                <li ng-repeat="view in view.submenu" ng-include="'categoryTree'" class="dropdown-submenu"></li>
+                <li ng-repeat="view in view.submenu | orderBy:'view.name'" ng-include="'categoryTree'" class="dropdown-submenu"></li>
                 <li ng-repeat="view in view.views | orderBy:'view.name'" ng-click="reststoreService.addSavedView(view.id)"><a style="max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;"><i class="fa fa-fw"></i> {{ view.name }}</a></li>
             </ul>
         </script>
@@ -35,11 +35,12 @@
 
             <li class="dropdown-header">Personal views</li>
 
-            <li ng-repeat="sv in reststoreService.savedViews | orderBy:'sv.name'" ng-if="sv.owner == cvOptions.user" ng-click="reststoreService.addSavedView(sv.id)"><a style="max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;"><i class="fa fa-fw"></i> {{ sv.name }}</a></li>
+            <!--<li ng-repeat="sv in reststoreService.savedViews | orderBy:'sv.name'" ng-if="sv.owner == cvOptions.user" ng-click="reststoreService.addSavedView(sv.id)"><a style="max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;"><i class="fa fa-fw"></i> {{ sv.name }}</a></li>-->
+            <li ng-repeat="view in savedViews | orderBy:'view.name'" ng-include="'categoryTree'" ng-class="{'dropdown-submenu': view.submenu}"></li>
 
             <li class="dropdown-header">Shared by others</li>
 
-            <li ng-repeat="view in sharedViews" ng-include="'categoryTree'" ng-class="{'dropdown-submenu': view.submenu}"></li>
+            <li ng-repeat="view in sharedViews | orderBy:'view.name'" ng-include="'categoryTree'" ng-class="{'dropdown-submenu': view.submenu}"></li>
 
             <!--<menutree views="sharedViews"></menutree>-->
 
