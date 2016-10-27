@@ -6809,6 +6809,23 @@ button.cv-bootstrap .close {
 .cv-bootstrap .glyphicon.glyphicon-chevron-right:before {
   content: "\f054";
 }
+.cv-bootstrap .cv-gui-panel .cv-gui-catalog-menu li {
+  position: relative;
+}
+.cv-bootstrap .cv-gui-panel .cv-gui-catalog-menu li a:hover {
+  color: #fff;
+  background-color: #337ab7;
+}
+.cv-bootstrap .cv-gui-panel .cv-gui-catalog-menu li ul {
+  display: none;
+}
+.cv-bootstrap .cv-gui-panel .cv-gui-catalog-menu li ul.submenu {
+  top: 0;
+  left: 100%;
+}
+.cv-bootstrap .cv-gui-panel .cv-gui-catalog-menu li:hover > ul {
+  display: block;
+}
 /*
 */
 .cv-view-panel,
@@ -6825,19 +6842,6 @@ button.cv-bootstrap .close {
 }
 .cv-view-panel .dropdown-menu li {
   cursor: pointer;
-}
-.cv-gui-panel .cv-gui-catalog-menu li {
-  position: relative;
-}
-.cv-gui-panel .cv-gui-catalog-menu li ul {
-  display: none;
-}
-.cv-gui-panel .cv-gui-catalog-menu li ul.submenu {
-  top: 0;
-  left: 100%;
-}
-.cv-gui-panel .cv-gui-catalog-menu li:hover > ul {
-  display: block;
 }
 .cv-gui-title {
   font-weight: bold;

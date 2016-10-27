@@ -1352,7 +1352,10 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
 		var date_to = null;
 
 		if (datefilter.mode.indexOf("auto-") == 0) {
-			if (datefilter.mode == "auto-last1m") {
+			if (datefilter.mode == "auto-last7d") {
+				date_from = new Date();
+				date_from.setDate(date_from.getDate() - 7);
+			} else if (datefilter.mode == "auto-last1m") {
 				date_from = new Date();
 				date_from.setMonth(date_from.getMonth() - 1);
 			} else if (datefilter.mode == "auto-last3m") {
@@ -3391,6 +3394,7 @@ angular.module('cv.views.cube').filter("datefilterMode", ['$rootScope', 'cvOptio
 		var text = "None";
 		switch (val) {
 			case "custom": text = "Custom"; break;
+			case "auto-last7d": text = "Last 7 days"; break;
 			case "auto-last1m": text = "Last month"; break;
 			case "auto-last3m": text = "Last 3 months"; break;
 			case "auto-last6m": text = "Last 6 months"; break;
@@ -3452,9 +3456,12 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeFilterDateContro
 		$scope.refreshView();
 	}
 
-	$scope.$watch("dateStart.value", $scope.updateDateFilter);
-	$scope.$watch("dateEnd.value", $scope.updateDateFilter);
-	$scope.$watch("datefilter.mode", $scope.updateDateFilter);
+	$scope.$watch("dateStart.value", function(newValue, oldValue) {
+		if (newValue != oldValue) $scope.updateDateFilter()});
+	$scope.$watch("dateEnd.value", function(newValue, oldValue) {
+		if (newValue != oldValue) $scope.updateDateFilter()});
+	$scope.$watch("datefilter.mode", function(newValue, oldValue) {
+		if (newValue != oldValue) $scope.updateDateFilter()});
 
 	$scope.initialize();
 
@@ -4476,7 +4483,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartController"
 		    .node();
 		   */
 		  //img2.src = canvasUrl;
-		  exportService.saveAs(canvasUrl, $scope.view.cube.name + "-" + $scope.view.params.charttype + ".png");
+		  exportService.saveAs(canvasUrl, 'image/png', $scope.view.cube.name + "-" + $scope.view.params.charttype + ".png");
 		}
 		// start loading the image.
 		img.src = url;
@@ -6307,13 +6314,13 @@ angular.module('cv.views.cube').service("exportService", ['$rootScope', '$timeou
 	 *
 	 * @memberof cv.views.cube.exportService
 	 */
-	this.saveAs = function(content, mime, filename) {
+	this.saveAs = function(contentUri, mime, filename) {
 
 		// Method 1
 		//var uri = "data:" + mime + ";charset=utf-8," + encodeURIComponent(content);
 
 		// Method 2
-		var csvData = new Blob([content], { type: mime });
+		var csvData = b64toBlob(contentUri.split(',')[1], mime);
 		var uri = URL.createObjectURL(csvData);
 
 		var link = document.createElement('a');
@@ -6326,6 +6333,29 @@ angular.module('cv.views.cube').service("exportService", ['$rootScope', '$timeou
 	    } else {
 	        location.replace(uri);
 	    }
+
+		function b64toBlob(b64Data, contentType, sliceSize) {
+			contentType = contentType || '';
+			sliceSize = sliceSize || 512;
+
+			var byteCharacters = atob(b64Data);
+			var byteArrays = [];
+
+			for (var offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+				var slice = byteCharacters.slice(offset, offset + sliceSize);
+
+				var byteNumbers = new Array(slice.length);
+				for (var i = 0; i < slice.length; i++) {
+					byteNumbers[i] = slice.charCodeAt(i);
+				}
+
+				var byteArray = new Uint8Array(byteNumbers);
+
+				byteArrays.push(byteArray);
+			}
+
+			return new Blob(byteArrays, {type: contentType});
+		}
 	};
 
 	/**
@@ -6663,26 +6693,28 @@ angular.module('cv.studio').controller("CubesViewerStudioViewController", ['$roo
 });
 
 
-function get_hierarchy_menu(views_list) {
+function get_hierarchy_menu(views_list, owner_function) {
 	var ret = [];
 	var d = [];
 	var menu = {};
 	$(views_list).each(function (idx, view) {
-		var view_params = JSON.parse(view.data);
-		if (view_params.menu_path) {
-			var parent = menu;
-			$(view_params.menu_path.split('/')).each(function (idx, name) {
-				if (!parent[name]) {
-					parent[name] = {};
+		if (owner_function(view.owner)) {
+			var view_params = JSON.parse(view.data);
+			if (view_params.menu_path) {
+				var parent = menu;
+				$(view_params.menu_path.split('/')).each(function (idx, name) {
+					if (!parent[name]) {
+						parent[name] = {};
+					}
+					parent = parent[name];
+				});
+				if (!parent['views']) {
+					parent['views'] = [];
 				}
-				parent = parent[name];
-			});
-			if (!parent['views']) {
-				parent['views'] = [];
+				parent['views'].push(view);
+			} else {
+				d.push(view)
 			}
-			parent['views'].push(view);
-		} else {
-			d.push(view)
 		}
 	});
 
@@ -6721,6 +6753,9 @@ angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootSco
 	$scope.reststoreService = reststoreService;
 
 	$scope.studioViewsService.studioScope = $scope;
+
+	$scope.savedViews = [];
+	$scope.sharedViews = [];
 
 	$scope.initialize = function() {
 	};
@@ -6875,7 +6910,12 @@ angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootSco
 
     $scope.$watch('reststoreService.savedViews', function (newValue, oldValue) {
 	    if (newValue != oldValue) {
-           $scope.sharedViews = get_hierarchy_menu(reststoreService.savedViews);
+           $scope.savedViews = get_hierarchy_menu(reststoreService.savedViews, function(owner){
+			   return owner == cvOptions.user;
+		   });
+           $scope.sharedViews = get_hierarchy_menu(reststoreService.savedViews, function(owner){
+			   return owner != cvOptions.user;
+		   });
        }
     });
 
@@ -7800,7 +7840,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "            <a ng-if=\"view.data\" ng-click=\"reststoreService.addSavedView(view.id)\" style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i class=\"fa fa-fw\"></i> {{ view.name }}</a>\n" +
     "            <a ng-if=\"view.submenu\" style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i class=\"fa fa-fw\"></i> {{ view.name }}</a>\n" +
     "            <ul class=\"dropdown-menu submenu\" ng-if=\"view.submenu\">\n" +
-    "                <li ng-repeat=\"view in view.submenu\" ng-include=\"'categoryTree'\" class=\"dropdown-submenu\"></li>\n" +
+    "                <li ng-repeat=\"view in view.submenu | orderBy:'view.name'\" ng-include=\"'categoryTree'\" class=\"dropdown-submenu\"></li>\n" +
     "                <li ng-repeat=\"view in view.views | orderBy:'view.name'\" ng-click=\"reststoreService.addSavedView(view.id)\"><a style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i class=\"fa fa-fw\"></i> {{ view.name }}</a></li>\n" +
     "            </ul>\n" +
     "        </script>\n" +
@@ -7814,11 +7854,12 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "\n" +
     "            <li class=\"dropdown-header\">Personal views</li>\n" +
     "\n" +
-    "            <li ng-repeat=\"sv in reststoreService.savedViews | orderBy:'sv.name'\" ng-if=\"sv.owner == cvOptions.user\" ng-click=\"reststoreService.addSavedView(sv.id)\"><a style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i class=\"fa fa-fw\"></i> {{ sv.name }}</a></li>\n" +
+    "            <!--<li ng-repeat=\"sv in reststoreService.savedViews | orderBy:'sv.name'\" ng-if=\"sv.owner == cvOptions.user\" ng-click=\"reststoreService.addSavedView(sv.id)\"><a style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i class=\"fa fa-fw\"></i> {{ sv.name }}</a></li>-->\n" +
+    "            <li ng-repeat=\"view in savedViews | orderBy:'view.name'\" ng-include=\"'categoryTree'\" ng-class=\"{'dropdown-submenu': view.submenu}\"></li>\n" +
     "\n" +
     "            <li class=\"dropdown-header\">Shared by others</li>\n" +
     "\n" +
-    "            <li ng-repeat=\"view in sharedViews\" ng-include=\"'categoryTree'\" ng-class=\"{'dropdown-submenu': view.submenu}\"></li>\n" +
+    "            <li ng-repeat=\"view in sharedViews | orderBy:'view.name'\" ng-include=\"'categoryTree'\" ng-class=\"{'dropdown-submenu': view.submenu}\"></li>\n" +
     "\n" +
     "            <!--<menutree views=\"sharedViews\"></menutree>-->\n" +
     "\n" +
@@ -8609,6 +8650,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "                      <ul class=\"dropdown-menu cv-view-menu cv-view-menu-view\">\n" +
     "                        <li ng-click=\"setMode('custom')\"><a><i class=\"fa fa-fw\"></i> Custom</a></li>\n" +
     "                        <div class=\"divider\"></div>\n" +
+    "                        <li ng-click=\"setMode('auto-last7d')\"><a><i class=\"fa fa-fw\"></i> Last 7 days</a></li>\n" +
     "                        <li ng-click=\"setMode('auto-last1m')\"><a><i class=\"fa fa-fw\"></i> Last month</a></li>\n" +
     "                        <li ng-click=\"setMode('auto-last3m')\"><a><i class=\"fa fa-fw\"></i> Last 3 months</a></li>\n" +
     "                        <li ng-click=\"setMode('auto-last6m')\"><a><i class=\"fa fa-fw\"></i> Last 6 months</a></li>\n" +
