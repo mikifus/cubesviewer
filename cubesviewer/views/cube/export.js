@@ -107,13 +107,13 @@ angular.module('cv.views.cube').service("exportService", ['$rootScope', '$timeou
 	 *
 	 * @memberof cv.views.cube.exportService
 	 */
-	this.saveAs = function(content, mime, filename) {
+	this.saveAs = function(contentUri, mime, filename) {
 
 		// Method 1
 		//var uri = "data:" + mime + ";charset=utf-8," + encodeURIComponent(content);
 
 		// Method 2
-		var csvData = new Blob([content], { type: mime });
+		var csvData = b64toBlob(contentUri.split(',')[1], mime);
 		var uri = URL.createObjectURL(csvData);
 
 		var link = document.createElement('a');
@@ -126,6 +126,29 @@ angular.module('cv.views.cube').service("exportService", ['$rootScope', '$timeou
 	    } else {
 	        location.replace(uri);
 	    }
+
+		function b64toBlob(b64Data, contentType, sliceSize) {
+			contentType = contentType || '';
+			sliceSize = sliceSize || 512;
+
+			var byteCharacters = atob(b64Data);
+			var byteArrays = [];
+
+			for (var offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+				var slice = byteCharacters.slice(offset, offset + sliceSize);
+
+				var byteNumbers = new Array(slice.length);
+				for (var i = 0; i < slice.length; i++) {
+					byteNumbers[i] = slice.charCodeAt(i);
+				}
+
+				var byteArray = new Uint8Array(byteNumbers);
+
+				byteArrays.push(byteArray);
+			}
+
+			return new Blob(byteArrays, {type: contentType});
+		}
 	};
 
 	/**

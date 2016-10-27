@@ -236,7 +236,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartController"
 		    .node();
 		   */
 		  //img2.src = canvasUrl;
-		  exportService.saveAs(canvasUrl, $scope.view.cube.name + "-" + $scope.view.params.charttype + ".png");
+		  exportService.saveAs(canvasUrl, 'image/png', $scope.view.cube.name + "-" + $scope.view.params.charttype + ".png");
 		}
 		// start loading the image.
 		img.src = url;
