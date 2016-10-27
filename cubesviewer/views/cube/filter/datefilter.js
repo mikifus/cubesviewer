@@ -40,6 +40,7 @@ angular.module('cv.views.cube').filter("datefilterMode", ['$rootScope', 'cvOptio
 		var text = "None";
 		switch (val) {
 			case "custom": text = "Custom"; break;
+			case "auto-last7d": text = "Last 7 days"; break;
 			case "auto-last1m": text = "Last month"; break;
 			case "auto-last3m": text = "Last 3 months"; break;
 			case "auto-last6m": text = "Last 6 months"; break;
@@ -101,9 +102,12 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeFilterDateContro
 		$scope.refreshView();
 	}
 
-	$scope.$watch("dateStart.value", $scope.updateDateFilter);
-	$scope.$watch("dateEnd.value", $scope.updateDateFilter);
-	$scope.$watch("datefilter.mode", $scope.updateDateFilter);
+	$scope.$watch("dateStart.value", function(newValue, oldValue) {
+		if (newValue != oldValue) $scope.updateDateFilter()});
+	$scope.$watch("dateEnd.value", function(newValue, oldValue) {
+		if (newValue != oldValue) $scope.updateDateFilter()});
+	$scope.$watch("datefilter.mode", function(newValue, oldValue) {
+		if (newValue != oldValue) $scope.updateDateFilter()});
 
 	$scope.initialize();
 

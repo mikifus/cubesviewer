@@ -302,7 +302,10 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
 		var date_to = null;
 
 		if (datefilter.mode.indexOf("auto-") == 0) {
-			if (datefilter.mode == "auto-last1m") {
+			if (datefilter.mode == "auto-last7d") {
+				date_from = new Date();
+				date_from.setDate(date_from.getDate() - 7);
+			} else if (datefilter.mode == "auto-last1m") {
 				date_from = new Date();
 				date_from.setMonth(date_from.getMonth() - 1);
 			} else if (datefilter.mode == "auto-last3m") {
