@@ -40,6 +40,7 @@ cubesviewer.CubeView = function(cvOptions, id, type) {
 	view.resultLimitHit = false;
 	view.requestFailed = false;
 	view.pendingRequests = 0;
+	view.pendingActions = 0;
 	view.dimensionFilter = null;
 	view.dimensionRangeFilter = null;
 
@@ -248,7 +249,8 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
 			}
 		}
 
-		$scope.refreshView();
+		$scope.view.pendingActions++;
+		// $scope.refreshView();
 	};
 
 	/**
@@ -333,7 +335,9 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
 			view.params.cuts = [];
 		}
 
-		$scope.refreshView();
+		view.pendingActions++;
+
+		// $scope.refreshView();
 
 	};
 
@@ -584,6 +588,11 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
 
 	$scope.onResize = function() {
 		$rootScope.$broadcast('ViewResize');
+	};
+
+	$scope.applyAggregate = function(){
+		$scope.view.pendingActions = 0;
+		$scope.refreshView();
 	};
 
 	angular.element($window).on('resize', $scope.onResize);

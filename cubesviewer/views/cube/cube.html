@@ -26,6 +26,8 @@
 
             <div class="panel panel-primary pull-right" style="padding: 3px; white-space: nowrap; margin-bottom: 6px; margin-left: 6px;">
 
+                <button type="button" ng-click="applyAggregate()" ng-disabled="view.pendingActions <= 0" class="btn btn-default btn-sm" ng-class="{'btn-primary': view.pendingActions > 0}" title="Apply"><i class="fa fa-fw fa-play"></i></button>
+
                 <div ng-if="cvOptions.undoEnabled" class="btn-group" role="group" ng-controller="CubesViewerViewsUndoController">
                   <button type="button" ng-click="undo()" ng-disabled="view.undoPos <= 0" class="btn btn-default btn-sm" title="Undo"><i class="fa fa-fw fa-undo"></i></button>
                   <button type="button" ng-click="redo()" ng-disabled="view.undoPos >= view.undoList.length - 1" class="btn btn-default btn-sm" title="Redo"><i class="fa fa-fw fa-undo fa-flip-horizontal"></i></button>
