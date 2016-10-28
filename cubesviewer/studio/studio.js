@@ -207,8 +207,8 @@ function get_hierarchy_menu(views_list, owner_function) {
 
 	ret = construct_menu(menu);
 
-	$(d).each(function (i) {
-		ret.push(i)
+	$(d).each(function (i, v) {
+		ret.push(v)
 	});
 
 	return ret;
