@@ -244,6 +244,8 @@ angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootSco
 	$scope.savedViews = [];
 	$scope.sharedViews = [];
 
+	$scope.savedDashboards = [];
+
 	$scope.initialize = function() {
 	};
 
@@ -392,8 +394,29 @@ angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootSco
 			$('.cv-views-container').masonry('layout');
 		}, 100);
 	};
+	$scope.saveDashboard = function () {
+		reststoreService.dashboard.views = [];
+		studioViewsService.views.forEach(function (v) {reststoreService.dashboard.views.unshift(v.savedId)});
+		reststoreService.saveDashboard();
+	};
 
-	$scope.initialize();
+	/*
+	 * Renames a dashboard.
+	 */
+	$scope.renameDashboard = function() {
+
+		var modalInstance = $uibModal.open({
+	    	animation: true,
+	    	templateUrl: 'studio/dashboard/rename.html',
+	    	controller: 'CubesViewerRenameDashboardController',
+	    	appendTo: angular.element($($element).find('.cv-gui-modals')[0]),
+	    	size: "md",
+		    resolve: {
+		        dashboard: function () { return reststoreService.dashboard; },
+	    		element: function() { return $($element).find('.cv-gui-modals')[0] },
+		    }
+	    });
+	};
 
     $scope.$watch('reststoreService.savedViews', function (newValue, oldValue) {
 	    if (newValue != oldValue) {
@@ -406,6 +429,13 @@ angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootSco
        }
     });
 
+	$scope.initialize();
+
+	$scope.$watch('reststoreService.savedViews', function(newValue, oldValue){
+       if (newValue != oldValue) {
+           reststoreService.dashboardList();
+       }
+   });
 }]);
 
 
@@ -510,6 +540,25 @@ angular.module('cv.studio').controller("CubesViewerHelpController", ['$rootScope
 	};
 }]);
 
+angular.module('cv.studio').controller("CubesViewerRenameDashboardController", ['$rootScope', '$scope', '$uibModalInstance', 'cvOptions', 'cubesService', 'studioViewsService', 'dashboard',
+                                                                       function ($rootScope, $scope, $uibModalInstance, cvOptions, cubesService, studioViewsService, dashboard) {
+
+	$scope.dashboardName = dashboard.name;
+
+	$scope.renameDashboard = function(name) {
+
+		if ((name != null) && (name != "")) {
+			dashboard.name = name;
+		}
+
+		$uibModalInstance.close();
+	};
+
+	$scope.close = function() {
+		$uibModalInstance.dismiss('cancel');
+	};
+
+}]);
 
 // Disable Debug Info (for production)
 angular.module('cv.studio').config([ '$compileProvider', function($compileProvider) {

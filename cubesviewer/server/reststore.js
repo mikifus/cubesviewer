@@ -30,11 +30,23 @@ angular.module('cv.studio').service("reststoreService", ['$rootScope', '$http', 
 
 	reststoreService.savedViews = [];
 
+    reststoreService.savedDashboards = [];
+
+    reststoreService.dashboard = new_dashboard();
+
 	reststoreService.initialize = function() {
 		if (! cvOptions.backendUrl) return;
 		reststoreService.viewList();
 	};
 
+	function new_dashboard() {
+        return {
+            'id': 0,
+            'name': 'New',
+            'views': [],
+            'shared': false
+        }
+    }
     /**
      * Returns a stored view from memory.
      */
@@ -199,6 +211,7 @@ angular.module('cv.studio').service("reststoreService", ['$rootScope', '$http', 
     	// TODO: Check whether the server model is loaded, etc
 
         var savedview = reststoreService.getSavedView(savedViewId);
+        if (!savedview) return;
         var viewobject = $.parseJSON(savedview.data);
         var view = studioViewsService.addViewObject(viewobject);
 
@@ -215,6 +228,94 @@ angular.module('cv.studio').service("reststoreService", ['$rootScope', '$http', 
         }
 
     };
+
+    reststoreService.restoreDashboard = function(dashboard){
+        reststoreService.dashboard = dashboard;
+        reststoreService.dashboard.views.forEach(function(v){
+            reststoreService.addSavedView(v);
+        });
+    };
+
+    reststoreService.shareDashboard = function() {
+        var dashboard = reststoreService.dashboard;
+        if (reststoreService.dashboard.owner != cvOptions.user) {
+            dialogService.show('Cannot share/unshare a dashboard that belongs to other user (try cloning the dashboard).');
+            return;
+        }
+
+        reststoreService.dashboard.shared = !reststoreService.dashboard.shared;
+        reststoreService.saveDashboard();
+
+    };
+
+    reststoreService.dashboardList = function(){
+        $http.get(cvOptions.backendUrl + "/dashboard/list/").then(
+        		reststoreService._dashboardListCallback, cubesService.defaultRequestErrorHandler);
+    };
+
+    reststoreService._dashboardListCallback = function(data, status) {
+        reststoreService.savedDashboards = data.data;
+    };
+
+   /**
+    * Save a dashboard.
+    */
+   reststoreService.saveDashboard = function () {
+       $http({
+           "method": "POST",
+           "url": cvOptions.backendUrl + "/dashboard/save/",
+           "data": JSON.stringify(reststoreService.dashboard),
+           "headers": {"X-CSRFToken": $cookies.get('csrftoken')}
+       }).then(reststoreService._saveDashboardCallback, cubesService.defaultRequestErrorHandler);
+
+   };
+
+   /**
+    * Save callback
+    */
+   reststoreService._saveDashboardCallback = function (data, status) {
+       data = data.data;
+       reststoreService.savedDashboards.push(data);
+       dialogService.show("Dashboard saved.");
+   };
+
+   /**
+    * Delete a dashboard.
+    */
+   reststoreService.deleteDashboard = function () {
+       if (reststoreService.dashboard.owner != cvOptions.user) {
+            dialogService.show('Cannot delete a dashboard that belongs to other user.');
+            return;
+        }
+
+        if (! confirm('Are you sure you want to delete and close this dashboard?')) {
+            return;
+        }
+
+        var data = {
+            "id": reststoreService.dashboard.id
+        };
+       $http({
+           "method": "POST",
+           "url": cvOptions.backendUrl + "/dashboard/delete/",
+           "data": JSON.stringify(data),
+           "headers": {"X-CSRFToken": $cookies.get('csrftoken')}
+       }).then(reststoreService._deleteDashboardCallback, cubesService.defaultRequestErrorHandler);
+
+   };
+
+   /**
+    * Delete callback
+    */
+   reststoreService._deleteDashboardCallback = function (data, status) {
+       reststoreService.dashboard = new_dashboard();
+       var views = studioViewsService.views.slice();
+       views.forEach(function(v){
+           studioViewsService.closeView(v);
+       });
+       reststoreService.dashboardList();
+       dialogService.show("Dashboard deleted.");
+   };
 
     reststoreService.initialize();
 

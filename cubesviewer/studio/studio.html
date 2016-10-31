@@ -17,36 +17,6 @@
 
           </ul>
         </div>
-        <script type="text/ng-template" id="categoryTree">
-            <a ng-if="view.data" ng-click="reststoreService.addSavedView(view.id)" style="max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;"><i class="fa fa-fw"></i> {{ view.name }}</a>
-            <a ng-if="view.submenu" style="max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;"><i class="fa fa-fw"></i> {{ view.name }}</a>
-            <ul class="dropdown-menu submenu" ng-if="view.submenu">
-                <li ng-repeat="view in view.submenu | orderBy:'view.name'" ng-include="'categoryTree'" class="dropdown-submenu"></li>
-                <li ng-repeat="view in view.views | orderBy:'view.name'" ng-click="reststoreService.addSavedView(view.id)"><a style="max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;"><i class="fa fa-fw"></i> {{ view.name }}</a></li>
-            </ul>
-        </script>
-
-        <div ng-if="cvOptions.backendUrl" class="dropdown m-b" style="display: inline-block; ">
-          <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" data-submenu>
-            <i class="fa fa-fw fa-file"></i> Saved views <span class="caret"></span>
-          </button>
-
-          <ul class="dropdown-menu cv-gui-catalog-menu">
-
-            <li class="dropdown-header">Personal views</li>
-
-            <!--<li ng-repeat="sv in reststoreService.savedViews | orderBy:'sv.name'" ng-if="sv.owner == cvOptions.user" ng-click="reststoreService.addSavedView(sv.id)"><a style="max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;"><i class="fa fa-fw"></i> {{ sv.name }}</a></li>-->
-            <li ng-repeat="view in savedViews | orderBy:'view.name'" ng-include="'categoryTree'" ng-class="{'dropdown-submenu': view.submenu}"></li>
-
-            <li class="dropdown-header">Shared by others</li>
-
-            <li ng-repeat="view in sharedViews | orderBy:'view.name'" ng-include="'categoryTree'" ng-class="{'dropdown-submenu': view.submenu}"></li>
-
-            <!--<menutree views="sharedViews"></menutree>-->
-
-          </ul>
-        </div>
-
 
         <div class="dropdown m-b" style="display: inline-block; margin-left: 5px;">
           <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" data-submenu>
@@ -77,7 +47,81 @@
                 <li class=""><a href="http://github.com/jjmontesl/cubesviewer/blob/master/doc/guide/cubesviewer-user-main.md" target="_blank"><i class="fa fa-fw fa-question"></i> User guide</a></li>
                 <li class=""><a data-toggle="modal" data-target="#cvAboutModal"><i class="fa fa-fw fa-info"></i> About CubesViewer...</a></li>
 
+                <div class="divider"></div>
+                <li class=""><a ng-click="saveDashboard()"><i class="fa fa-fw fa-save"></i> Save dashboard</a></li>
+
             </ul>
+        </div>
+
+        <div class="dropdown m-b" style="display: inline-block; margin-left: 5px;">
+            <script type="text/ng-template" id="categoryTree">
+                <a ng-if="view.data" ng-click="reststoreService.addSavedView(view.id)"
+                   style="max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;"><i
+                        class="fa fa-fw"></i> {{ view.name }}</a>
+                <a ng-if="view.submenu"
+                   style="max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;"><i
+                        class="fa fa-fw"></i> {{ view.name }}</a>
+                <ul class="dropdown-menu submenu" ng-if="view.submenu">
+                    <li ng-repeat="view in view.submenu | orderBy:'view.name'" ng-include="'categoryTree'"
+                        class="dropdown-submenu"></li>
+                    <li ng-repeat="view in view.views | orderBy:'view.name'"
+                        ng-click="reststoreService.addSavedView(view.id)"><a
+                            style="max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;"><i
+                            class="fa fa-fw"></i> {{ view.name }}</a></li>
+                </ul>
+            </script>
+
+            <div ng-if="cvOptions.backendUrl" class="dropdown m-b" style="display: inline-block; ">
+                <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" data-submenu>
+                    <i class="fa fa-fw fa-bars"></i> Saved views <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu cv-gui-catalog-menu">
+                    <li class="dropdown-header">Personal views</li>
+                    <li ng-repeat="view in savedViews | orderBy:'view.name'" ng-include="'categoryTree'"
+                        ng-class="{'dropdown-submenu': view.submenu}"></li>
+                    <li class="dropdown-header">Shared by others</li>
+                    <li ng-repeat="view in sharedViews | orderBy:'view.name'" ng-include="'categoryTree'"
+                        ng-class="{'dropdown-submenu': view.submenu}"></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="dropdown m-b" style="display: inline-block; margin-left: 5px;">
+            <div ng-if="cvOptions.backendUrl" class="dropdown m-b" style="display: inline-block; ">
+                <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" data-submenu>
+                    <i class="fa fa-fw fa-bars"></i> Dashboards <span class="caret"></span>
+                </button>
+
+                <ul class="dropdown-menu cv-gui-catalog-menu">
+                    <li class="dropdown-header">Personal</li>
+                    <li ng-repeat="d in reststoreService.savedDashboards | orderBy:'d.name'"
+                        ng-if="d.owner == cvOptions.user" ng-click="reststoreService.restoreDashboard(d)"><a
+                            style="max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;"><i
+                            class="fa fa-fw"></i> {{ d.name }}</a></li>
+                    <li class="dropdown-header">Shared by others</li>
+                    <li ng-repeat="d in reststoreService.savedDashboards | orderBy:'d.name'"
+                        ng-if="d.owner != cvOptions.user" ng-click="reststoreService.restoreDashboard(d)"><a
+                            style="max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;"><i
+                            class="fa fa-fw"></i> {{ d.name }}</a></li>
+                </ul>
+            </div>
+            <div class="dropdown" style="display: inline-block;">
+                <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" data-submenu>
+                    <i class="fa fa-fw fa-wrench"></i> Dashboard tools <span class="caret"></span>
+                </button>
+
+                <ul class="dropdown-menu">
+                    <li><a ng-click="saveDashboard()"><i class="fa fa-fw fa-save"></i> Save dashboard</a></li>
+                    <div class="divider"></div>
+                    <li><a ng-click="reststoreService.shareDashboard()"><i class="fa fa-fw fa-share"></i> {{ reststoreService.dashboard.shared ? "Unshare" : "Share" }} dashboard</a>
+                    <li><a ng-click="renameDashboard()"><i class="fa fa-fw fa-pencil"></i> Rename dashboard</a>
+                    </li>
+
+                    <div class="divider"></div>
+
+                    <li ng-class="{disabled:reststoreService.dashboard.id == 0}"><a ng-click="reststoreService.deleteDashboard()"><i class="fa fa-fw fa-trash-o"></i> Delete dashboard</a>
+                </ul>
+            </div>
         </div>
 
         <div style="display: inline-block; margin-left: 10px; margin-bottom: 0px;">
