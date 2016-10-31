@@ -102,10 +102,10 @@ angular.module('cv.studio').service("studioViewsService", ['$rootScope', '$ancho
 		}
 
 		var view = viewsService.createView("cube", data);
-		this.views.push(view);
+		this.views.unshift(view);
 
 		$timeout(function() {
-			$('.cv-views-container').masonry('appended', $('.cv-views-container').find(".sv" + view.id).show());
+			$('.cv-views-container').masonry('prepended', $('.cv-views-container').find(".sv" + view.id).show());
 			//$('.cv-views-container').masonry('reloadItems');
 			//$('.cv-views-container').masonry('layout');
 			$timeout(function() { $anchorScroll("cvView" + view.id); }, 500);
