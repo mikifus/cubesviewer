@@ -469,7 +469,6 @@ angular.module('cv.studio').controller("CubesViewerSetupControlsController", ['$
             $scope.drilldowns.push({'selected': enabled_drilldowns.indexOf(d) != -1, 'label': d.label, 'name': d.name});
             $scope.filters.push({'selected': enabled_filters.indexOf(d) != -1, 'label': d.label, 'name': d.name});
             $scope.horizontalDimensions.push({'selected': enabled_h_dim.indexOf(d) != -1, 'label': d.label, 'name': d.name});
-            $scope.measures.push({'selected': enabled_measures.indexOf(d) != -1, 'label': d.label, 'name': d.name});
         });
 
         view.cube.measures.forEach(function (d) {

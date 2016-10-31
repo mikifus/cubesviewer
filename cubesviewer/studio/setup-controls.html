@@ -22,7 +22,7 @@
             <h4>Hide controls</h4>
         </div>
         <div class="panel panel-default panel-outline">
-            <div class="panel-heading clearfix">
+            <div class="panel-heading clearfix" ng-if="drilldowns.length > 0">
                 <h5>Drilldowns</h5>
             </div>
             <div class="panel-body">
@@ -33,7 +33,7 @@
                     </label>
                 </div>
             </div>
-            <div class="panel-heading clearfix">
+            <div class="panel-heading clearfix" ng-if="filters.length > 0">
                 <h5>Filters</h5>
             </div>
             <div class="panel-body">
@@ -44,7 +44,7 @@
                     </label>
                 </div>
             </div>
-            <div class="panel-heading clearfix">
+            <div class="panel-heading clearfix" ng-if="horizontalDimensions.length > 0">
                 <h5>Horizontal dimension</h5>
             </div>
             <div class="panel-body">
@@ -55,7 +55,7 @@
                     </label>
                 </div>
             </div>
-            <div class="panel-heading clearfix">
+            <div class="panel-heading clearfix" ng-if="measures.length > 0">
                 <h5>Measures</h5>
             </div>
             <div class="panel-body">
@@ -66,7 +66,7 @@
                     </label>
                 </div>
             </div>
-            <div class="panel-heading clearfix">
+            <div class="panel-heading clearfix" ng-if="aggregates.length > 0">
                 <h5>Aggregates</h5>
             </div>
             <div class="panel-body">
