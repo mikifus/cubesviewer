@@ -38,7 +38,6 @@
                   <button type="button" ng-click="setViewMode('facts')" ng-class="{'active': view.params.mode == 'facts'}" class="btn btn-primary btn-sm " title="Facts"><i class="fa fa-fw fa-th"></i></button>
                   <button type="button" ng-click="setViewMode('series')" ng-class="{'active': view.params.mode == 'series'}" class="btn btn-primary btn-sm " title="Series"><i class="fa fa-fw fa-clock-o"></i></button>
                   <button type="button" ng-click="setViewMode('chart')" ng-class="{'active': view.params.mode == 'chart'}" class="btn btn-primary btn-sm " title="Charts"><i class="fa fa-fw fa-area-chart"></i></button>
-                  <button type="button" ng-click="setViewMode('widget')" ng-class="{'active': view.params.mode == 'widget'}" class="btn btn-primary btn-sm " title="Widgets"><i class="fa fa-fw fa-tasks"></i></button>
                 </div>
 
                 <div ng-include="'views/cube/cube-menu-drilldown.html'" class="dropdown m-b" style="display: inline-block; margin-left: 5px;"></div>
@@ -137,7 +136,6 @@
             <div ng-if="view.params.mode == 'facts'" ng-include="'views/cube/facts/facts.html'"></div>
             <div ng-if="view.params.mode == 'series'" ng-include="'views/cube/series/series.html'"></div>
             <div ng-if="view.params.mode == 'chart'" ng-include="'views/cube/chart/chart.html'"></div>
-            <div ng-if="view.params.mode == 'widget'" ng-include="'views/cube/widget/widget.html'"></div>
 
         </div>
         <div class="clearfix"></div>
