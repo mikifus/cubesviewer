@@ -524,12 +524,13 @@
         if (args.cut) http_args.cut = args.cut.toString();
         if (args.measure) http_args.measure = args.measure.toString();
         if (args.drilldown) http_args.drilldown = args.drilldown.toString();
+        if (args.aggregates) http_args.aggregates = args.aggregates.join('|');
         if (args.split) http_args.split = args.split.toString();
         if (args.order) http_args.order = args.order.toString();
         if (args.page) http_args.page = args.page;
         if (args.pagesize) http_args.pagesize = args.pagesize;
 
-        return this.server.query("aggregate", this.cube, args, callback);
+        return this.server.query("aggregate", this.cube, http_args, callback);
     };
 
     cubes.Browser.prototype.facts = function(args, callback) {
