@@ -224,7 +224,7 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "            <h4>Hide controls</h4>\n" +
     "        </div>\n" +
     "        <div class=\"panel panel-default panel-outline\">\n" +
-    "            <div class=\"panel-heading clearfix\">\n" +
+    "            <div class=\"panel-heading clearfix\" ng-if=\"drilldowns.length > 0\">\n" +
     "                <h5>Drilldowns</h5>\n" +
     "            </div>\n" +
     "            <div class=\"panel-body\">\n" +
@@ -235,7 +235,7 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "                    </label>\n" +
     "                </div>\n" +
     "            </div>\n" +
-    "            <div class=\"panel-heading clearfix\">\n" +
+    "            <div class=\"panel-heading clearfix\" ng-if=\"filters.length > 0\">\n" +
     "                <h5>Filters</h5>\n" +
     "            </div>\n" +
     "            <div class=\"panel-body\">\n" +
@@ -246,7 +246,7 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "                    </label>\n" +
     "                </div>\n" +
     "            </div>\n" +
-    "            <div class=\"panel-heading clearfix\">\n" +
+    "            <div class=\"panel-heading clearfix\" ng-if=\"horizontalDimensions.length > 0\">\n" +
     "                <h5>Horizontal dimension</h5>\n" +
     "            </div>\n" +
     "            <div class=\"panel-body\">\n" +
@@ -257,7 +257,7 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "                    </label>\n" +
     "                </div>\n" +
     "            </div>\n" +
-    "            <div class=\"panel-heading clearfix\">\n" +
+    "            <div class=\"panel-heading clearfix\" ng-if=\"measures.length > 0\">\n" +
     "                <h5>Measures</h5>\n" +
     "            </div>\n" +
     "            <div class=\"panel-body\">\n" +
@@ -268,7 +268,7 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "                    </label>\n" +
     "                </div>\n" +
     "            </div>\n" +
-    "            <div class=\"panel-heading clearfix\">\n" +
+    "            <div class=\"panel-heading clearfix\" ng-if=\"aggregates.length > 0\">\n" +
     "                <h5>Aggregates</h5>\n" +
     "            </div>\n" +
     "            <div class=\"panel-body\">\n" +
@@ -930,6 +930,8 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "        <div class=\"cv-view-viewmenu hidden-print\" ng-hide=\"view.getControlsHidden()\">\n" +
     "\n" +
     "            <div class=\"panel panel-primary pull-right\" style=\"padding: 3px; white-space: nowrap; margin-bottom: 6px; margin-left: 6px;\">\n" +
+    "\n" +
+    "                <button type=\"button\" ng-click=\"applyAggregate()\" ng-disabled=\"view.pendingActions <= 0\" class=\"btn btn-default btn-sm\" ng-class=\"{'btn-primary': view.pendingActions > 0}\" title=\"Apply\"><i class=\"fa fa-fw fa-play\"></i></button>\n" +
     "\n" +
     "                <div ng-if=\"cvOptions.undoEnabled\" class=\"btn-group\" role=\"group\" ng-controller=\"CubesViewerViewsUndoController\">\n" +
     "                  <button type=\"button\" ng-click=\"undo()\" ng-disabled=\"view.undoPos <= 0\" class=\"btn btn-default btn-sm\" title=\"Undo\"><i class=\"fa fa-fw fa-undo\"></i></button>\n" +

@@ -2182,6 +2182,7 @@ cubesviewer.CubeView = function(cvOptions, id, type) {
 	view.resultLimitHit = false;
 	view.requestFailed = false;
 	view.pendingRequests = 0;
+	view.pendingActions = 0;
 	view.dimensionFilter = null;
 	view.dimensionRangeFilter = null;
 
@@ -2390,7 +2391,8 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
 			}
 		}
 
-		$scope.refreshView();
+		$scope.view.pendingActions++;
+		// $scope.refreshView();
 	};
 
 	/**
@@ -2475,7 +2477,9 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
 			view.params.cuts = [];
 		}
 
-		$scope.refreshView();
+		view.pendingActions++;
+
+		// $scope.refreshView();
 
 	};
 
@@ -2501,7 +2505,9 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
 		} else {
 			view.params.rangefilters = [];
 		}
-		$scope.refreshView();
+
+		$scope.pendingActions++;
+		// $scope.refreshView();
 	};
 
 
@@ -2726,6 +2732,11 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
 
 	$scope.onResize = function() {
 		$rootScope.$broadcast('ViewResize');
+	};
+
+	$scope.applyAggregate = function(){
+		$scope.view.pendingActions = 0;
+		$scope.refreshView();
 	};
 
 	angular.element($window).on('resize', $scope.onResize);
@@ -6615,10 +6626,10 @@ angular.module('cv.studio').service("studioViewsService", ['$rootScope', '$ancho
 		}
 
 		var view = viewsService.createView("cube", data);
-		this.views.push(view);
+		this.views.unshift(view);
 
 		$timeout(function() {
-			$('.cv-views-container').masonry('appended', $('.cv-views-container').find(".sv" + view.id).show());
+			$('.cv-views-container').masonry('prepended', $('.cv-views-container').find(".sv" + view.id).show());
 			//$('.cv-views-container').masonry('reloadItems');
 			//$('.cv-views-container').masonry('layout');
 			$timeout(function() { $anchorScroll("cvView" + view.id); }, 500);
@@ -6720,8 +6731,8 @@ function get_hierarchy_menu(views_list, owner_function) {
 
 	ret = construct_menu(menu);
 
-	$(d).each(function (i) {
-		ret.push(i)
+	$(d).each(function (i, v) {
+		ret.push(v)
 	});
 
 	return ret;
@@ -6982,7 +6993,6 @@ angular.module('cv.studio').controller("CubesViewerSetupControlsController", ['$
             $scope.drilldowns.push({'selected': enabled_drilldowns.indexOf(d) != -1, 'label': d.label, 'name': d.name});
             $scope.filters.push({'selected': enabled_filters.indexOf(d) != -1, 'label': d.label, 'name': d.name});
             $scope.horizontalDimensions.push({'selected': enabled_h_dim.indexOf(d) != -1, 'label': d.label, 'name': d.name});
-            $scope.measures.push({'selected': enabled_measures.indexOf(d) != -1, 'label': d.label, 'name': d.name});
         });
 
         view.cube.measures.forEach(function (d) {
@@ -7750,7 +7760,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "            <h4>Hide controls</h4>\n" +
     "        </div>\n" +
     "        <div class=\"panel panel-default panel-outline\">\n" +
-    "            <div class=\"panel-heading clearfix\">\n" +
+    "            <div class=\"panel-heading clearfix\" ng-if=\"drilldowns.length > 0\">\n" +
     "                <h5>Drilldowns</h5>\n" +
     "            </div>\n" +
     "            <div class=\"panel-body\">\n" +
@@ -7761,7 +7771,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "                    </label>\n" +
     "                </div>\n" +
     "            </div>\n" +
-    "            <div class=\"panel-heading clearfix\">\n" +
+    "            <div class=\"panel-heading clearfix\" ng-if=\"filters.length > 0\">\n" +
     "                <h5>Filters</h5>\n" +
     "            </div>\n" +
     "            <div class=\"panel-body\">\n" +
@@ -7772,7 +7782,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "                    </label>\n" +
     "                </div>\n" +
     "            </div>\n" +
-    "            <div class=\"panel-heading clearfix\">\n" +
+    "            <div class=\"panel-heading clearfix\" ng-if=\"horizontalDimensions.length > 0\">\n" +
     "                <h5>Horizontal dimension</h5>\n" +
     "            </div>\n" +
     "            <div class=\"panel-body\">\n" +
@@ -7783,7 +7793,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "                    </label>\n" +
     "                </div>\n" +
     "            </div>\n" +
-    "            <div class=\"panel-heading clearfix\">\n" +
+    "            <div class=\"panel-heading clearfix\" ng-if=\"measures.length > 0\">\n" +
     "                <h5>Measures</h5>\n" +
     "            </div>\n" +
     "            <div class=\"panel-body\">\n" +
@@ -7794,7 +7804,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "                    </label>\n" +
     "                </div>\n" +
     "            </div>\n" +
-    "            <div class=\"panel-heading clearfix\">\n" +
+    "            <div class=\"panel-heading clearfix\" ng-if=\"aggregates.length > 0\">\n" +
     "                <h5>Aggregates</h5>\n" +
     "            </div>\n" +
     "            <div class=\"panel-body\">\n" +
@@ -8456,6 +8466,8 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "        <div class=\"cv-view-viewmenu hidden-print\" ng-hide=\"view.getControlsHidden()\">\n" +
     "\n" +
     "            <div class=\"panel panel-primary pull-right\" style=\"padding: 3px; white-space: nowrap; margin-bottom: 6px; margin-left: 6px;\">\n" +
+    "\n" +
+    "                <button type=\"button\" ng-click=\"applyAggregate()\" ng-disabled=\"view.pendingActions <= 0\" class=\"btn btn-default btn-sm\" ng-class=\"{'btn-primary': view.pendingActions > 0}\" title=\"Apply\"><i class=\"fa fa-fw fa-play\"></i></button>\n" +
     "\n" +
     "                <div ng-if=\"cvOptions.undoEnabled\" class=\"btn-group\" role=\"group\" ng-controller=\"CubesViewerViewsUndoController\">\n" +
     "                  <button type=\"button\" ng-click=\"undo()\" ng-disabled=\"view.undoPos <= 0\" class=\"btn btn-default btn-sm\" title=\"Undo\"><i class=\"fa fa-fw fa-undo\"></i></button>\n" +
