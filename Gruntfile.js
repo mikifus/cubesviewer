@@ -34,6 +34,8 @@ module.exports = function(grunt) {
               'cubesviewer/views/cube/chart/chart-sunburst.js',
               'cubesviewer/views/cube/chart/chart-lines-avg.js',
               'cubesviewer/views/cube/chart/chart-lines-variance.js',
+              'cubesviewer/views/cube/widget/widget.js',
+              'cubesviewer/views/cube/widget/max-value.js',
               //'cubesviewer/cubesviewer.views.cube.rangefilter.js',
               'cubesviewer/views/cube/export.js',
               'cubesviewer/views/undo.js',
@@ -140,7 +142,7 @@ module.exports = function(grunt) {
     	    src:      '**/**.html',
     	    dest:     'cubesviewer/cubesviewer.templates.js',
     	    options: {
-    	    	module:	  "cv",
+    	    	module:	  "cv"
     	    }
     	  }
     	}
@@ -161,6 +163,8 @@ module.exports = function(grunt) {
   grunt.registerTask('test', ['jshint']);  // 'qunit'
 
   grunt.registerTask('default', ['less', 'ngtemplates', 'concat', 'uglify', 'jsdoc']);  // 'bower',
+
+  grunt.registerTask('dev', ['less', 'ngtemplates', 'concat']);
 
 };
 

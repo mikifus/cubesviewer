@@ -562,12 +562,13 @@ angular.module('bootstrapSubmenu', []).directive("submenu", ['$timeout', functio
         if (args.cut) http_args.cut = args.cut.toString();
         if (args.measure) http_args.measure = args.measure.toString();
         if (args.drilldown) http_args.drilldown = args.drilldown.toString();
+        if (args.aggregates) http_args.aggregates = args.aggregates.join('|');
         if (args.split) http_args.split = args.split.toString();
         if (args.order) http_args.order = args.order.toString();
         if (args.page) http_args.page = args.page;
         if (args.pagesize) http_args.pagesize = args.pagesize;
 
-        return this.server.query("aggregate", this.cube, args, callback);
+        return this.server.query("aggregate", this.cube, http_args, callback);
     };
 
     cubes.Browser.prototype.facts = function(args, callback) {
@@ -6216,6 +6217,276 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesVarian
 }]);
 
 
+;/**
+ * Created by itux on 01/11/2016.
+ */
+/*
+ * CubesViewer
+ * Copyright (c) 2012-2016 Jose Juan Montes, see AUTHORS for more details
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+"use strict";
+
+/*
+ * Series chart object. Contains view functions for the 'chart' mode.
+ * This is an optional component, part of the cube view.
+ */
+
+angular.module('cv.views.cube').controller("CubesViewerWidgetController", ['$rootScope', '$scope', '$timeout', '$element', 'cvOptions', 'cubesService', 'viewsService', 'seriesOperationsService', 'exportService',
+    function ($rootScope, $scope, $timeout, $element, cvOptions, cubesService, viewsService, seriesOperationsService, exportService) {
+
+        $scope.initialize = function () {
+            // Add chart view parameters to view definition
+            $scope.view.params = $.extend(
+                {},
+                {"widgettype": "max-difficulty"},
+                $scope.view.params
+            );
+            //$scope.refreshView();
+        };
+
+        $scope.$watch("view.params.widgettype", function () {
+            $scope.loadData();
+        });
+        $scope.$on("ViewRefresh", function (view) {
+            $scope.loadData();
+        });
+
+        $scope.loadData = function () {
+
+            var view = $scope.view;
+
+            var browser_args = cubesService.buildBrowserArgs($scope.view, $scope.view.params.xaxis != null ? true : false, false);
+            var browser = new cubes.Browser(cubesService.cubesserver, $scope.view.cube);
+            var viewStateKey = $scope.newViewStateKey();
+            var jqxhr = browser.aggregate(browser_args, $scope._loadDataCallback(viewStateKey));
+
+            $scope.view.pendingRequests++;
+            jqxhr.always(function () {
+                $scope.view.pendingRequests--;
+                $rootScope.$apply();
+            });
+            jqxhr.error($scope.requestErrorHandler);
+
+        };
+
+        $scope._loadDataCallback = function (viewStateKey) {
+            return function (data, status) {
+                // Only update if view hasn't changed since data was requested.
+                if (viewStateKey == $scope._viewStateKey) {
+                    $scope.validateData(data, status);
+                    $scope.processData(data);
+                    $rootScope.$apply();
+                }
+            };
+        };
+
+        $scope.processData = function (data) {
+
+            if ($scope.view.pendingRequests == 0) {
+            }
+
+            $scope.rawData = data;
+
+            $scope.resetGrid();
+            $scope.view.grid.data = [];
+            $scope.view.grid.columnDefs = [];
+            $rootScope.$apply();
+
+            var view = $scope.view;
+            var rows = $scope.view.grid.data;
+            var columnDefs = view.grid.columnDefs;
+
+            // Process data
+            $scope._addRows($scope, data);
+            seriesOperationsService.applyCalculations($scope.view, $scope.view.grid.data, view.grid.columnDefs);
+
+            var drilldown = view.params.drilldown.slice(0);
+
+            // Join keys
+            if (drilldown.length > 0) {
+                columnDefs.splice(0, drilldown.length, {
+                    name: "key"
+                });
+
+                $(rows).each(function (idx, e) {
+                    var jointkey = [];
+                    for (var i = 0; i < drilldown.length; i++) {
+                        if (drilldown[i] != 'date@daily:day') {
+                            jointkey.push(e["key" + i]);
+                        }
+                    }
+                    e["key"] = jointkey.join(" / ");
+                });
+            }
+            $scope.$broadcast("gridDataUpdated");
+        };
+
+        /*
+         * Adds rows.
+         */
+        $scope._addRows = cubesviewer._seriesAddRows;
+
+        /**
+         * FIXME: This shouldn't be defined here.
+         * Note that `this` refers to the view in this context.
+         */
+
+        $scope.$on("$destroy", function () {
+            $scope.view.grid.data = [];
+            $scope.view.grid.columnDefs = [];
+        });
+
+        $scope.initialize();
+
+    }]);;/*
+ * CubesViewer
+ * Copyright (c) 2012-2016 Jose Juan Montes, see AUTHORS for more details
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+/*
+ * Series chart object. Contains view functions for the 'chart' mode.
+ * This is an optional component, part of the cube view.
+ */
+
+"use strict";
+
+angular.module('cv.views.cube').controller("CubesViewerWidgetMaxValueController",
+    ['$rootScope', '$scope', '$element', '$timeout', 'cvOptions', 'cubesService', 'viewsService',
+        function ($rootScope, $scope, $element, $timeout, cvOptions, cubesService, viewsService) {
+
+            $scope.diff_abs = function(num){
+                if (num || num == 0) {
+                    return Math.abs(num).toFixed(1);
+                } else {
+                    return 0;
+                }
+            };
+
+            $scope.series = [];
+
+            $scope.initialize = function () {
+            };
+
+            $scope.$on('gridDataUpdated', function () {
+                $scope.drawWidgetMaxDifficulty();
+            });
+
+            $scope.drawWidgetMaxDifficulty = function () {
+
+                var view = $scope.view;
+                var dataRows = $scope.view.grid.data;
+                var columnDefs = view.grid.columnDefs;
+                var drilldown = view.params.drilldown.slice(0);
+                var zaxis = drilldown.splice(drilldown.indexOf('date@daily:day'), 1).pop();
+                var zparts = view.cube.dimensionParts(zaxis);
+
+                var d = [];
+
+                var serieCount = 0;
+                var zkeys = [];
+                $(dataRows).each(function (idx, e) {
+                    var zinfos = zparts.hierarchy.readCell(e['_cells'][Object.keys(e['_cells'])[0]], zparts.level);
+                    var zdrilldownLevelLabels = [];
+                    $(zinfos).each(function (idx, info) {
+                        zdrilldownLevelLabels.push(info.label);
+                    });
+                    var zkey = zdrilldownLevelLabels.join(' / ');
+                    if (zkeys.indexOf(zkey) == -1) zkeys.push(zkey);
+                    var serie = [];
+                    for (var i = 1; i < columnDefs.length; i++) {
+                        var value = e[columnDefs[i].name];
+                        serie.push({"x": columnDefs[i].name, "y": (value != undefined) ? value : 0});
+                    }
+                    var series = {"values": serie, "key": e["key"] != "" ? e["key"] : view.params.yaxis, "zkey": zkey};
+                    if (view.params["chart-disabledseries"]) {
+                        if (view.params["chart-disabledseries"]["key"] == (view.params.drilldown.join(","))) {
+                            series.disabled = !!view.params["chart-disabledseries"]["disabled"][series.key];
+                        }
+                    }
+                    d.push(series);
+                    serieCount++;
+                });
+                d.sort(function (a, b) {
+                    return a.key < b.key ? -1 : (a.key > b.key ? +1 : 0)
+                });
+                zkeys.sort();
+                var prev_key = zkeys.slice(-2)[0];
+                var current_key = zkeys.slice(-2)[1];
+                if (!current_key) {
+                    current_key = prev_key;
+                }
+                var prev_series = $.grep(d, function (serie) {
+                    return serie.zkey == prev_key;
+                });
+
+                var curr_series = $.grep(d, function (serie) {
+                    return serie.zkey == current_key;
+                });
+                $(curr_series).each(function (i, serie) {
+                    var prev_values = $.grep(prev_series, function (ps) {
+                        return ps.key == serie.key;
+                    });
+                    if (prev_values.length > 0) {
+                        prev_values = prev_values[0]['values'];
+                        $(serie['values']).each(function (i, v) {
+                            v['prev'] = prev_values[i]['y'];
+                            v['diff'] = (v['y'] - prev_values[i]['y']) / v['y'] * 100;
+                        });
+                    }
+
+                    var sort_values = serie['values'].slice(0);
+                    sort_values.sort(function (a, b) {
+                        return a.y > b.y ? -1 : (a.y < b.y ? +1 : 0);
+                    });
+                    sort_values = sort_values.slice(0, 10);
+
+                    serie['values'] = serie['values'].filter(function (v) {
+                        return sort_values.indexOf(v) != -1;
+                    });
+                });
+                $scope.series = curr_series;
+            };
+            $scope.initialize();
+        }]);
+
+
 ;/*
  * CubesViewer
  * Copyright (c) 2012-2016 Jose Juan Montes, see AUTHORS for more details
@@ -6768,6 +7039,8 @@ angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootSco
 	$scope.savedViews = [];
 	$scope.sharedViews = [];
 
+	$scope.savedDashboards = [];
+
 	$scope.initialize = function() {
 	};
 
@@ -6916,8 +7189,29 @@ angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootSco
 			$('.cv-views-container').masonry('layout');
 		}, 100);
 	};
+	$scope.saveDashboard = function () {
+		reststoreService.dashboard.views = [];
+		studioViewsService.views.forEach(function (v) {reststoreService.dashboard.views.unshift(v.savedId)});
+		reststoreService.saveDashboard();
+	};
 
-	$scope.initialize();
+	/*
+	 * Renames a dashboard.
+	 */
+	$scope.renameDashboard = function() {
+
+		var modalInstance = $uibModal.open({
+	    	animation: true,
+	    	templateUrl: 'studio/dashboard/rename.html',
+	    	controller: 'CubesViewerRenameDashboardController',
+	    	appendTo: angular.element($($element).find('.cv-gui-modals')[0]),
+	    	size: "md",
+		    resolve: {
+		        dashboard: function () { return reststoreService.dashboard; },
+	    		element: function() { return $($element).find('.cv-gui-modals')[0] },
+		    }
+	    });
+	};
 
     $scope.$watch('reststoreService.savedViews', function (newValue, oldValue) {
 	    if (newValue != oldValue) {
@@ -6930,6 +7224,13 @@ angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootSco
        }
     });
 
+	$scope.initialize();
+
+	$scope.$watch('reststoreService.savedViews', function(newValue, oldValue){
+       if (newValue != oldValue) {
+           reststoreService.dashboardList();
+       }
+   });
 }]);
 
 
@@ -7012,6 +7313,7 @@ angular.module('cv.studio').controller("CubesViewerSetupControlsController", ['$
 
             view.setEnabledDrilldowns($scope.drilldowns);
             view.setEnabledFilters($scope.filters);
+			view.setEnabledHorizontalDimensions($scope.horizontalDimensions);
             view.setEnabledMeasures($scope.measures);
             view.setEnabledAggregates($scope.aggregates);
 			view.help = $scope.help;
@@ -7034,6 +7336,25 @@ angular.module('cv.studio').controller("CubesViewerHelpController", ['$rootScope
 	};
 }]);
 
+angular.module('cv.studio').controller("CubesViewerRenameDashboardController", ['$rootScope', '$scope', '$uibModalInstance', 'cvOptions', 'cubesService', 'studioViewsService', 'dashboard',
+                                                                       function ($rootScope, $scope, $uibModalInstance, cvOptions, cubesService, studioViewsService, dashboard) {
+
+	$scope.dashboardName = dashboard.name;
+
+	$scope.renameDashboard = function(name) {
+
+		if ((name != null) && (name != "")) {
+			dashboard.name = name;
+		}
+
+		$uibModalInstance.close();
+	};
+
+	$scope.close = function() {
+		$uibModalInstance.dismiss('cancel');
+	};
+
+}]);
 
 // Disable Debug Info (for production)
 angular.module('cv.studio').config([ '$compileProvider', function($compileProvider) {
@@ -7250,11 +7571,23 @@ angular.module('cv.studio').service("reststoreService", ['$rootScope', '$http', 
 
 	reststoreService.savedViews = [];
 
+    reststoreService.savedDashboards = [];
+
+    reststoreService.dashboard = new_dashboard();
+
 	reststoreService.initialize = function() {
 		if (! cvOptions.backendUrl) return;
 		reststoreService.viewList();
 	};
 
+	function new_dashboard() {
+        return {
+            'id': 0,
+            'name': 'New',
+            'views': [],
+            'shared': false
+        }
+    }
     /**
      * Returns a stored view from memory.
      */
@@ -7419,6 +7752,7 @@ angular.module('cv.studio').service("reststoreService", ['$rootScope', '$http', 
     	// TODO: Check whether the server model is loaded, etc
 
         var savedview = reststoreService.getSavedView(savedViewId);
+        if (!savedview) return;
         var viewobject = $.parseJSON(savedview.data);
         var view = studioViewsService.addViewObject(viewobject);
 
@@ -7435,6 +7769,94 @@ angular.module('cv.studio').service("reststoreService", ['$rootScope', '$http', 
         }
 
     };
+
+    reststoreService.restoreDashboard = function(dashboard){
+        reststoreService.dashboard = dashboard;
+        reststoreService.dashboard.views.forEach(function(v){
+            reststoreService.addSavedView(v);
+        });
+    };
+
+    reststoreService.shareDashboard = function() {
+        var dashboard = reststoreService.dashboard;
+        if (reststoreService.dashboard.owner != cvOptions.user) {
+            dialogService.show('Cannot share/unshare a dashboard that belongs to other user (try cloning the dashboard).');
+            return;
+        }
+
+        reststoreService.dashboard.shared = !reststoreService.dashboard.shared;
+        reststoreService.saveDashboard();
+
+    };
+
+    reststoreService.dashboardList = function(){
+        $http.get(cvOptions.backendUrl + "/dashboard/list/").then(
+        		reststoreService._dashboardListCallback, cubesService.defaultRequestErrorHandler);
+    };
+
+    reststoreService._dashboardListCallback = function(data, status) {
+        reststoreService.savedDashboards = data.data;
+    };
+
+   /**
+    * Save a dashboard.
+    */
+   reststoreService.saveDashboard = function () {
+       $http({
+           "method": "POST",
+           "url": cvOptions.backendUrl + "/dashboard/save/",
+           "data": JSON.stringify(reststoreService.dashboard),
+           "headers": {"X-CSRFToken": $cookies.get('csrftoken')}
+       }).then(reststoreService._saveDashboardCallback, cubesService.defaultRequestErrorHandler);
+
+   };
+
+   /**
+    * Save callback
+    */
+   reststoreService._saveDashboardCallback = function (data, status) {
+       data = data.data;
+       reststoreService.savedDashboards.push(data);
+       dialogService.show("Dashboard saved.");
+   };
+
+   /**
+    * Delete a dashboard.
+    */
+   reststoreService.deleteDashboard = function () {
+       if (reststoreService.dashboard.owner != cvOptions.user) {
+            dialogService.show('Cannot delete a dashboard that belongs to other user.');
+            return;
+        }
+
+        if (! confirm('Are you sure you want to delete and close this dashboard?')) {
+            return;
+        }
+
+        var data = {
+            "id": reststoreService.dashboard.id
+        };
+       $http({
+           "method": "POST",
+           "url": cvOptions.backendUrl + "/dashboard/delete/",
+           "data": JSON.stringify(data),
+           "headers": {"X-CSRFToken": $cookies.get('csrftoken')}
+       }).then(reststoreService._deleteDashboardCallback, cubesService.defaultRequestErrorHandler);
+
+   };
+
+   /**
+    * Delete callback
+    */
+   reststoreService._deleteDashboardCallback = function (data, status) {
+       reststoreService.dashboard = new_dashboard();
+       var views = studioViewsService.views.slice();
+       views.forEach(function(v){
+           studioViewsService.closeView(v);
+       });
+       reststoreService.dashboardList();
+       dialogService.show("Dashboard deleted.");
+   };
 
     reststoreService.initialize();
 
@@ -7586,6 +8008,28 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "</div>\n" +
     "\n" +
     "\n"
+  );
+
+
+  $templateCache.put('studio/dashboard/rename.html',
+    "  <div class=\"modal-header\">\n" +
+    "    <button type=\"button\" ng-click=\"close();\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\"><span aria-hidden=\"true\"><i class=\"fa fa-fw fa-close\"></i></span></button>\n" +
+    "    <h4 class=\"modal-title\" id=\"myModalLabel\"><i class=\"fa fa-pencil\"></i> Rename dashboard</h4>\n" +
+    "  </div>\n" +
+    "  <div class=\"modal-body\">\n" +
+    "\n" +
+    "        <form class=\"form\" ng-submit=\"renameDashboard(dashboardName);\">\n" +
+    "            <div class=\"form-group\">\n" +
+    "                <label>Name:</label>\n" +
+    "                <input class=\"form-control\" ng-model=\"dashboardName\" />\n" +
+    "            </div>\n" +
+    "        </form>\n" +
+    "\n" +
+    "  </div>\n" +
+    "  <div class=\"modal-footer\">\n" +
+    "    <button type=\"button\" ng-click=\"close();\" class=\"btn btn-secondary\" data-dismiss=\"modal\">Cancel</button>\n" +
+    "    <button type=\"button\" ng-click=\"renameDashboard(dashboardName);\" class=\"btn btn-primary\" data-dismiss=\"modal\">Rename</button>\n" +
+    "  </div>"
   );
 
 
@@ -7846,36 +8290,6 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "\n" +
     "          </ul>\n" +
     "        </div>\n" +
-    "        <script type=\"text/ng-template\" id=\"categoryTree\">\n" +
-    "            <a ng-if=\"view.data\" ng-click=\"reststoreService.addSavedView(view.id)\" style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i class=\"fa fa-fw\"></i> {{ view.name }}</a>\n" +
-    "            <a ng-if=\"view.submenu\" style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i class=\"fa fa-fw\"></i> {{ view.name }}</a>\n" +
-    "            <ul class=\"dropdown-menu submenu\" ng-if=\"view.submenu\">\n" +
-    "                <li ng-repeat=\"view in view.submenu | orderBy:'view.name'\" ng-include=\"'categoryTree'\" class=\"dropdown-submenu\"></li>\n" +
-    "                <li ng-repeat=\"view in view.views | orderBy:'view.name'\" ng-click=\"reststoreService.addSavedView(view.id)\"><a style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i class=\"fa fa-fw\"></i> {{ view.name }}</a></li>\n" +
-    "            </ul>\n" +
-    "        </script>\n" +
-    "\n" +
-    "        <div ng-if=\"cvOptions.backendUrl\" class=\"dropdown m-b\" style=\"display: inline-block; \">\n" +
-    "          <button class=\"btn btn-primary dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\" data-submenu>\n" +
-    "            <i class=\"fa fa-fw fa-file\"></i> Saved views <span class=\"caret\"></span>\n" +
-    "          </button>\n" +
-    "\n" +
-    "          <ul class=\"dropdown-menu cv-gui-catalog-menu\">\n" +
-    "\n" +
-    "            <li class=\"dropdown-header\">Personal views</li>\n" +
-    "\n" +
-    "            <!--<li ng-repeat=\"sv in reststoreService.savedViews | orderBy:'sv.name'\" ng-if=\"sv.owner == cvOptions.user\" ng-click=\"reststoreService.addSavedView(sv.id)\"><a style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i class=\"fa fa-fw\"></i> {{ sv.name }}</a></li>-->\n" +
-    "            <li ng-repeat=\"view in savedViews | orderBy:'view.name'\" ng-include=\"'categoryTree'\" ng-class=\"{'dropdown-submenu': view.submenu}\"></li>\n" +
-    "\n" +
-    "            <li class=\"dropdown-header\">Shared by others</li>\n" +
-    "\n" +
-    "            <li ng-repeat=\"view in sharedViews | orderBy:'view.name'\" ng-include=\"'categoryTree'\" ng-class=\"{'dropdown-submenu': view.submenu}\"></li>\n" +
-    "\n" +
-    "            <!--<menutree views=\"sharedViews\"></menutree>-->\n" +
-    "\n" +
-    "          </ul>\n" +
-    "        </div>\n" +
-    "\n" +
     "\n" +
     "        <div class=\"dropdown m-b\" style=\"display: inline-block; margin-left: 5px;\">\n" +
     "          <button class=\"btn btn-primary dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\" data-submenu>\n" +
@@ -7906,7 +8320,81 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "                <li class=\"\"><a href=\"http://github.com/jjmontesl/cubesviewer/blob/master/doc/guide/cubesviewer-user-main.md\" target=\"_blank\"><i class=\"fa fa-fw fa-question\"></i> User guide</a></li>\n" +
     "                <li class=\"\"><a data-toggle=\"modal\" data-target=\"#cvAboutModal\"><i class=\"fa fa-fw fa-info\"></i> About CubesViewer...</a></li>\n" +
     "\n" +
+    "                <div class=\"divider\"></div>\n" +
+    "                <li class=\"\"><a ng-click=\"saveDashboard()\"><i class=\"fa fa-fw fa-save\"></i> Save dashboard</a></li>\n" +
+    "\n" +
     "            </ul>\n" +
+    "        </div>\n" +
+    "\n" +
+    "        <div class=\"dropdown m-b\" style=\"display: inline-block; margin-left: 5px;\">\n" +
+    "            <script type=\"text/ng-template\" id=\"categoryTree\">\n" +
+    "                <a ng-if=\"view.data\" ng-click=\"reststoreService.addSavedView(view.id)\"\n" +
+    "                   style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i\n" +
+    "                        class=\"fa fa-fw\"></i> {{ view.name }}</a>\n" +
+    "                <a ng-if=\"view.submenu\"\n" +
+    "                   style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i\n" +
+    "                        class=\"fa fa-fw\"></i> {{ view.name }}</a>\n" +
+    "                <ul class=\"dropdown-menu submenu\" ng-if=\"view.submenu\">\n" +
+    "                    <li ng-repeat=\"view in view.submenu | orderBy:'view.name'\" ng-include=\"'categoryTree'\"\n" +
+    "                        class=\"dropdown-submenu\"></li>\n" +
+    "                    <li ng-repeat=\"view in view.views | orderBy:'view.name'\"\n" +
+    "                        ng-click=\"reststoreService.addSavedView(view.id)\"><a\n" +
+    "                            style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i\n" +
+    "                            class=\"fa fa-fw\"></i> {{ view.name }}</a></li>\n" +
+    "                </ul>\n" +
+    "            </script>\n" +
+    "\n" +
+    "            <div ng-if=\"cvOptions.backendUrl\" class=\"dropdown m-b\" style=\"display: inline-block; \">\n" +
+    "                <button class=\"btn btn-primary dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\" data-submenu>\n" +
+    "                    <i class=\"fa fa-fw fa-bars\"></i> Saved views <span class=\"caret\"></span>\n" +
+    "                </button>\n" +
+    "                <ul class=\"dropdown-menu cv-gui-catalog-menu\">\n" +
+    "                    <li class=\"dropdown-header\">Personal views</li>\n" +
+    "                    <li ng-repeat=\"view in savedViews | orderBy:'view.name'\" ng-include=\"'categoryTree'\"\n" +
+    "                        ng-class=\"{'dropdown-submenu': view.submenu}\"></li>\n" +
+    "                    <li class=\"dropdown-header\">Shared by others</li>\n" +
+    "                    <li ng-repeat=\"view in sharedViews | orderBy:'view.name'\" ng-include=\"'categoryTree'\"\n" +
+    "                        ng-class=\"{'dropdown-submenu': view.submenu}\"></li>\n" +
+    "                </ul>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "\n" +
+    "        <div class=\"dropdown m-b\" style=\"display: inline-block; margin-left: 5px;\">\n" +
+    "            <div ng-if=\"cvOptions.backendUrl\" class=\"dropdown m-b\" style=\"display: inline-block; \">\n" +
+    "                <button class=\"btn btn-primary dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\" data-submenu>\n" +
+    "                    <i class=\"fa fa-fw fa-bars\"></i> Dashboards <span class=\"caret\"></span>\n" +
+    "                </button>\n" +
+    "\n" +
+    "                <ul class=\"dropdown-menu cv-gui-catalog-menu\">\n" +
+    "                    <li class=\"dropdown-header\">Personal</li>\n" +
+    "                    <li ng-repeat=\"d in reststoreService.savedDashboards | orderBy:'d.name'\"\n" +
+    "                        ng-if=\"d.owner == cvOptions.user\" ng-click=\"reststoreService.restoreDashboard(d)\"><a\n" +
+    "                            style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i\n" +
+    "                            class=\"fa fa-fw\"></i> {{ d.name }}</a></li>\n" +
+    "                    <li class=\"dropdown-header\">Shared by others</li>\n" +
+    "                    <li ng-repeat=\"d in reststoreService.savedDashboards | orderBy:'d.name'\"\n" +
+    "                        ng-if=\"d.owner != cvOptions.user\" ng-click=\"reststoreService.restoreDashboard(d)\"><a\n" +
+    "                            style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i\n" +
+    "                            class=\"fa fa-fw\"></i> {{ d.name }}</a></li>\n" +
+    "                </ul>\n" +
+    "            </div>\n" +
+    "            <div class=\"dropdown\" style=\"display: inline-block;\">\n" +
+    "                <button class=\"btn btn-primary dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\" data-submenu>\n" +
+    "                    <i class=\"fa fa-fw fa-wrench\"></i> Dashboard tools <span class=\"caret\"></span>\n" +
+    "                </button>\n" +
+    "\n" +
+    "                <ul class=\"dropdown-menu\">\n" +
+    "                    <li><a ng-click=\"saveDashboard()\"><i class=\"fa fa-fw fa-save\"></i> Save dashboard</a></li>\n" +
+    "                    <div class=\"divider\"></div>\n" +
+    "                    <li><a ng-click=\"reststoreService.shareDashboard()\"><i class=\"fa fa-fw fa-share\"></i> {{ reststoreService.dashboard.shared ? \"Unshare\" : \"Share\" }} dashboard</a>\n" +
+    "                    <li><a ng-click=\"renameDashboard()\"><i class=\"fa fa-fw fa-pencil\"></i> Rename dashboard</a>\n" +
+    "                    </li>\n" +
+    "\n" +
+    "                    <div class=\"divider\"></div>\n" +
+    "\n" +
+    "                    <li ng-class=\"{disabled:reststoreService.dashboard.id == 0}\"><a ng-click=\"reststoreService.deleteDashboard()\"><i class=\"fa fa-fw fa-trash-o\"></i> Delete dashboard</a>\n" +
+    "                </ul>\n" +
+    "            </div>\n" +
     "        </div>\n" +
     "\n" +
     "        <div style=\"display: inline-block; margin-left: 10px; margin-bottom: 0px;\">\n" +
@@ -8479,6 +8967,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "                  <button type=\"button\" ng-click=\"setViewMode('facts')\" ng-class=\"{'active': view.params.mode == 'facts'}\" class=\"btn btn-primary btn-sm \" title=\"Facts\"><i class=\"fa fa-fw fa-th\"></i></button>\n" +
     "                  <button type=\"button\" ng-click=\"setViewMode('series')\" ng-class=\"{'active': view.params.mode == 'series'}\" class=\"btn btn-primary btn-sm \" title=\"Series\"><i class=\"fa fa-fw fa-clock-o\"></i></button>\n" +
     "                  <button type=\"button\" ng-click=\"setViewMode('chart')\" ng-class=\"{'active': view.params.mode == 'chart'}\" class=\"btn btn-primary btn-sm \" title=\"Charts\"><i class=\"fa fa-fw fa-area-chart\"></i></button>\n" +
+    "                  <button type=\"button\" ng-click=\"setViewMode('widget')\" ng-class=\"{'active': view.params.mode == 'widget'}\" class=\"btn btn-primary btn-sm \" title=\"Widgets\"><i class=\"fa fa-fw fa-tasks\"></i></button>\n" +
     "                </div>\n" +
     "\n" +
     "                <div ng-include=\"'views/cube/cube-menu-drilldown.html'\" class=\"dropdown m-b\" style=\"display: inline-block; margin-left: 5px;\"></div>\n" +
@@ -8577,6 +9066,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "            <div ng-if=\"view.params.mode == 'facts'\" ng-include=\"'views/cube/facts/facts.html'\"></div>\n" +
     "            <div ng-if=\"view.params.mode == 'series'\" ng-include=\"'views/cube/series/series.html'\"></div>\n" +
     "            <div ng-if=\"view.params.mode == 'chart'\" ng-include=\"'views/cube/chart/chart.html'\"></div>\n" +
+    "            <div ng-if=\"view.params.mode == 'widget'\" ng-include=\"'views/cube/widget/widget.html'\"></div>\n" +
     "\n" +
     "        </div>\n" +
     "        <div class=\"clearfix\"></div>\n" +
@@ -8888,6 +9378,39 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "    </div>\n" +
     "\n" +
     "</div>\n"
+  );
+
+
+  $templateCache.put('views/cube/widget/widget-max-value.html',
+    "<div class=\"container\">\n" +
+    "    <div ng-repeat=\"serie in series\" class=\"row\" style=\"margin-top: 1em;\">\n" +
+    "        <h3 class=\"\" style=\"color: #337ab7;\">{{serie['key']}}</h3>\n" +
+    "        <div ng-repeat=\"point in serie['values']\" class=\"col-md-3\">\n" +
+    "            <span style=\"font-size: 200%\">{{point['y'].toFixed(2)}}</span>\n" +
+    "            <span ng-class=\"{'text-success': point['diff'] > 0, 'text-danger': point['diff'] < 0}\"><i\n" +
+    "                    ng-class=\"{'fa-chevron-up text-success': point['diff'] > 0,\n" +
+    "        'fa-chevron-down text-danger': point['diff'] < 0}\" class=\"fa fa-fw\" style=\"font-size: 150%\"></i>\n" +
+    "        <span style=\"font-size: 150%;\">({{diff_abs(point['diff'])}}%)</span></span>\n" +
+    "            on {{view.cube.dimensionParts(view.params.xaxis).labelShort}}:\n" +
+    "            <span style=\"font-size: 150%;\">{{point['x']}}</span>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "</div>"
+  );
+
+
+  $templateCache.put('views/cube/widget/widget.html',
+    "<div ng-controller=\"CubesViewerWidgetController\">\n" +
+    "    <div ng-if=\"view.params.widgettype == 'max-difficulty'\">\n" +
+    "\n" +
+    "        <div ng-if=\"view.pendingRequests > 0\" class=\"loadingbar-content\">\n" +
+    "            <span class=\"loadingbar-expand\"></span>\n" +
+    "        </div>\n" +
+    "        <div ng-controller=\"CubesViewerWidgetMaxValueController\">\n" +
+    "            <div ng-include=\"'views/cube/widget/widget-max-value.html'\"></div>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "</div>"
   );
 
 }]);

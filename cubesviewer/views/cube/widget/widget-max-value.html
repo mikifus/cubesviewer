@@ -1,0 +1,14 @@
+<div class="container">
+    <div ng-repeat="serie in series" class="row" style="margin-top: 1em;">
+        <h3 class="" style="color: #337ab7;">{{serie['key']}}</h3>
+        <div ng-repeat="point in serie['values']" class="col-md-3">
+            <span style="font-size: 200%">{{point['y'].toFixed(2)}}</span>
+            <span ng-class="{'text-success': point['diff'] > 0, 'text-danger': point['diff'] < 0}"><i
+                    ng-class="{'fa-chevron-up text-success': point['diff'] > 0,
+        'fa-chevron-down text-danger': point['diff'] < 0}" class="fa fa-fw" style="font-size: 150%"></i>
+        <span style="font-size: 150%;">({{diff_abs(point['diff'])}}%)</span></span>
+            on {{view.cube.dimensionParts(view.params.xaxis).labelShort}}:
+            <span style="font-size: 150%;">{{point['x']}}</span>
+        </div>
+    </div>
+</div>

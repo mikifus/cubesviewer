@@ -53,6 +53,28 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
   );
 
 
+  $templateCache.put('studio/dashboard/rename.html',
+    "  <div class=\"modal-header\">\n" +
+    "    <button type=\"button\" ng-click=\"close();\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\"><span aria-hidden=\"true\"><i class=\"fa fa-fw fa-close\"></i></span></button>\n" +
+    "    <h4 class=\"modal-title\" id=\"myModalLabel\"><i class=\"fa fa-pencil\"></i> Rename dashboard</h4>\n" +
+    "  </div>\n" +
+    "  <div class=\"modal-body\">\n" +
+    "\n" +
+    "        <form class=\"form\" ng-submit=\"renameDashboard(dashboardName);\">\n" +
+    "            <div class=\"form-group\">\n" +
+    "                <label>Name:</label>\n" +
+    "                <input class=\"form-control\" ng-model=\"dashboardName\" />\n" +
+    "            </div>\n" +
+    "        </form>\n" +
+    "\n" +
+    "  </div>\n" +
+    "  <div class=\"modal-footer\">\n" +
+    "    <button type=\"button\" ng-click=\"close();\" class=\"btn btn-secondary\" data-dismiss=\"modal\">Cancel</button>\n" +
+    "    <button type=\"button\" ng-click=\"renameDashboard(dashboardName);\" class=\"btn btn-primary\" data-dismiss=\"modal\">Rename</button>\n" +
+    "  </div>"
+  );
+
+
   $templateCache.put('studio/help.html',
     "  <div class=\"modal-header\">\n" +
     "    <button type=\"button\" ng-click=\"close();\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\"><span aria-hidden=\"true\"><i class=\"fa fa-fw fa-close\"></i></span></button>\n" +
@@ -310,36 +332,6 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "\n" +
     "          </ul>\n" +
     "        </div>\n" +
-    "        <script type=\"text/ng-template\" id=\"categoryTree\">\n" +
-    "            <a ng-if=\"view.data\" ng-click=\"reststoreService.addSavedView(view.id)\" style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i class=\"fa fa-fw\"></i> {{ view.name }}</a>\n" +
-    "            <a ng-if=\"view.submenu\" style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i class=\"fa fa-fw\"></i> {{ view.name }}</a>\n" +
-    "            <ul class=\"dropdown-menu submenu\" ng-if=\"view.submenu\">\n" +
-    "                <li ng-repeat=\"view in view.submenu | orderBy:'view.name'\" ng-include=\"'categoryTree'\" class=\"dropdown-submenu\"></li>\n" +
-    "                <li ng-repeat=\"view in view.views | orderBy:'view.name'\" ng-click=\"reststoreService.addSavedView(view.id)\"><a style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i class=\"fa fa-fw\"></i> {{ view.name }}</a></li>\n" +
-    "            </ul>\n" +
-    "        </script>\n" +
-    "\n" +
-    "        <div ng-if=\"cvOptions.backendUrl\" class=\"dropdown m-b\" style=\"display: inline-block; \">\n" +
-    "          <button class=\"btn btn-primary dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\" data-submenu>\n" +
-    "            <i class=\"fa fa-fw fa-file\"></i> Saved views <span class=\"caret\"></span>\n" +
-    "          </button>\n" +
-    "\n" +
-    "          <ul class=\"dropdown-menu cv-gui-catalog-menu\">\n" +
-    "\n" +
-    "            <li class=\"dropdown-header\">Personal views</li>\n" +
-    "\n" +
-    "            <!--<li ng-repeat=\"sv in reststoreService.savedViews | orderBy:'sv.name'\" ng-if=\"sv.owner == cvOptions.user\" ng-click=\"reststoreService.addSavedView(sv.id)\"><a style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i class=\"fa fa-fw\"></i> {{ sv.name }}</a></li>-->\n" +
-    "            <li ng-repeat=\"view in savedViews | orderBy:'view.name'\" ng-include=\"'categoryTree'\" ng-class=\"{'dropdown-submenu': view.submenu}\"></li>\n" +
-    "\n" +
-    "            <li class=\"dropdown-header\">Shared by others</li>\n" +
-    "\n" +
-    "            <li ng-repeat=\"view in sharedViews | orderBy:'view.name'\" ng-include=\"'categoryTree'\" ng-class=\"{'dropdown-submenu': view.submenu}\"></li>\n" +
-    "\n" +
-    "            <!--<menutree views=\"sharedViews\"></menutree>-->\n" +
-    "\n" +
-    "          </ul>\n" +
-    "        </div>\n" +
-    "\n" +
     "\n" +
     "        <div class=\"dropdown m-b\" style=\"display: inline-block; margin-left: 5px;\">\n" +
     "          <button class=\"btn btn-primary dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\" data-submenu>\n" +
@@ -370,7 +362,81 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "                <li class=\"\"><a href=\"http://github.com/jjmontesl/cubesviewer/blob/master/doc/guide/cubesviewer-user-main.md\" target=\"_blank\"><i class=\"fa fa-fw fa-question\"></i> User guide</a></li>\n" +
     "                <li class=\"\"><a data-toggle=\"modal\" data-target=\"#cvAboutModal\"><i class=\"fa fa-fw fa-info\"></i> About CubesViewer...</a></li>\n" +
     "\n" +
+    "                <div class=\"divider\"></div>\n" +
+    "                <li class=\"\"><a ng-click=\"saveDashboard()\"><i class=\"fa fa-fw fa-save\"></i> Save dashboard</a></li>\n" +
+    "\n" +
     "            </ul>\n" +
+    "        </div>\n" +
+    "\n" +
+    "        <div class=\"dropdown m-b\" style=\"display: inline-block; margin-left: 5px;\">\n" +
+    "            <script type=\"text/ng-template\" id=\"categoryTree\">\n" +
+    "                <a ng-if=\"view.data\" ng-click=\"reststoreService.addSavedView(view.id)\"\n" +
+    "                   style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i\n" +
+    "                        class=\"fa fa-fw\"></i> {{ view.name }}</a>\n" +
+    "                <a ng-if=\"view.submenu\"\n" +
+    "                   style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i\n" +
+    "                        class=\"fa fa-fw\"></i> {{ view.name }}</a>\n" +
+    "                <ul class=\"dropdown-menu submenu\" ng-if=\"view.submenu\">\n" +
+    "                    <li ng-repeat=\"view in view.submenu | orderBy:'view.name'\" ng-include=\"'categoryTree'\"\n" +
+    "                        class=\"dropdown-submenu\"></li>\n" +
+    "                    <li ng-repeat=\"view in view.views | orderBy:'view.name'\"\n" +
+    "                        ng-click=\"reststoreService.addSavedView(view.id)\"><a\n" +
+    "                            style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i\n" +
+    "                            class=\"fa fa-fw\"></i> {{ view.name }}</a></li>\n" +
+    "                </ul>\n" +
+    "            </script>\n" +
+    "\n" +
+    "            <div ng-if=\"cvOptions.backendUrl\" class=\"dropdown m-b\" style=\"display: inline-block; \">\n" +
+    "                <button class=\"btn btn-primary dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\" data-submenu>\n" +
+    "                    <i class=\"fa fa-fw fa-bars\"></i> Saved views <span class=\"caret\"></span>\n" +
+    "                </button>\n" +
+    "                <ul class=\"dropdown-menu cv-gui-catalog-menu\">\n" +
+    "                    <li class=\"dropdown-header\">Personal views</li>\n" +
+    "                    <li ng-repeat=\"view in savedViews | orderBy:'view.name'\" ng-include=\"'categoryTree'\"\n" +
+    "                        ng-class=\"{'dropdown-submenu': view.submenu}\"></li>\n" +
+    "                    <li class=\"dropdown-header\">Shared by others</li>\n" +
+    "                    <li ng-repeat=\"view in sharedViews | orderBy:'view.name'\" ng-include=\"'categoryTree'\"\n" +
+    "                        ng-class=\"{'dropdown-submenu': view.submenu}\"></li>\n" +
+    "                </ul>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "\n" +
+    "        <div class=\"dropdown m-b\" style=\"display: inline-block; margin-left: 5px;\">\n" +
+    "            <div ng-if=\"cvOptions.backendUrl\" class=\"dropdown m-b\" style=\"display: inline-block; \">\n" +
+    "                <button class=\"btn btn-primary dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\" data-submenu>\n" +
+    "                    <i class=\"fa fa-fw fa-bars\"></i> Dashboards <span class=\"caret\"></span>\n" +
+    "                </button>\n" +
+    "\n" +
+    "                <ul class=\"dropdown-menu cv-gui-catalog-menu\">\n" +
+    "                    <li class=\"dropdown-header\">Personal</li>\n" +
+    "                    <li ng-repeat=\"d in reststoreService.savedDashboards | orderBy:'d.name'\"\n" +
+    "                        ng-if=\"d.owner == cvOptions.user\" ng-click=\"reststoreService.restoreDashboard(d)\"><a\n" +
+    "                            style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i\n" +
+    "                            class=\"fa fa-fw\"></i> {{ d.name }}</a></li>\n" +
+    "                    <li class=\"dropdown-header\">Shared by others</li>\n" +
+    "                    <li ng-repeat=\"d in reststoreService.savedDashboards | orderBy:'d.name'\"\n" +
+    "                        ng-if=\"d.owner != cvOptions.user\" ng-click=\"reststoreService.restoreDashboard(d)\"><a\n" +
+    "                            style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i\n" +
+    "                            class=\"fa fa-fw\"></i> {{ d.name }}</a></li>\n" +
+    "                </ul>\n" +
+    "            </div>\n" +
+    "            <div class=\"dropdown\" style=\"display: inline-block;\">\n" +
+    "                <button class=\"btn btn-primary dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\" data-submenu>\n" +
+    "                    <i class=\"fa fa-fw fa-wrench\"></i> Dashboard tools <span class=\"caret\"></span>\n" +
+    "                </button>\n" +
+    "\n" +
+    "                <ul class=\"dropdown-menu\">\n" +
+    "                    <li><a ng-click=\"saveDashboard()\"><i class=\"fa fa-fw fa-save\"></i> Save dashboard</a></li>\n" +
+    "                    <div class=\"divider\"></div>\n" +
+    "                    <li><a ng-click=\"reststoreService.shareDashboard()\"><i class=\"fa fa-fw fa-share\"></i> {{ reststoreService.dashboard.shared ? \"Unshare\" : \"Share\" }} dashboard</a>\n" +
+    "                    <li><a ng-click=\"renameDashboard()\"><i class=\"fa fa-fw fa-pencil\"></i> Rename dashboard</a>\n" +
+    "                    </li>\n" +
+    "\n" +
+    "                    <div class=\"divider\"></div>\n" +
+    "\n" +
+    "                    <li ng-class=\"{disabled:reststoreService.dashboard.id == 0}\"><a ng-click=\"reststoreService.deleteDashboard()\"><i class=\"fa fa-fw fa-trash-o\"></i> Delete dashboard</a>\n" +
+    "                </ul>\n" +
+    "            </div>\n" +
     "        </div>\n" +
     "\n" +
     "        <div style=\"display: inline-block; margin-left: 10px; margin-bottom: 0px;\">\n" +
@@ -943,6 +1009,7 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "                  <button type=\"button\" ng-click=\"setViewMode('facts')\" ng-class=\"{'active': view.params.mode == 'facts'}\" class=\"btn btn-primary btn-sm \" title=\"Facts\"><i class=\"fa fa-fw fa-th\"></i></button>\n" +
     "                  <button type=\"button\" ng-click=\"setViewMode('series')\" ng-class=\"{'active': view.params.mode == 'series'}\" class=\"btn btn-primary btn-sm \" title=\"Series\"><i class=\"fa fa-fw fa-clock-o\"></i></button>\n" +
     "                  <button type=\"button\" ng-click=\"setViewMode('chart')\" ng-class=\"{'active': view.params.mode == 'chart'}\" class=\"btn btn-primary btn-sm \" title=\"Charts\"><i class=\"fa fa-fw fa-area-chart\"></i></button>\n" +
+    "                  <button type=\"button\" ng-click=\"setViewMode('widget')\" ng-class=\"{'active': view.params.mode == 'widget'}\" class=\"btn btn-primary btn-sm \" title=\"Widgets\"><i class=\"fa fa-fw fa-tasks\"></i></button>\n" +
     "                </div>\n" +
     "\n" +
     "                <div ng-include=\"'views/cube/cube-menu-drilldown.html'\" class=\"dropdown m-b\" style=\"display: inline-block; margin-left: 5px;\"></div>\n" +
@@ -1041,6 +1108,7 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "            <div ng-if=\"view.params.mode == 'facts'\" ng-include=\"'views/cube/facts/facts.html'\"></div>\n" +
     "            <div ng-if=\"view.params.mode == 'series'\" ng-include=\"'views/cube/series/series.html'\"></div>\n" +
     "            <div ng-if=\"view.params.mode == 'chart'\" ng-include=\"'views/cube/chart/chart.html'\"></div>\n" +
+    "            <div ng-if=\"view.params.mode == 'widget'\" ng-include=\"'views/cube/widget/widget.html'\"></div>\n" +
     "\n" +
     "        </div>\n" +
     "        <div class=\"clearfix\"></div>\n" +
@@ -1352,6 +1420,39 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "    </div>\n" +
     "\n" +
     "</div>\n"
+  );
+
+
+  $templateCache.put('views/cube/widget/widget-max-value.html',
+    "<div class=\"container\">\n" +
+    "    <div ng-repeat=\"serie in series\" class=\"row\" style=\"margin-top: 1em;\">\n" +
+    "        <h3 class=\"\" style=\"color: #337ab7;\">{{serie['key']}}</h3>\n" +
+    "        <div ng-repeat=\"point in serie['values']\" class=\"col-md-3\">\n" +
+    "            <span style=\"font-size: 200%\">{{point['y'].toFixed(2)}}</span>\n" +
+    "            <span ng-class=\"{'text-success': point['diff'] > 0, 'text-danger': point['diff'] < 0}\"><i\n" +
+    "                    ng-class=\"{'fa-chevron-up text-success': point['diff'] > 0,\n" +
+    "        'fa-chevron-down text-danger': point['diff'] < 0}\" class=\"fa fa-fw\" style=\"font-size: 150%\"></i>\n" +
+    "        <span style=\"font-size: 150%;\">({{diff_abs(point['diff'])}}%)</span></span>\n" +
+    "            on {{view.cube.dimensionParts(view.params.xaxis).labelShort}}:\n" +
+    "            <span style=\"font-size: 150%;\">{{point['x']}}</span>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "</div>"
+  );
+
+
+  $templateCache.put('views/cube/widget/widget.html',
+    "<div ng-controller=\"CubesViewerWidgetController\">\n" +
+    "    <div ng-if=\"view.params.widgettype == 'max-difficulty'\">\n" +
+    "\n" +
+    "        <div ng-if=\"view.pendingRequests > 0\" class=\"loadingbar-content\">\n" +
+    "            <span class=\"loadingbar-expand\"></span>\n" +
+    "        </div>\n" +
+    "        <div ng-controller=\"CubesViewerWidgetMaxValueController\">\n" +
+    "            <div ng-include=\"'views/cube/widget/widget-max-value.html'\"></div>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "</div>"
   );
 
 }]);
