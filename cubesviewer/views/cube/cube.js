@@ -364,7 +364,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
 			view.params.rangefilters = [];
 		}
 
-		$scope.pendingActions++;
+		$scope.view.pendingActions++;
 		// $scope.refreshView();
 	};
 
