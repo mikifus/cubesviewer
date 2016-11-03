@@ -562,12 +562,13 @@ angular.module('bootstrapSubmenu', []).directive("submenu", ['$timeout', functio
         if (args.cut) http_args.cut = args.cut.toString();
         if (args.measure) http_args.measure = args.measure.toString();
         if (args.drilldown) http_args.drilldown = args.drilldown.toString();
+        if (args.aggregates) http_args.aggregates = args.aggregates.join('|');
         if (args.split) http_args.split = args.split.toString();
         if (args.order) http_args.order = args.order.toString();
         if (args.page) http_args.page = args.page;
         if (args.pagesize) http_args.pagesize = args.pagesize;
 
-        return this.server.query("aggregate", this.cube, args, callback);
+        return this.server.query("aggregate", this.cube, http_args, callback);
     };
 
     cubes.Browser.prototype.facts = function(args, callback) {
@@ -2485,6 +2486,8 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
 
 	// Select a range
 	$scope.selectRange = function(dimension, range_from, range_to) {
+		console.log('selectRange', dimension, range_from, range_to);
+		console.log($scope.view.pendingActions);
 		var view = $scope.view;
 		if (dimension) {
 			if (range_from || range_to) {
@@ -2506,8 +2509,9 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
 			view.params.rangefilters = [];
 		}
 
-		$scope.pendingActions++;
+		$scope.view.pendingActions++;
 		// $scope.refreshView();
+		console.log('pendingActions', $scope.view.pendingActions);
 	};
 
 
@@ -6768,6 +6772,8 @@ angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootSco
 	$scope.savedViews = [];
 	$scope.sharedViews = [];
 
+	$scope.savedDashboards = [];
+
 	$scope.initialize = function() {
 	};
 
@@ -6916,8 +6922,29 @@ angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootSco
 			$('.cv-views-container').masonry('layout');
 		}, 100);
 	};
+	$scope.saveDashboard = function () {
+		reststoreService.dashboard.views = [];
+		studioViewsService.views.forEach(function (v) {reststoreService.dashboard.views.unshift(v.savedId)});
+		reststoreService.saveDashboard();
+	};
 
-	$scope.initialize();
+	/*
+	 * Renames a dashboard.
+	 */
+	$scope.renameDashboard = function() {
+
+		var modalInstance = $uibModal.open({
+	    	animation: true,
+	    	templateUrl: 'studio/dashboard/rename.html',
+	    	controller: 'CubesViewerRenameDashboardController',
+	    	appendTo: angular.element($($element).find('.cv-gui-modals')[0]),
+	    	size: "md",
+		    resolve: {
+		        dashboard: function () { return reststoreService.dashboard; },
+	    		element: function() { return $($element).find('.cv-gui-modals')[0] },
+		    }
+	    });
+	};
 
     $scope.$watch('reststoreService.savedViews', function (newValue, oldValue) {
 	    if (newValue != oldValue) {
@@ -6930,6 +6957,13 @@ angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootSco
        }
     });
 
+	$scope.initialize();
+
+	$scope.$watch('reststoreService.savedViews', function(newValue, oldValue){
+       if (newValue != oldValue) {
+           reststoreService.dashboardList();
+       }
+   });
 }]);
 
 
@@ -7012,6 +7046,7 @@ angular.module('cv.studio').controller("CubesViewerSetupControlsController", ['$
 
             view.setEnabledDrilldowns($scope.drilldowns);
             view.setEnabledFilters($scope.filters);
+			view.setEnabledHorizontalDimensions($scope.horizontalDimensions);
             view.setEnabledMeasures($scope.measures);
             view.setEnabledAggregates($scope.aggregates);
 			view.help = $scope.help;
@@ -7034,6 +7069,25 @@ angular.module('cv.studio').controller("CubesViewerHelpController", ['$rootScope
 	};
 }]);
 
+angular.module('cv.studio').controller("CubesViewerRenameDashboardController", ['$rootScope', '$scope', '$uibModalInstance', 'cvOptions', 'cubesService', 'studioViewsService', 'dashboard',
+                                                                       function ($rootScope, $scope, $uibModalInstance, cvOptions, cubesService, studioViewsService, dashboard) {
+
+	$scope.dashboardName = dashboard.name;
+
+	$scope.renameDashboard = function(name) {
+
+		if ((name != null) && (name != "")) {
+			dashboard.name = name;
+		}
+
+		$uibModalInstance.close();
+	};
+
+	$scope.close = function() {
+		$uibModalInstance.dismiss('cancel');
+	};
+
+}]);
 
 // Disable Debug Info (for production)
 angular.module('cv.studio').config([ '$compileProvider', function($compileProvider) {
@@ -7250,11 +7304,23 @@ angular.module('cv.studio').service("reststoreService", ['$rootScope', '$http', 
 
 	reststoreService.savedViews = [];
 
+    reststoreService.savedDashboards = [];
+
+    reststoreService.dashboard = new_dashboard();
+
 	reststoreService.initialize = function() {
 		if (! cvOptions.backendUrl) return;
 		reststoreService.viewList();
 	};
 
+	function new_dashboard() {
+        return {
+            'id': 0,
+            'name': 'New',
+            'views': [],
+            'shared': false
+        }
+    }
     /**
      * Returns a stored view from memory.
      */
@@ -7419,6 +7485,7 @@ angular.module('cv.studio').service("reststoreService", ['$rootScope', '$http', 
     	// TODO: Check whether the server model is loaded, etc
 
         var savedview = reststoreService.getSavedView(savedViewId);
+        if (!savedview) return;
         var viewobject = $.parseJSON(savedview.data);
         var view = studioViewsService.addViewObject(viewobject);
 
@@ -7435,6 +7502,94 @@ angular.module('cv.studio').service("reststoreService", ['$rootScope', '$http', 
         }
 
     };
+
+    reststoreService.restoreDashboard = function(dashboard){
+        reststoreService.dashboard = dashboard;
+        reststoreService.dashboard.views.forEach(function(v){
+            reststoreService.addSavedView(v);
+        });
+    };
+
+    reststoreService.shareDashboard = function() {
+        var dashboard = reststoreService.dashboard;
+        if (reststoreService.dashboard.owner != cvOptions.user) {
+            dialogService.show('Cannot share/unshare a dashboard that belongs to other user (try cloning the dashboard).');
+            return;
+        }
+
+        reststoreService.dashboard.shared = !reststoreService.dashboard.shared;
+        reststoreService.saveDashboard();
+
+    };
+
+    reststoreService.dashboardList = function(){
+        $http.get(cvOptions.backendUrl + "/dashboard/list/").then(
+        		reststoreService._dashboardListCallback, cubesService.defaultRequestErrorHandler);
+    };
+
+    reststoreService._dashboardListCallback = function(data, status) {
+        reststoreService.savedDashboards = data.data;
+    };
+
+   /**
+    * Save a dashboard.
+    */
+   reststoreService.saveDashboard = function () {
+       $http({
+           "method": "POST",
+           "url": cvOptions.backendUrl + "/dashboard/save/",
+           "data": JSON.stringify(reststoreService.dashboard),
+           "headers": {"X-CSRFToken": $cookies.get('csrftoken')}
+       }).then(reststoreService._saveDashboardCallback, cubesService.defaultRequestErrorHandler);
+
+   };
+
+   /**
+    * Save callback
+    */
+   reststoreService._saveDashboardCallback = function (data, status) {
+       data = data.data;
+       reststoreService.savedDashboards.push(data);
+       dialogService.show("Dashboard saved.");
+   };
+
+   /**
+    * Delete a dashboard.
+    */
+   reststoreService.deleteDashboard = function () {
+       if (reststoreService.dashboard.owner != cvOptions.user) {
+            dialogService.show('Cannot delete a dashboard that belongs to other user.');
+            return;
+        }
+
+        if (! confirm('Are you sure you want to delete and close this dashboard?')) {
+            return;
+        }
+
+        var data = {
+            "id": reststoreService.dashboard.id
+        };
+       $http({
+           "method": "POST",
+           "url": cvOptions.backendUrl + "/dashboard/delete/",
+           "data": JSON.stringify(data),
+           "headers": {"X-CSRFToken": $cookies.get('csrftoken')}
+       }).then(reststoreService._deleteDashboardCallback, cubesService.defaultRequestErrorHandler);
+
+   };
+
+   /**
+    * Delete callback
+    */
+   reststoreService._deleteDashboardCallback = function (data, status) {
+       reststoreService.dashboard = new_dashboard();
+       var views = studioViewsService.views.slice();
+       views.forEach(function(v){
+           studioViewsService.closeView(v);
+       });
+       reststoreService.dashboardList();
+       dialogService.show("Dashboard deleted.");
+   };
 
     reststoreService.initialize();
 
@@ -7586,6 +7741,28 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "</div>\n" +
     "\n" +
     "\n"
+  );
+
+
+  $templateCache.put('studio/dashboard/rename.html',
+    "  <div class=\"modal-header\">\n" +
+    "    <button type=\"button\" ng-click=\"close();\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\"><span aria-hidden=\"true\"><i class=\"fa fa-fw fa-close\"></i></span></button>\n" +
+    "    <h4 class=\"modal-title\" id=\"myModalLabel\"><i class=\"fa fa-pencil\"></i> Rename dashboard</h4>\n" +
+    "  </div>\n" +
+    "  <div class=\"modal-body\">\n" +
+    "\n" +
+    "        <form class=\"form\" ng-submit=\"renameDashboard(dashboardName);\">\n" +
+    "            <div class=\"form-group\">\n" +
+    "                <label>Name:</label>\n" +
+    "                <input class=\"form-control\" ng-model=\"dashboardName\" />\n" +
+    "            </div>\n" +
+    "        </form>\n" +
+    "\n" +
+    "  </div>\n" +
+    "  <div class=\"modal-footer\">\n" +
+    "    <button type=\"button\" ng-click=\"close();\" class=\"btn btn-secondary\" data-dismiss=\"modal\">Cancel</button>\n" +
+    "    <button type=\"button\" ng-click=\"renameDashboard(dashboardName);\" class=\"btn btn-primary\" data-dismiss=\"modal\">Rename</button>\n" +
+    "  </div>"
   );
 
 
@@ -7846,36 +8023,6 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "\n" +
     "          </ul>\n" +
     "        </div>\n" +
-    "        <script type=\"text/ng-template\" id=\"categoryTree\">\n" +
-    "            <a ng-if=\"view.data\" ng-click=\"reststoreService.addSavedView(view.id)\" style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i class=\"fa fa-fw\"></i> {{ view.name }}</a>\n" +
-    "            <a ng-if=\"view.submenu\" style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i class=\"fa fa-fw\"></i> {{ view.name }}</a>\n" +
-    "            <ul class=\"dropdown-menu submenu\" ng-if=\"view.submenu\">\n" +
-    "                <li ng-repeat=\"view in view.submenu | orderBy:'view.name'\" ng-include=\"'categoryTree'\" class=\"dropdown-submenu\"></li>\n" +
-    "                <li ng-repeat=\"view in view.views | orderBy:'view.name'\" ng-click=\"reststoreService.addSavedView(view.id)\"><a style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i class=\"fa fa-fw\"></i> {{ view.name }}</a></li>\n" +
-    "            </ul>\n" +
-    "        </script>\n" +
-    "\n" +
-    "        <div ng-if=\"cvOptions.backendUrl\" class=\"dropdown m-b\" style=\"display: inline-block; \">\n" +
-    "          <button class=\"btn btn-primary dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\" data-submenu>\n" +
-    "            <i class=\"fa fa-fw fa-file\"></i> Saved views <span class=\"caret\"></span>\n" +
-    "          </button>\n" +
-    "\n" +
-    "          <ul class=\"dropdown-menu cv-gui-catalog-menu\">\n" +
-    "\n" +
-    "            <li class=\"dropdown-header\">Personal views</li>\n" +
-    "\n" +
-    "            <!--<li ng-repeat=\"sv in reststoreService.savedViews | orderBy:'sv.name'\" ng-if=\"sv.owner == cvOptions.user\" ng-click=\"reststoreService.addSavedView(sv.id)\"><a style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i class=\"fa fa-fw\"></i> {{ sv.name }}</a></li>-->\n" +
-    "            <li ng-repeat=\"view in savedViews | orderBy:'view.name'\" ng-include=\"'categoryTree'\" ng-class=\"{'dropdown-submenu': view.submenu}\"></li>\n" +
-    "\n" +
-    "            <li class=\"dropdown-header\">Shared by others</li>\n" +
-    "\n" +
-    "            <li ng-repeat=\"view in sharedViews | orderBy:'view.name'\" ng-include=\"'categoryTree'\" ng-class=\"{'dropdown-submenu': view.submenu}\"></li>\n" +
-    "\n" +
-    "            <!--<menutree views=\"sharedViews\"></menutree>-->\n" +
-    "\n" +
-    "          </ul>\n" +
-    "        </div>\n" +
-    "\n" +
     "\n" +
     "        <div class=\"dropdown m-b\" style=\"display: inline-block; margin-left: 5px;\">\n" +
     "          <button class=\"btn btn-primary dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\" data-submenu>\n" +
@@ -7906,7 +8053,81 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "                <li class=\"\"><a href=\"http://github.com/jjmontesl/cubesviewer/blob/master/doc/guide/cubesviewer-user-main.md\" target=\"_blank\"><i class=\"fa fa-fw fa-question\"></i> User guide</a></li>\n" +
     "                <li class=\"\"><a data-toggle=\"modal\" data-target=\"#cvAboutModal\"><i class=\"fa fa-fw fa-info\"></i> About CubesViewer...</a></li>\n" +
     "\n" +
+    "                <div class=\"divider\"></div>\n" +
+    "                <li class=\"\"><a ng-click=\"saveDashboard()\"><i class=\"fa fa-fw fa-save\"></i> Save dashboard</a></li>\n" +
+    "\n" +
     "            </ul>\n" +
+    "        </div>\n" +
+    "\n" +
+    "        <div class=\"dropdown m-b\" style=\"display: inline-block; margin-left: 5px;\">\n" +
+    "            <script type=\"text/ng-template\" id=\"categoryTree\">\n" +
+    "                <a ng-if=\"view.data\" ng-click=\"reststoreService.addSavedView(view.id)\"\n" +
+    "                   style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i\n" +
+    "                        class=\"fa fa-fw\"></i> {{ view.name }}</a>\n" +
+    "                <a ng-if=\"view.submenu\"\n" +
+    "                   style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i\n" +
+    "                        class=\"fa fa-fw\"></i> {{ view.name }}</a>\n" +
+    "                <ul class=\"dropdown-menu submenu\" ng-if=\"view.submenu\">\n" +
+    "                    <li ng-repeat=\"view in view.submenu | orderBy:'view.name'\" ng-include=\"'categoryTree'\"\n" +
+    "                        class=\"dropdown-submenu\"></li>\n" +
+    "                    <li ng-repeat=\"view in view.views | orderBy:'view.name'\"\n" +
+    "                        ng-click=\"reststoreService.addSavedView(view.id)\"><a\n" +
+    "                            style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i\n" +
+    "                            class=\"fa fa-fw\"></i> {{ view.name }}</a></li>\n" +
+    "                </ul>\n" +
+    "            </script>\n" +
+    "\n" +
+    "            <div ng-if=\"cvOptions.backendUrl\" class=\"dropdown m-b\" style=\"display: inline-block; \">\n" +
+    "                <button class=\"btn btn-primary dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\" data-submenu>\n" +
+    "                    <i class=\"fa fa-fw fa-bars\"></i> Saved views <span class=\"caret\"></span>\n" +
+    "                </button>\n" +
+    "                <ul class=\"dropdown-menu cv-gui-catalog-menu\">\n" +
+    "                    <li class=\"dropdown-header\">Personal views</li>\n" +
+    "                    <li ng-repeat=\"view in savedViews | orderBy:'view.name'\" ng-include=\"'categoryTree'\"\n" +
+    "                        ng-class=\"{'dropdown-submenu': view.submenu}\"></li>\n" +
+    "                    <li class=\"dropdown-header\">Shared by others</li>\n" +
+    "                    <li ng-repeat=\"view in sharedViews | orderBy:'view.name'\" ng-include=\"'categoryTree'\"\n" +
+    "                        ng-class=\"{'dropdown-submenu': view.submenu}\"></li>\n" +
+    "                </ul>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "\n" +
+    "        <div class=\"dropdown m-b\" style=\"display: inline-block; margin-left: 5px;\">\n" +
+    "            <div ng-if=\"cvOptions.backendUrl\" class=\"dropdown m-b\" style=\"display: inline-block; \">\n" +
+    "                <button class=\"btn btn-primary dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\" data-submenu>\n" +
+    "                    <i class=\"fa fa-fw fa-bars\"></i> Dashboards <span class=\"caret\"></span>\n" +
+    "                </button>\n" +
+    "\n" +
+    "                <ul class=\"dropdown-menu cv-gui-catalog-menu\">\n" +
+    "                    <li class=\"dropdown-header\">Personal</li>\n" +
+    "                    <li ng-repeat=\"d in reststoreService.savedDashboards | orderBy:'d.name'\"\n" +
+    "                        ng-if=\"d.owner == cvOptions.user\" ng-click=\"reststoreService.restoreDashboard(d)\"><a\n" +
+    "                            style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i\n" +
+    "                            class=\"fa fa-fw\"></i> {{ d.name }}</a></li>\n" +
+    "                    <li class=\"dropdown-header\">Shared by others</li>\n" +
+    "                    <li ng-repeat=\"d in reststoreService.savedDashboards | orderBy:'d.name'\"\n" +
+    "                        ng-if=\"d.owner != cvOptions.user\" ng-click=\"reststoreService.restoreDashboard(d)\"><a\n" +
+    "                            style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i\n" +
+    "                            class=\"fa fa-fw\"></i> {{ d.name }}</a></li>\n" +
+    "                </ul>\n" +
+    "            </div>\n" +
+    "            <div class=\"dropdown\" style=\"display: inline-block;\">\n" +
+    "                <button class=\"btn btn-primary dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\" data-submenu>\n" +
+    "                    <i class=\"fa fa-fw fa-wrench\"></i> Dashboard tools <span class=\"caret\"></span>\n" +
+    "                </button>\n" +
+    "\n" +
+    "                <ul class=\"dropdown-menu\">\n" +
+    "                    <li><a ng-click=\"saveDashboard()\"><i class=\"fa fa-fw fa-save\"></i> Save dashboard</a></li>\n" +
+    "                    <div class=\"divider\"></div>\n" +
+    "                    <li><a ng-click=\"reststoreService.shareDashboard()\"><i class=\"fa fa-fw fa-share\"></i> {{ reststoreService.dashboard.shared ? \"Unshare\" : \"Share\" }} dashboard</a>\n" +
+    "                    <li><a ng-click=\"renameDashboard()\"><i class=\"fa fa-fw fa-pencil\"></i> Rename dashboard</a>\n" +
+    "                    </li>\n" +
+    "\n" +
+    "                    <div class=\"divider\"></div>\n" +
+    "\n" +
+    "                    <li ng-class=\"{disabled:reststoreService.dashboard.id == 0}\"><a ng-click=\"reststoreService.deleteDashboard()\"><i class=\"fa fa-fw fa-trash-o\"></i> Delete dashboard</a>\n" +
+    "                </ul>\n" +
+    "            </div>\n" +
     "        </div>\n" +
     "\n" +
     "        <div style=\"display: inline-block; margin-left: 10px; margin-bottom: 0px;\">\n" +

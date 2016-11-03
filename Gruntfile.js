@@ -162,5 +162,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('default', ['less', 'ngtemplates', 'concat', 'uglify', 'jsdoc']);  // 'bower',
 
+  grunt.registerTask('dev', ['less', 'ngtemplates', 'concat']);
+
 };
 
