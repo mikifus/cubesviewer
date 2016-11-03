@@ -518,6 +518,7 @@ angular.module('cv.studio').controller("CubesViewerSetupControlsController", ['$
 
             view.setEnabledDrilldowns($scope.drilldowns);
             view.setEnabledFilters($scope.filters);
+			view.setEnabledHorizontalDimensions($scope.horizontalDimensions);
             view.setEnabledMeasures($scope.measures);
             view.setEnabledAggregates($scope.aggregates);
 			view.help = $scope.help;
