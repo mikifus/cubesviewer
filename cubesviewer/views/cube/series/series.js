@@ -184,6 +184,12 @@ cubesviewer._seriesAddRows = function($scope, data) {
 	if (view.params.xaxis != null) {
 		drilldown.splice(0,0, view.params.xaxis);
 	}
+
+    // Include Z Axis if necessary
+    if (view.params.zaxis != null) {
+        drilldown.splice(1, 0, view.params.zaxis);
+    }
+
 	var baseidx = ((view.params.xaxis == null) ? 0 : 1);
 
 	var addedCols = [];

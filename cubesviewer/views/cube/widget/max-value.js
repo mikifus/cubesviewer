@@ -54,8 +54,10 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMaxValueController"
                 var view = $scope.view;
                 var dataRows = $scope.view.grid.data;
                 var columnDefs = view.grid.columnDefs;
-                var drilldown = view.params.drilldown.slice(0);
-                var zaxis = drilldown.splice(drilldown.indexOf('date@daily:day'), 1).pop();
+                var zaxis = view.params.zaxis;
+                if (!zaxis) {
+                    return;
+                }
                 var zparts = view.cube.dimensionParts(zaxis);
 
                 var d = [];

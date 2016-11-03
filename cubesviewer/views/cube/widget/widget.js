@@ -38,7 +38,7 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetController", ['$roo
             // Add chart view parameters to view definition
             $scope.view.params = $.extend(
                 {},
-                {"widgettype": "max-difficulty"},
+                {"widgettype": "max-difficulty", "zaxis": null},
                 $scope.view.params
             );
             //$scope.refreshView();
@@ -52,10 +52,9 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetController", ['$roo
         });
 
         $scope.loadData = function () {
-
-            var view = $scope.view;
-
-            var browser_args = cubesService.buildBrowserArgs($scope.view, $scope.view.params.xaxis != null ? true : false, false);
+            var includeXAxis = $scope.view.params.xaxis != null;
+            var includeZAxis = $scope.view.params.zaxis != null;
+            var browser_args = cubesService.buildBrowserArgs($scope.view, includeXAxis, false, includeZAxis);
             var browser = new cubes.Browser(cubesService.cubesserver, $scope.view.cube);
             var viewStateKey = $scope.newViewStateKey();
             var jqxhr = browser.aggregate(browser_args, $scope._loadDataCallback(viewStateKey));
@@ -102,6 +101,9 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetController", ['$roo
 
             var drilldown = view.params.drilldown.slice(0);
 
+            if (view.params.zaxis) {
+                drilldown.splice(0, 0, view.params.zaxis);
+            }
             // Join keys
             if (drilldown.length > 0) {
                 columnDefs.splice(0, drilldown.length, {
@@ -111,11 +113,15 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetController", ['$roo
                 $(rows).each(function (idx, e) {
                     var jointkey = [];
                     for (var i = 0; i < drilldown.length; i++) {
-                        if (drilldown[i] != 'date@daily:day') {
+                        if (drilldown[i] != view.params.zaxis) {
                             jointkey.push(e["key" + i]);
                         }
                     }
-                    e["key"] = jointkey.join(" / ");
+                    if (jointkey.length > 0) {
+                        e["key"] = jointkey.join(" / ");
+                    } else {
+                        e["key"] = null;
+                    }
                 });
             }
             $scope.$broadcast("gridDataUpdated");

@@ -1194,7 +1194,7 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
 	/*
 	 * Builds Cubes Server query parameters based on current view values.
 	 */
-	this.buildBrowserArgs = function(view, includeXAxis, onlyCuts) {
+	this.buildBrowserArgs = function(view, includeXAxis, onlyCuts, includeZAxis) {
 
 		// "lang": view.cubesviewer.options.cubesLang
 
@@ -1209,6 +1209,10 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
 			// Include X Axis if necessary
 			if (includeXAxis) {
 				drilldowns.splice(0, 0, view.params.xaxis);
+			}
+			// Include Z Axis if necessary
+			if (includeZAxis) {
+				drilldowns.splice(0, 0, view.params.zaxis);
 			}
 
 			// Preprocess
@@ -2568,6 +2572,14 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
 	 */
 	$scope.selectXAxis = function(dimension) {
 		$scope.view.params.xaxis = (dimension == "" ? null : dimension);
+		$scope.refreshView();
+	};
+
+	/*
+	 * Selects z axis
+	 */
+	$scope.selectZAxis = function(dimension) {
+		$scope.view.params.zaxis = (dimension == "" ? null : dimension);
 		$scope.refreshView();
 	};
 
@@ -4035,6 +4047,12 @@ cubesviewer._seriesAddRows = function($scope, data) {
 	if (view.params.xaxis != null) {
 		drilldown.splice(0,0, view.params.xaxis);
 	}
+
+    // Include Z Axis if necessary
+    if (view.params.zaxis != null) {
+        drilldown.splice(1, 0, view.params.zaxis);
+    }
+    console.log(drilldown);
 	var baseidx = ((view.params.xaxis == null) ? 0 : 1);
 
 	var addedCols = [];
@@ -6257,7 +6275,7 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetController", ['$roo
             // Add chart view parameters to view definition
             $scope.view.params = $.extend(
                 {},
-                {"widgettype": "max-difficulty"},
+                {"widgettype": "max-difficulty", "zaxis": null},
                 $scope.view.params
             );
             //$scope.refreshView();
@@ -6271,10 +6289,9 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetController", ['$roo
         });
 
         $scope.loadData = function () {
-
-            var view = $scope.view;
-
-            var browser_args = cubesService.buildBrowserArgs($scope.view, $scope.view.params.xaxis != null ? true : false, false);
+            var includeXAxis = $scope.view.params.xaxis != null;
+            var includeZAxis = $scope.view.params.zaxis != null;
+            var browser_args = cubesService.buildBrowserArgs($scope.view, includeXAxis, false, includeZAxis);
             var browser = new cubes.Browser(cubesService.cubesserver, $scope.view.cube);
             var viewStateKey = $scope.newViewStateKey();
             var jqxhr = browser.aggregate(browser_args, $scope._loadDataCallback(viewStateKey));
@@ -6321,6 +6338,9 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetController", ['$roo
 
             var drilldown = view.params.drilldown.slice(0);
 
+            if (view.params.zaxis) {
+                drilldown.splice(0, 0, view.params.zaxis);
+            }
             // Join keys
             if (drilldown.length > 0) {
                 columnDefs.splice(0, drilldown.length, {
@@ -6330,11 +6350,15 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetController", ['$roo
                 $(rows).each(function (idx, e) {
                     var jointkey = [];
                     for (var i = 0; i < drilldown.length; i++) {
-                        if (drilldown[i] != 'date@daily:day') {
+                        if (drilldown[i] != view.params.zaxis) {
                             jointkey.push(e["key" + i]);
                         }
                     }
-                    e["key"] = jointkey.join(" / ");
+                    if (jointkey.length > 0) {
+                        e["key"] = jointkey.join(" / ");
+                    } else {
+                        e["key"] = null;
+                    }
                 });
             }
             $scope.$broadcast("gridDataUpdated");
@@ -6412,8 +6436,10 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMaxValueController"
                 var view = $scope.view;
                 var dataRows = $scope.view.grid.data;
                 var columnDefs = view.grid.columnDefs;
-                var drilldown = view.params.drilldown.slice(0);
-                var zaxis = drilldown.splice(drilldown.indexOf('date@daily:day'), 1).pop();
+                var zaxis = view.params.zaxis;
+                if (!zaxis) {
+                    return;
+                }
                 var zparts = view.cube.dimensionParts(zaxis);
 
                 var d = [];
@@ -8774,37 +8800,44 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
 
 
   $templateCache.put('views/cube/cube-menu-view.html',
-    "  <button class=\"btn btn-primary btn-sm dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\" data-submenu>\n" +
-    "    <i class=\"fa fa-fw fa-cogs\"></i> <span class=\"hidden-xs\" ng-class=\"{ 'hidden-sm hidden-md': cvOptions.studioTwoColumn }\">View</span> <span class=\"caret\"></span>\n" +
-    "  </button>\n" +
+    "<button class=\"btn btn-primary btn-sm dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\" data-submenu>\n" +
+    "    <i class=\"fa fa-fw fa-cogs\"></i> <span class=\"hidden-xs\"\n" +
+    "                                           ng-class=\"{ 'hidden-sm hidden-md': cvOptions.studioTwoColumn }\">View</span>\n" +
+    "    <span class=\"caret\"></span>\n" +
+    "</button>\n" +
     "\n" +
-    "  <ul class=\"dropdown-menu dropdown-menu-right cv-view-menu cv-view-menu-view\">\n" +
+    "<ul class=\"dropdown-menu dropdown-menu-right cv-view-menu cv-view-menu-view\">\n" +
     "\n" +
     "    <li ng-show=\"view.params.mode == 'chart'\" class=\"dropdown-submenu\">\n" +
-    "        <a tabindex=\"0\" ><i class=\"fa fa-fw fa-area-chart\"></i> Chart type</a>\n" +
+    "        <a tabindex=\"0\"><i class=\"fa fa-fw fa-area-chart\"></i> Chart type</a>\n" +
     "        <ul class=\"dropdown-menu\">\n" +
-    "          <li ng-click=\"selectChartType('pie')\"><a href=\"\"><i class=\"fa fa-fw fa-pie-chart\"></i> Pie</a></li>\n" +
-    "          <li ng-click=\"selectChartType('bars-vertical')\"><a href=\"\"><i class=\"fa fa-fw fa-bar-chart\"></i> Bars Vertical</a></li>\n" +
-    "          <li ng-click=\"selectChartType('bars-horizontal')\"><a href=\"\"><i class=\"fa fa-fw fa-rotate-270 fa-bar-chart\"></i> Bars Horizontal</a></li>\n" +
-    "          <li ng-click=\"selectChartType('lines')\"><a href=\"\"><i class=\"fa fa-fw fa-line-chart\"></i> Lines</a></li>\n" +
-    "          <li ng-click=\"selectChartType('lines-stacked')\"><a href=\"\"><i class=\"fa fa-fw fa-area-chart\"></i> Areas</a></li>\n" +
-    "          <li ng-click=\"selectChartType('radar')\"><a href=\"\"><i class=\"fa fa-fw fa-bullseye\"></i> Radar</a></li>\n" +
-    "          <li ng-click=\"selectChartType('lines-avg')\"><a href=\"\"><i class=\"fa fa-fw fa-bullseye\"></i> Lines AVG</a></li>\n" +
-    "          <li ng-click=\"selectChartType('variance')\"><a href=\"\"><i class=\"fa fa-fw fa-bullseye\"></i> Lines Variance</a></li>\n" +
+    "            <li ng-click=\"selectChartType('pie')\"><a href=\"\"><i class=\"fa fa-fw fa-pie-chart\"></i> Pie</a></li>\n" +
+    "            <li ng-click=\"selectChartType('bars-vertical')\"><a href=\"\"><i class=\"fa fa-fw fa-bar-chart\"></i> Bars\n" +
+    "                Vertical</a></li>\n" +
+    "            <li ng-click=\"selectChartType('bars-horizontal')\"><a href=\"\"><i\n" +
+    "                    class=\"fa fa-fw fa-rotate-270 fa-bar-chart\"></i> Bars Horizontal</a></li>\n" +
+    "            <li ng-click=\"selectChartType('lines')\"><a href=\"\"><i class=\"fa fa-fw fa-line-chart\"></i> Lines</a></li>\n" +
+    "            <li ng-click=\"selectChartType('lines-stacked')\"><a href=\"\"><i class=\"fa fa-fw fa-area-chart\"></i> Areas</a>\n" +
+    "            </li>\n" +
+    "            <li ng-click=\"selectChartType('radar')\"><a href=\"\"><i class=\"fa fa-fw fa-bullseye\"></i> Radar</a></li>\n" +
+    "            <li ng-click=\"selectChartType('lines-avg')\"><a href=\"\"><i class=\"fa fa-fw fa-bullseye\"></i> Lines AVG</a>\n" +
+    "            </li>\n" +
+    "            <li ng-click=\"selectChartType('variance')\"><a href=\"\"><i class=\"fa fa-fw fa-bullseye\"></i> Lines\n" +
+    "                Variance</a></li>\n" +
     "\n" +
-    "          <!-- <div class=\"divider\"></div>  -->\n" +
+    "            <!-- <div class=\"divider\"></div>  -->\n" +
     "\n" +
-    "          <!--\n" +
-    "          <li><a href=\"\"><i class=\"fa fa-fw fa-dot-circle-o\"></i> Bubbles</a></li>\n" +
-    "          <li><a href=\"\"><i class=\"fa fa-fw fa-square\"></i> Treemap</a></li>\n" +
-    "          <li ng-click=\"selectChartType('sunburst')\"><a href=\"\"><i class=\"fa fa-fw fa-sun-o\"></i> Sunburst</a></li>\n" +
-    "          -->\n" +
+    "            <!--\n" +
+    "            <li><a href=\"\"><i class=\"fa fa-fw fa-dot-circle-o\"></i> Bubbles</a></li>\n" +
+    "            <li><a href=\"\"><i class=\"fa fa-fw fa-square\"></i> Treemap</a></li>\n" +
+    "            <li ng-click=\"selectChartType('sunburst')\"><a href=\"\"><i class=\"fa fa-fw fa-sun-o\"></i> Sunburst</a></li>\n" +
+    "            -->\n" +
     "\n" +
-    "          <!--\n" +
-    "          <div class=\"divider\"></div>\n" +
+    "            <!--\n" +
+    "            <div class=\"divider\"></div>\n" +
     "\n" +
-    "          <li><a href=\"\"><i class=\"fa fa-fw fa-globe\"></i> Map</a></li>\n" +
-    "           -->\n" +
+    "            <li><a href=\"\"><i class=\"fa fa-fw fa-globe\"></i> Map</a></li>\n" +
+    "             -->\n" +
     "\n" +
     "        </ul>\n" +
     "    </li>\n" +
@@ -8814,119 +8847,183 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "        <a tabindex=\"0\" ><i class=\"fa fa-fw fa-sliders\"></i> Chart options</a>\n" +
     "        <ul class=\"dropdown-menu\">\n" +
     "    -->\n" +
-    "        <li class=\"dropdown-submenu\" ng-show=\"view.params.mode == 'chart' && (view.params.charttype == 'lines-stacked' || view.params.charttype == 'lines')\">\n" +
-    "            <a href=\"\"><i class=\"fa fa-fw fa-angle-up\"></i> Curve type</a>\n" +
-    "            <ul class=\"dropdown-menu\">\n" +
-    "                <li ng-class=\"{'active': view.params.chartoptions.lineInterpolation == 'linear'}\" ng-click=\"view.params.chartoptions.lineInterpolation = 'linear'; refreshView();\"><a href=\"\"> Linear</a></li>\n" +
-    "                <li ng-class=\"{'active': view.params.chartoptions.lineInterpolation == 'monotone'}\" ng-click=\"view.params.chartoptions.lineInterpolation = 'monotone'; refreshView();\"><a href=\"\"> Smooth</a></li>\n" +
-    "                <!-- <li ng-class=\"{'active': view.params.chartoptions.lineInterpolation == 'cardinal'}\" ng-click=\"view.params.chartoptions.lineInterpolation = 'cardinal'; refreshView();\"><a href=\"\"> Smooth (Cardinal)</a></li>  -->\n" +
-    "            </ul>\n" +
-    "        </li>\n" +
+    "    <li class=\"dropdown-submenu\"\n" +
+    "        ng-show=\"(view.params.mode == 'chart' || view.params.mode == 'widget') && (view.params.charttype == 'lines-stacked' || view.params.charttype == 'lines')\">\n" +
+    "        <a href=\"\"><i class=\"fa fa-fw fa-angle-up\"></i> Curve type</a>\n" +
+    "        <ul class=\"dropdown-menu\">\n" +
+    "            <li ng-class=\"{'active': view.params.chartoptions.lineInterpolation == 'linear'}\"\n" +
+    "                ng-click=\"view.params.chartoptions.lineInterpolation = 'linear'; refreshView();\"><a href=\"\"> Linear</a>\n" +
+    "            </li>\n" +
+    "            <li ng-class=\"{'active': view.params.chartoptions.lineInterpolation == 'monotone'}\"\n" +
+    "                ng-click=\"view.params.chartoptions.lineInterpolation = 'monotone'; refreshView();\"><a href=\"\">\n" +
+    "                Smooth</a></li>\n" +
+    "            <!-- <li ng-class=\"{'active': view.params.chartoptions.lineInterpolation == 'cardinal'}\" ng-click=\"view.params.chartoptions.lineInterpolation = 'cardinal'; refreshView();\"><a href=\"\"> Smooth (Cardinal)</a></li>  -->\n" +
+    "        </ul>\n" +
+    "    </li>\n" +
     "\n" +
-    "        <li ng-class=\"{'disabled': view.grid.data.length != 2 }\" ng-show=\"view.params.mode == 'chart' && view.params.charttype == 'bars-horizontal'\" ng-click=\"view.params.chartoptions.mirrorSerie2 = !view.params.chartoptions.mirrorSerie2; refreshView();\">\n" +
-    "            <a><i class=\"fa fa-fw fa-arrows-h\"></i> Invert 2nd series\n" +
-    "                <span style=\"margin-left: 5px;\" class=\"label label-default\" ng-class=\"{ 'label-success': view.params.chartoptions.mirrorSerie2 }\">{{ view.params.chartoptions.mirrorSerie2 ? \"ON\" : \"OFF\" }}</span>\n" +
-    "            </a>\n" +
-    "        </li>\n" +
+    "    <li ng-class=\"{'disabled': view.grid.data.length != 2 }\"\n" +
+    "        ng-show=\"(view.params.mode == 'chart' || view.params.mode == 'widget') && view.params.charttype == 'bars-horizontal'\"\n" +
+    "        ng-click=\"view.params.chartoptions.mirrorSerie2 = !view.params.chartoptions.mirrorSerie2; refreshView();\">\n" +
+    "        <a><i class=\"fa fa-fw fa-arrows-h\"></i> Invert 2nd series\n" +
+    "            <span style=\"margin-left: 5px;\" class=\"label label-default\"\n" +
+    "                  ng-class=\"{ 'label-success': view.params.chartoptions.mirrorSerie2 }\">{{ view.params.chartoptions.mirrorSerie2 ? \"ON\" : \"OFF\" }}</span>\n" +
+    "        </a>\n" +
+    "    </li>\n" +
     "\n" +
     "    <!--\n" +
     "        </ul>\n" +
     "    </li>\n" +
     "     -->\n" +
     "\n" +
-    "    <li ng-show=\"view.params.mode == 'chart'\" ng-click=\"view.params.chartoptions.showLegend = !view.params.chartoptions.showLegend; refreshView();\">\n" +
-    "        <a><i class=\"fa fa-fw\" ng-class=\"{'fa-toggle-on': view.params.chartoptions.showLegend, 'fa-toggle-off': ! view.params.chartoptions.showLegend }\"></i> Toggle legend\n" +
-    "            <span style=\"margin-left: 5px;\" class=\"label label-default\" ng-class=\"{ 'label-success': view.params.chartoptions.showLegend }\">{{ view.params.chartoptions.showLegend ? \"ON\" : \"OFF\" }}</span>\n" +
+    "    <li ng-show=\"view.params.mode == 'chart'\"\n" +
+    "        ng-click=\"view.params.chartoptions.showLegend = !view.params.chartoptions.showLegend; refreshView();\">\n" +
+    "        <a><i class=\"fa fa-fw\"\n" +
+    "              ng-class=\"{'fa-toggle-on': view.params.chartoptions.showLegend, 'fa-toggle-off': ! view.params.chartoptions.showLegend }\"></i>\n" +
+    "            Toggle legend\n" +
+    "            <span style=\"margin-left: 5px;\" class=\"label label-default\"\n" +
+    "                  ng-class=\"{ 'label-success': view.params.chartoptions.showLegend }\">{{ view.params.chartoptions.showLegend ? \"ON\" : \"OFF\" }}</span>\n" +
     "        </a>\n" +
     "    </li>\n" +
     "\n" +
-    "    <div ng-show=\"view.params.mode == 'chart'\" class=\"divider\"></div>\n" +
+    "    <div ng-show=\"(view.params.mode == 'chart' || view.params.mode == 'widget')\" class=\"divider\"></div>\n" +
     "\n" +
-    "    <li ng-show=\"view.params.mode == 'series' || view.params.mode == 'chart'\" class=\"dropdown-submenu\">\n" +
+    "    <li ng-show=\"view.params.mode == 'series' || view.params.mode == 'chart' || view.params.mode == 'widget'\"\n" +
+    "        class=\"dropdown-submenu\">\n" +
     "        <a tabindex=\"0\"><i class=\"fa fa-fw fa-long-arrow-right\"></i> Horizontal dimension</a>\n" +
     "        <ul class=\"dropdown-menu\">\n" +
     "\n" +
-    "          <li on-repeat-done ng-repeat-start=\"dimension in view.getEnabledHorizontalDimensions()\" ng-if=\"dimension.levels.length == 1\" ng-click=\"selectXAxis(dimension.name)\">\n" +
-    "            <a href=\"\">{{ dimension.label }}</a>\n" +
-    "          </li>\n" +
-    "          <li ng-repeat-end ng-if=\"dimension.levels.length != 1\" class=\"dropdown-submenu\">\n" +
-    "            <a tabindex=\"0\">{{ dimension.label }}</a>\n" +
+    "            <li on-repeat-done ng-repeat-start=\"dimension in view.getEnabledHorizontalDimensions()\"\n" +
+    "                ng-if=\"dimension.levels.length == 1\" ng-click=\"selectXAxis(dimension.name)\">\n" +
+    "                <a href=\"\">{{ dimension.label }}</a>\n" +
+    "            </li>\n" +
+    "            <li ng-repeat-end ng-if=\"dimension.levels.length != 1\" class=\"dropdown-submenu\">\n" +
+    "                <a tabindex=\"0\">{{ dimension.label }}</a>\n" +
     "\n" +
-    "            <ul ng-if=\"dimension.hierarchies_count() != 1\" class=\"dropdown-menu\">\n" +
-    "                <li ng-repeat=\"(hikey,hi) in dimension.hierarchies\" class=\"dropdown-submenu\">\n" +
-    "                    <a tabindex=\"0\" href=\"\" onclick=\"return false;\">{{ hi.label }}</a>\n" +
-    "                    <ul class=\"dropdown-menu\">\n" +
-    "                        <!-- ng-click=\"selectDrill(dimension.name + '@' + hi.name + ':' + level.name, true)\"  -->\n" +
-    "                        <li ng-repeat=\"level in hi.levels\" ng-click=\"selectXAxis(dimension.name + '@' + hi.name + ':' + level.name )\"><a href=\"\">{{ level.label }}</a></li>\n" +
-    "                    </ul>\n" +
-    "                </li>\n" +
-    "            </ul>\n" +
+    "                <ul ng-if=\"dimension.hierarchies_count() != 1\" class=\"dropdown-menu\">\n" +
+    "                    <li ng-repeat=\"(hikey,hi) in dimension.hierarchies\" class=\"dropdown-submenu\">\n" +
+    "                        <a tabindex=\"0\" href=\"\" onclick=\"return false;\">{{ hi.label }}</a>\n" +
+    "                        <ul class=\"dropdown-menu\">\n" +
+    "                            <!-- ng-click=\"selectDrill(dimension.name + '@' + hi.name + ':' + level.name, true)\"  -->\n" +
+    "                            <li ng-repeat=\"level in hi.levels\"\n" +
+    "                                ng-click=\"selectXAxis(dimension.name + '@' + hi.name + ':' + level.name )\"><a href=\"\">{{\n" +
+    "                                level.label }}</a></li>\n" +
+    "                        </ul>\n" +
+    "                    </li>\n" +
+    "                </ul>\n" +
     "\n" +
-    "            <ul ng-if=\"dimension.hierarchies_count() == 1\" class=\"dropdown-menu\">\n" +
-    "                <!--  selectDrill(dimension.name + ':' + level.name, true) -->\n" +
-    "                <li ng-repeat=\"level in dimension.default_hierarchy().levels\" ng-click=\"selectXAxis(dimension.name + ':' + level.name);\"><a href=\"\">{{ level.label }}</a></li>\n" +
-    "            </ul>\n" +
+    "                <ul ng-if=\"dimension.hierarchies_count() == 1\" class=\"dropdown-menu\">\n" +
+    "                    <!--  selectDrill(dimension.name + ':' + level.name, true) -->\n" +
+    "                    <li ng-repeat=\"level in dimension.default_hierarchy().levels\"\n" +
+    "                        ng-click=\"selectXAxis(dimension.name + ':' + level.name);\"><a href=\"\">{{ level.label }}</a></li>\n" +
+    "                </ul>\n" +
     "\n" +
-    "          </li>\n" +
+    "            </li>\n" +
     "\n" +
-    "          <div class=\"divider\"></div>\n" +
+    "            <div class=\"divider\"></div>\n" +
     "\n" +
-    "          <li ng-click=\"selectXAxis(null);\"><a href=\"\"><i class=\"fa fa-fw fa-close\"></i> None</a></li>\n" +
+    "            <li ng-click=\"selectXAxis(null);\"><a href=\"\"><i class=\"fa fa-fw fa-close\"></i> None</a></li>\n" +
     "\n" +
     "        </ul>\n" +
     "    </li>\n" +
     "\n" +
-    "    <li ng-show=\"view.params.mode == 'series' || view.params.mode == 'chart'\" class=\"dropdown-submenu\">\n" +
+    "    <li ng-show=\"view.params.mode == 'series' || view.params.mode == 'chart' || view.params.mode == 'widget'\"\n" +
+    "        class=\"dropdown-submenu\">\n" +
     "        <a tabindex=\"0\"><i class=\"fa fa-fw fa-crosshairs\"></i> Measure</a>\n" +
     "        <ul class=\"dropdown-menu\">\n" +
     "\n" +
-    "          <li ng-repeat=\"measure in view.getEnabledMeasures()\" ng-if=\"view.cube.measureAggregates(measure.name).length > 0\" class=\"dropdown-submenu\">\n" +
-    "            <a href=\"\">{{ measure.label }}</a>\n" +
-    "            <ul class=\"dropdown-menu\">\n" +
-    "                <li ng-repeat=\"aggregate in view.cube.measureAggregates(measure.name)\" >\n" +
-    "                    <a href=\"\" ng-click=\"selectMeasure(aggregate.ref)\">{{ aggregate.label }}</a>\n" +
-    "                </li>\n" +
-    "            </ul>\n" +
-    "          </li>\n" +
+    "            <li ng-repeat=\"measure in view.getEnabledMeasures()\"\n" +
+    "                ng-if=\"view.cube.measureAggregates(measure.name).length > 0\" class=\"dropdown-submenu\">\n" +
+    "                <a href=\"\">{{ measure.label }}</a>\n" +
+    "                <ul class=\"dropdown-menu\">\n" +
+    "                    <li ng-repeat=\"aggregate in view.cube.measureAggregates(measure.name)\">\n" +
+    "                        <a href=\"\" ng-click=\"selectMeasure(aggregate.ref)\">{{ aggregate.label }}</a>\n" +
+    "                    </li>\n" +
+    "                </ul>\n" +
+    "            </li>\n" +
     "\n" +
-    "          <div class=\"divider\" ng-if=\"view.getEnabledAggregates().length > 0\"></div>\n" +
-    "          <li ng-repeat=\"aggregate in view.getEnabledAggregates()\" ng-if=\"view.getEnabledAggregates().length > 0\" >\n" +
-    "            <a href=\"\" ng-click=\"selectMeasure(aggregate.ref)\">{{ aggregate.label }}</a>\n" +
-    "          </li>\n" +
+    "            <div class=\"divider\" ng-if=\"view.getEnabledAggregates().length > 0\"></div>\n" +
+    "            <li ng-repeat=\"aggregate in view.getEnabledAggregates()\" ng-if=\"view.getEnabledAggregates().length > 0\">\n" +
+    "                <a href=\"\" ng-click=\"selectMeasure(aggregate.ref)\">{{ aggregate.label }}</a>\n" +
+    "            </li>\n" +
     "\n" +
     "        </ul>\n" +
     "    </li>\n" +
     "\n" +
-    "    <div ng-show=\"cvOptions.seriesOperationsEnabled && (view.params.mode == 'series' || view.params.mode == 'chart')\" class=\"divider\"></div>\n" +
-    "\n" +
-    "    <li ng-show=\"cvOptions.seriesOperationsEnabled && (view.params.mode == 'series' || view.params.mode == 'chart')\" class=\"dropdown-submenu\">\n" +
-    "        <a tabindex=\"0\" ><i class=\"fa fa-fw fa-calculator\"></i> Series operations</a>\n" +
+    "    <li ng-show=\"view.params.mode == 'widget'\"\n" +
+    "        class=\"dropdown-submenu\">\n" +
+    "        <a tabindex=\"0\"><i class=\"fa fa-fw fa-paper-plane-o\"></i> History dimension</a>\n" +
     "        <ul class=\"dropdown-menu\">\n" +
-    "          <li ng-click=\"selectOperation('difference')\"><a href=\"\"><i class=\"fa fa-fw fa-line-chart\"></i> Difference</a></li>\n" +
-    "          <li ng-click=\"selectOperation('percentage')\"><a href=\"\"><i class=\"fa fa-fw fa-percent\"></i> Change rate</a></li>\n" +
-    "          <!--\n" +
-    "          <li ng-click=\"selectOperation('accum')\"><a href=\"\"><i class=\"fa fa-fw\">&sum;</i> Accumulated</a></li>\n" +
-    "          <div class=\"divider\"></div>\n" +
-    "          <li ng-click=\"selectOperation('fill-zeros')\"><a href=\"\"><i class=\"fa fa-fw\">0</i> Replace blanks with zeroes</a></li>\n" +
-    "           -->\n" +
-    "          <div class=\"divider\"></div>\n" +
-    "          <li ng-click=\"selectOperation(null)\"><a href=\"\"><i class=\"fa fa-fw fa-times\"></i> Clear operations</a></li>\n" +
+    "\n" +
+    "            <li on-repeat-done ng-repeat-start=\"dimension in view.getEnabledHorizontalDimensions()\"\n" +
+    "                ng-if=\"dimension.levels.length == 1\" ng-click=\"selectZAxis(dimension.name)\">\n" +
+    "                <a href=\"\">{{ dimension.label }}</a>\n" +
+    "            </li>\n" +
+    "            <li ng-repeat-end ng-if=\"dimension.levels.length != 1\" class=\"dropdown-submenu\">\n" +
+    "                <a tabindex=\"0\">{{ dimension.label }}</a>\n" +
+    "\n" +
+    "                <ul ng-if=\"dimension.hierarchies_count() != 1\" class=\"dropdown-menu\">\n" +
+    "                    <li ng-repeat=\"(hikey,hi) in dimension.hierarchies\" class=\"dropdown-submenu\">\n" +
+    "                        <a tabindex=\"0\" href=\"\" onclick=\"return false;\">{{ hi.label }}</a>\n" +
+    "                        <ul class=\"dropdown-menu\">\n" +
+    "                            <li ng-repeat=\"level in hi.levels\"\n" +
+    "                                ng-click=\"selectZAxis(dimension.name + '@' + hi.name + ':' + level.name )\"><a href=\"\">{{\n" +
+    "                                level.label }}</a></li>\n" +
+    "                        </ul>\n" +
+    "                    </li>\n" +
+    "                </ul>\n" +
+    "\n" +
+    "                <ul ng-if=\"dimension.hierarchies_count() == 1\" class=\"dropdown-menu\">\n" +
+    "                    <li ng-repeat=\"level in dimension.default_hierarchy().levels\"\n" +
+    "                        ng-click=\"selectZAxis(dimension.name + ':' + level.name);\"><a href=\"\">{{ level.label }}</a></li>\n" +
+    "                </ul>\n" +
+    "\n" +
+    "            </li>\n" +
+    "\n" +
+    "            <div class=\"divider\"></div>\n" +
+    "\n" +
+    "            <li ng-click=\"selectXAxis(null);\"><a href=\"\"><i class=\"fa fa-fw fa-close\"></i> None</a></li>\n" +
+    "\n" +
     "        </ul>\n" +
     "    </li>\n" +
     "\n" +
-    "    <div ng-show=\"view.params.mode == 'series' || view.params.mode == 'chart'\" class=\"divider\"></div>\n" +
+    "    <div ng-show=\"cvOptions.seriesOperationsEnabled && (view.params.mode == 'series' || view.params.mode == 'chart' || view.params.mode == 'widget')\"\n" +
+    "         class=\"divider\"></div>\n" +
     "\n" +
-    "    <li ng-show=\"view.params.mode != 'chart'\" ng-click=\"exportService.exportGridAsCsv(view)\"><a><i class=\"fa fa-fw fa-table\"></i> Export table</a></li>\n" +
-    "    <li ng-show=\"view.params.mode == 'chart' && view.params.charttype != 'radar' \" ng-click=\"view.exportChartAsPNG()\"><a><i class=\"fa fa-fw fa-picture-o\"></i> Export figure</a></li>\n" +
+    "    <li ng-show=\"cvOptions.seriesOperationsEnabled && (view.params.mode == 'series' || view.params.mode == 'chart' || view.params.mode == 'widget')\"\n" +
+    "        class=\"dropdown-submenu\">\n" +
+    "        <a tabindex=\"0\"><i class=\"fa fa-fw fa-calculator\"></i> Series operations</a>\n" +
+    "        <ul class=\"dropdown-menu\">\n" +
+    "            <li ng-click=\"selectOperation('difference')\"><a href=\"\"><i class=\"fa fa-fw fa-line-chart\"></i>\n" +
+    "                Difference</a></li>\n" +
+    "            <li ng-click=\"selectOperation('percentage')\"><a href=\"\"><i class=\"fa fa-fw fa-percent\"></i> Change rate</a>\n" +
+    "            </li>\n" +
+    "            <!--\n" +
+    "            <li ng-click=\"selectOperation('accum')\"><a href=\"\"><i class=\"fa fa-fw\">&sum;</i> Accumulated</a></li>\n" +
+    "            <div class=\"divider\"></div>\n" +
+    "            <li ng-click=\"selectOperation('fill-zeros')\"><a href=\"\"><i class=\"fa fa-fw\">0</i> Replace blanks with zeroes</a></li>\n" +
+    "             -->\n" +
+    "            <div class=\"divider\"></div>\n" +
+    "            <li ng-click=\"selectOperation(null)\"><a href=\"\"><i class=\"fa fa-fw fa-times\"></i> Clear operations</a></li>\n" +
+    "        </ul>\n" +
+    "    </li>\n" +
+    "\n" +
+    "    <div ng-show=\"view.params.mode == 'series' || view.params.mode == 'chart' || view.params.mode == 'widget'\"\n" +
+    "         class=\"divider\"></div>\n" +
+    "\n" +
+    "    <li ng-show=\"view.params.mode != 'chart' || view.params.mode == 'widget'\"\n" +
+    "        ng-click=\"exportService.exportGridAsCsv(view)\"><a><i\n" +
+    "            class=\"fa fa-fw fa-table\"></i> Export table</a></li>\n" +
+    "    <li ng-show=\"view.params.mode == 'chart' && view.params.charttype != 'radar' \" ng-click=\"view.exportChartAsPNG()\">\n" +
+    "        <a><i class=\"fa fa-fw fa-picture-o\"></i> Export figure</a></li>\n" +
     "    <li ng-click=\"exportService.exportFacts(view)\"><a><i class=\"fa fa-fw fa-th\"></i> Export facts</a></li>\n" +
     "\n" +
-    "  </ul>\n" +
+    "</ul>\n" +
     "\n"
   );
 
 
   $templateCache.put('views/cube/cube.html',
-    "<div class=\"cv-view-panel\" ng-controller=\"CubesViewerViewsCubeController as cubeView\" >\n" +
+    "<div class=\"cv-view-panel\" ng-controller=\"CubesViewerViewsCubeController as cubeView\">\n" +
     "\n" +
     "    <div ng-if=\"view.state == 3\">\n" +
     "        <div class=\"alert alert-danger\" style=\"margin: 0px;\">\n" +
@@ -8935,14 +9032,15 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "            <p ng-if=\"cubesService.state == 3\">Could not connect to data server: {{ cubesService.stateText }}</p>\n" +
     "            <p>Please try again and contact your administrator if the problem persists.</p>\n" +
     "            <p class=\"text-right\">\n" +
-    "                <a class=\"alert-link\" href=\"http://jjmontesl.github.io/cubesviewer/\" target=\"_blank\">CubesViewer Data Visualizer</a>\n" +
+    "                <a class=\"alert-link\" href=\"http://jjmontesl.github.io/cubesviewer/\" target=\"_blank\">CubesViewer Data\n" +
+    "                    Visualizer</a>\n" +
     "            </p>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "\n" +
     "    <div>\n" +
     "        <h2 ng-show=\"view.getControlsHidden()\" style=\"margin-top: 5px;\">\n" +
-    "            <i class=\"fa fa-fw fa-file-o\"></i> {{ view.params.name }}\n" +
+    "            <i class=\"fa fa-fw fa-file-o\"></i> <span ng-if=\"view.params.menu_path\">{{view.params.menu_path}}&colon;&nbsp;</span>{{ view.params.name }}\n" +
     "        </h2>\n" +
     "\n" +
     "        <div ng-include=\"'views/cube/alerts.html'\"></div>\n" +
@@ -8952,34 +9050,57 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "\n" +
     "        <div class=\"cv-view-viewmenu hidden-print\" ng-hide=\"view.getControlsHidden()\">\n" +
     "\n" +
-    "            <div class=\"panel panel-primary pull-right\" style=\"padding: 3px; white-space: nowrap; margin-bottom: 6px; margin-left: 6px;\">\n" +
+    "            <div class=\"panel panel-primary pull-right\"\n" +
+    "                 style=\"padding: 3px; white-space: nowrap; margin-bottom: 6px; margin-left: 6px;\">\n" +
     "\n" +
-    "                <button type=\"button\" ng-click=\"applyAggregate()\" ng-disabled=\"view.pendingActions <= 0\" class=\"btn btn-default btn-sm\" ng-class=\"{'btn-primary': view.pendingActions > 0}\" title=\"Apply\"><i class=\"fa fa-fw fa-play\"></i></button>\n" +
+    "                <button type=\"button\" ng-click=\"applyAggregate()\" ng-disabled=\"view.pendingActions <= 0\"\n" +
+    "                        class=\"btn btn-default btn-sm\" ng-class=\"{'btn-primary': view.pendingActions > 0}\"\n" +
+    "                        title=\"Apply\"><i class=\"fa fa-fw fa-play\"></i></button>\n" +
     "\n" +
-    "                <div ng-if=\"cvOptions.undoEnabled\" class=\"btn-group\" role=\"group\" ng-controller=\"CubesViewerViewsUndoController\">\n" +
-    "                  <button type=\"button\" ng-click=\"undo()\" ng-disabled=\"view.undoPos <= 0\" class=\"btn btn-default btn-sm\" title=\"Undo\"><i class=\"fa fa-fw fa-undo\"></i></button>\n" +
-    "                  <button type=\"button\" ng-click=\"redo()\" ng-disabled=\"view.undoPos >= view.undoList.length - 1\" class=\"btn btn-default btn-sm\" title=\"Redo\"><i class=\"fa fa-fw fa-undo fa-flip-horizontal\"></i></button>\n" +
+    "                <div ng-if=\"cvOptions.undoEnabled\" class=\"btn-group\" role=\"group\"\n" +
+    "                     ng-controller=\"CubesViewerViewsUndoController\">\n" +
+    "                    <button type=\"button\" ng-click=\"undo()\" ng-disabled=\"view.undoPos <= 0\"\n" +
+    "                            class=\"btn btn-default btn-sm\" title=\"Undo\"><i class=\"fa fa-fw fa-undo\"></i></button>\n" +
+    "                    <button type=\"button\" ng-click=\"redo()\" ng-disabled=\"view.undoPos >= view.undoList.length - 1\"\n" +
+    "                            class=\"btn btn-default btn-sm\" title=\"Redo\"><i\n" +
+    "                            class=\"fa fa-fw fa-undo fa-flip-horizontal\"></i></button>\n" +
     "                </div>\n" +
     "\n" +
     "                <div class=\"btn-group\" role=\"group\" aria-label=\"...\" style=\"margin-left: 5px;\">\n" +
-    "                  <button type=\"button\" ng-click=\"setViewMode('explore')\" ng-class=\"{'active': view.params.mode == 'explore'}\" class=\"btn btn-primary btn-sm explorebutton\" title=\"Explore\"><i class=\"fa fa-fw fa-arrow-circle-down\"></i></button>\n" +
-    "                  <button type=\"button\" ng-click=\"setViewMode('facts')\" ng-class=\"{'active': view.params.mode == 'facts'}\" class=\"btn btn-primary btn-sm \" title=\"Facts\"><i class=\"fa fa-fw fa-th\"></i></button>\n" +
-    "                  <button type=\"button\" ng-click=\"setViewMode('series')\" ng-class=\"{'active': view.params.mode == 'series'}\" class=\"btn btn-primary btn-sm \" title=\"Series\"><i class=\"fa fa-fw fa-clock-o\"></i></button>\n" +
-    "                  <button type=\"button\" ng-click=\"setViewMode('chart')\" ng-class=\"{'active': view.params.mode == 'chart'}\" class=\"btn btn-primary btn-sm \" title=\"Charts\"><i class=\"fa fa-fw fa-area-chart\"></i></button>\n" +
-    "                  <button type=\"button\" ng-click=\"setViewMode('widget')\" ng-class=\"{'active': view.params.mode == 'widget'}\" class=\"btn btn-primary btn-sm \" title=\"Widgets\"><i class=\"fa fa-fw fa-tasks\"></i></button>\n" +
+    "                    <button type=\"button\" ng-click=\"setViewMode('explore')\"\n" +
+    "                            ng-class=\"{'active': view.params.mode == 'explore'}\"\n" +
+    "                            class=\"btn btn-primary btn-sm explorebutton\" title=\"Explore\"><i\n" +
+    "                            class=\"fa fa-fw fa-arrow-circle-down\"></i></button>\n" +
+    "                    <button type=\"button\" ng-click=\"setViewMode('facts')\"\n" +
+    "                            ng-class=\"{'active': view.params.mode == 'facts'}\" class=\"btn btn-primary btn-sm \"\n" +
+    "                            title=\"Facts\"><i class=\"fa fa-fw fa-th\"></i></button>\n" +
+    "                    <button type=\"button\" ng-click=\"setViewMode('series')\"\n" +
+    "                            ng-class=\"{'active': view.params.mode == 'series'}\" class=\"btn btn-primary btn-sm \"\n" +
+    "                            title=\"Series\"><i class=\"fa fa-fw fa-clock-o\"></i></button>\n" +
+    "                    <button type=\"button\" ng-click=\"setViewMode('chart')\"\n" +
+    "                            ng-class=\"{'active': view.params.mode == 'chart'}\" class=\"btn btn-primary btn-sm \"\n" +
+    "                            title=\"Charts\"><i class=\"fa fa-fw fa-area-chart\"></i></button>\n" +
+    "                    <button type=\"button\" ng-click=\"setViewMode('widget')\"\n" +
+    "                            ng-class=\"{'active': view.params.mode == 'widget'}\" class=\"btn btn-primary btn-sm \"\n" +
+    "                            title=\"Widgets\"><i class=\"fa fa-fw fa-cubes\"></i></button>\n" +
     "                </div>\n" +
     "\n" +
-    "                <div ng-include=\"'views/cube/cube-menu-drilldown.html'\" class=\"dropdown m-b\" style=\"display: inline-block; margin-left: 5px;\"></div>\n" +
+    "                <div ng-include=\"'views/cube/cube-menu-drilldown.html'\" class=\"dropdown m-b\"\n" +
+    "                     style=\"display: inline-block; margin-left: 5px;\"></div>\n" +
     "\n" +
-    "                <div ng-include=\"'views/cube/cube-menu-filter.html'\" class=\"dropdown m-b\" style=\"display: inline-block; margin-left: 2px;\"></div>\n" +
+    "                <div ng-include=\"'views/cube/cube-menu-filter.html'\" class=\"dropdown m-b\"\n" +
+    "                     style=\"display: inline-block; margin-left: 2px;\"></div>\n" +
     "\n" +
-    "                <div ng-include=\"'views/cube/cube-menu-view.html'\" class=\"dropdown m-b\" style=\"display: inline-block; margin-left: 5px;\"></div>\n" +
+    "                <div ng-include=\"'views/cube/cube-menu-view.html'\" class=\"dropdown m-b\"\n" +
+    "                     style=\"display: inline-block; margin-left: 5px;\"></div>\n" +
     "\n" +
-    "                <div ng-if=\"cvOptions.container\" ng-include=\"'views/cube/cube-menu-panel.html'\" class=\"dropdown m-b\" style=\"display: inline-block; margin-left: 5px;\"></div>\n" +
+    "                <div ng-if=\"cvOptions.container\" ng-include=\"'views/cube/cube-menu-panel.html'\" class=\"dropdown m-b\"\n" +
+    "                     style=\"display: inline-block; margin-left: 5px;\"></div>\n" +
     "\n" +
     "            </div>\n" +
     "\n" +
-    "            <div class=\"pull-right\" style=\"white-space: nowrap; padding-top: 4px; padding-bottom: 4px; margin-left: 6px; margin-bottom: 6px;\">\n" +
+    "            <div class=\"pull-right\"\n" +
+    "                 style=\"white-space: nowrap; padding-top: 4px; padding-bottom: 4px; margin-left: 6px; margin-bottom: 6px;\">\n" +
     "\n" +
     "            </div>\n" +
     "\n" +
@@ -8987,23 +9108,43 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "\n" +
     "        <div class=\"cv-view-viewinfo\">\n" +
     "            <div>\n" +
-    "                <div class=\"label label-secondary cv-infopiece cv-view-viewinfo-cubename\" style=\"color: white; background-color: black;\">\n" +
+    "                <div class=\"label label-secondary cv-infopiece cv-view-viewinfo-cubename\"\n" +
+    "                     style=\"color: white; background-color: black;\">\n" +
     "                    <span><i class=\"fa fa-fw fa-cube\" title=\"Cube\"></i> <b class=\"hidden-xs hidden-sm\">Cube:</b> {{ view.cube.label }}</span>\n" +
-    "                    <button type=\"button\" class=\"btn btn-info btn-xs\" style=\"visibility: hidden;\"><i class=\"fa fa-fw fa-info\"></i></button>\n" +
+    "                    <button type=\"button\" class=\"btn btn-info btn-xs\" style=\"visibility: hidden;\"><i\n" +
+    "                            class=\"fa fa-fw fa-info\"></i></button>\n" +
     "                </div>\n" +
     "\n" +
     "                <div class=\"cv-view-viewinfo-drill\">\n" +
     "\n" +
     "\n" +
-    "                    <div ng-repeat=\"drilldown in view.params.drilldown\" ng-init=\"parts = view.cube.dimensionParts(drilldown);\" ng-if=\"view.params.mode != 'facts'\" class=\"label label-secondary cv-infopiece cv-view-viewinfo-drill\" style=\"color: black; background-color: #ccffcc;\">\n" +
-    "                        <span><i class=\"fa fa-fw fa-arrow-down\" title=\"Drilldown\"></i> <b class=\"hidden-xs hidden-sm\">Drilldown:</b> <span title=\"{{ view.cube.dimensionParts(drilldown).label }}\">{{ parts.labelShort }}</span></span>\n" +
-    "                        <button type=\"button\" class=\"btn btn-info btn-xs\" style=\"visibility: hidden; margin-left: -20px;\"><i class=\"fa fa-fw fa-info\"></i></button>\n" +
+    "                    <div ng-repeat=\"drilldown in view.params.drilldown\"\n" +
+    "                         ng-init=\"parts = view.cube.dimensionParts(drilldown);\" ng-if=\"view.params.mode != 'facts'\"\n" +
+    "                         class=\"label label-secondary cv-infopiece cv-view-viewinfo-drill\"\n" +
+    "                         style=\"color: black; background-color: #ccffcc;\">\n" +
+    "                        <span><i class=\"fa fa-fw fa-arrow-down\" title=\"Drilldown\"></i> <b class=\"hidden-xs hidden-sm\">Drilldown:</b> <span\n" +
+    "                                title=\"{{ view.cube.dimensionParts(drilldown).label }}\">{{ parts.labelShort }}</span></span>\n" +
+    "                        <button type=\"button\" class=\"btn btn-info btn-xs\"\n" +
+    "                                style=\"visibility: hidden; margin-left: -20px;\"><i class=\"fa fa-fw fa-info\"></i>\n" +
+    "                        </button>\n" +
     "\n" +
-    "                        <button ng-hide=\"view.getControlsHidden() || parts.hierarchy.levels.length < 2\" ng-disabled=\"! parts.drilldownDimensionMinus\" type=\"button\" ng-click=\"selectDrill(parts.drilldownDimensionMinus, true)\" class=\"btn btn-secondary btn-xs hidden-print\" style=\"margin-left: 3px;\"><i class=\"fa fa-fw fa-minus\"></i></button>\n" +
-    "                        <button ng-hide=\"view.getControlsHidden() || parts.hierarchy.levels.length < 2\" ng-disabled=\"! parts.drilldownDimensionPlus\" type=\"button\" ng-click=\"selectDrill(parts.drilldownDimensionPlus, true)\" class=\"btn btn-secondary btn-xs hidden-print\" style=\"margin-left: 0px;\"><i class=\"fa fa-fw fa-plus\"></i></button>\n" +
+    "                        <button ng-hide=\"view.getControlsHidden() || parts.hierarchy.levels.length < 2\"\n" +
+    "                                ng-disabled=\"! parts.drilldownDimensionMinus\" type=\"button\"\n" +
+    "                                ng-click=\"selectDrill(parts.drilldownDimensionMinus, true)\"\n" +
+    "                                class=\"btn btn-secondary btn-xs hidden-print\" style=\"margin-left: 3px;\"><i\n" +
+    "                                class=\"fa fa-fw fa-minus\"></i></button>\n" +
+    "                        <button ng-hide=\"view.getControlsHidden() || parts.hierarchy.levels.length < 2\"\n" +
+    "                                ng-disabled=\"! parts.drilldownDimensionPlus\" type=\"button\"\n" +
+    "                                ng-click=\"selectDrill(parts.drilldownDimensionPlus, true)\"\n" +
+    "                                class=\"btn btn-secondary btn-xs hidden-print\" style=\"margin-left: 0px;\"><i\n" +
+    "                                class=\"fa fa-fw fa-plus\"></i></button>\n" +
     "\n" +
-    "                        <button ng-hide=\"view.getControlsHidden()\" type=\"button\" ng-click=\"showDimensionFilter(drilldown)\" class=\"btn btn-secondary btn-xs hidden-print\" style=\"margin-left: 3px;\"><i class=\"fa fa-fw fa-search\"></i></button>\n" +
-    "                        <button ng-hide=\"view.getControlsHidden()\" type=\"button\" ng-click=\"selectDrill(drilldown, '')\" class=\"btn btn-danger btn-xs hidden-print\" style=\"margin-left: 1px;\"><i class=\"fa fa-fw fa-trash\"></i></button>\n" +
+    "                        <button ng-hide=\"view.getControlsHidden()\" type=\"button\"\n" +
+    "                                ng-click=\"showDimensionFilter(drilldown)\" class=\"btn btn-secondary btn-xs hidden-print\"\n" +
+    "                                style=\"margin-left: 3px;\"><i class=\"fa fa-fw fa-search\"></i></button>\n" +
+    "                        <button ng-hide=\"view.getControlsHidden()\" type=\"button\" ng-click=\"selectDrill(drilldown, '')\"\n" +
+    "                                class=\"btn btn-danger btn-xs hidden-print\" style=\"margin-left: 1px;\"><i\n" +
+    "                                class=\"fa fa-fw fa-trash\"></i></button>\n" +
     "                    </div>\n" +
     "\n" +
     "                </div>\n" +
@@ -9014,18 +9155,44 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "                        var depth = $(this).parents('.cv-view-infopiece-cut').first().attr('data-value').split(';')[0].split(\",\").length;\n" +
     "                        cubesviewer.views.cube.dimensionfilter.drawDimensionFilter(view, dimensionString + \":\" + parts.hierarchy.levels[depth - 1] );\n" +
     "                     -->\n" +
-    "                    <div ng-repeat=\"cut in view.params.cuts\" ng-init=\"equality = cut.invert ? ' &ne; ' : ' = ';\" class=\"label label-secondary cv-infopiece cv-view-viewinfo-cut\" style=\"color: black; background-color: #ffcccc;\">\n" +
-    "                        <span style=\"max-width: 480px;\"><i class=\"fa fa-fw fa-filter\" title=\"Filter\"></i> <b class=\"hidden-xs hidden-sm\">Filter:</b> <span title=\"{{ view.cube.dimensionPartsFromCut(cut).label }}\">{{ view.cube.dimensionPartsFromCut(cut).labelShort }}</span> <span ng-class=\"{ 'text-danger': cut.invert }\">{{ equality }}</span> <span title=\"{{ cut.value }}\">{{ cut.value }}</span></span>\n" +
-    "                        <button type=\"button\" class=\"btn btn-info btn-xs\" style=\"visibility: hidden; margin-left: -20px;\"><i class=\"fa fa-fw fa-info\"></i></button>\n" +
-    "                        <button ng-hide=\"view.getControlsHidden()\" type=\"button\" ng-click=\"showDimensionFilter(view.cube.dimensionPartsFromCut(cut).drilldownDimension)\" class=\"btn btn-secondary btn-xs hidden-print\" style=\"margin-left: 3px;\"><i class=\"fa fa-fw fa-search\"></i></button>\n" +
-    "                        <button ng-hide=\"view.getControlsHidden()\" type=\"button\" ng-click=\"selectCut(cut.dimension, '', cut.invert)\" class=\"btn btn-danger btn-xs hidden-print\" style=\"margin-left: 1px;\"><i class=\"fa fa-fw fa-trash\"></i></button>\n" +
+    "                    <div ng-repeat=\"cut in view.params.cuts\" ng-init=\"equality = cut.invert ? ' &ne; ' : ' = ';\"\n" +
+    "                         class=\"label label-secondary cv-infopiece cv-view-viewinfo-cut\"\n" +
+    "                         style=\"color: black; background-color: #ffcccc;\">\n" +
+    "                        <span style=\"max-width: 480px;\"><i class=\"fa fa-fw fa-filter\" title=\"Filter\"></i> <b\n" +
+    "                                class=\"hidden-xs hidden-sm\">Filter:</b> <span\n" +
+    "                                title=\"{{ view.cube.dimensionPartsFromCut(cut).label }}\">{{ view.cube.dimensionPartsFromCut(cut).labelShort }}</span> <span\n" +
+    "                                ng-class=\"{ 'text-danger': cut.invert }\">{{ equality }}</span> <span\n" +
+    "                                title=\"{{ cut.value }}\">{{ cut.value }}</span></span>\n" +
+    "                        <button type=\"button\" class=\"btn btn-info btn-xs\"\n" +
+    "                                style=\"visibility: hidden; margin-left: -20px;\"><i class=\"fa fa-fw fa-info\"></i>\n" +
+    "                        </button>\n" +
+    "                        <button ng-hide=\"view.getControlsHidden()\" type=\"button\"\n" +
+    "                                ng-click=\"showDimensionFilter(view.cube.dimensionPartsFromCut(cut).drilldownDimension)\"\n" +
+    "                                class=\"btn btn-secondary btn-xs hidden-print\" style=\"margin-left: 3px;\"><i\n" +
+    "                                class=\"fa fa-fw fa-search\"></i></button>\n" +
+    "                        <button ng-hide=\"view.getControlsHidden()\" type=\"button\"\n" +
+    "                                ng-click=\"selectCut(cut.dimension, '', cut.invert)\"\n" +
+    "                                class=\"btn btn-danger btn-xs hidden-print\" style=\"margin-left: 1px;\"><i\n" +
+    "                                class=\"fa fa-fw fa-trash\"></i></button>\n" +
     "                    </div>\n" +
     "\n" +
-    "                    <div ng-repeat=\"cut in view.params.rangefilters\" class=\"label label-secondary cv-infopiece cv-view-viewinfo-rangefilter\" style=\"color: black; background-color: #ffcccc;\">\n" +
-    "                        <span style=\"max-width: 480px;\"><i class=\"fa fa-fw fa-filter\" title=\"Filter\"></i> <b class=\"hidden-xs hidden-sm\">Range filter:</b> <span title=\"{{ view.cube.dimensionParts(cut.dimension).label }}\">{{ view.cube.dimensionParts(cut.dimension).label }}</span> <span title=\"{{ cut.range_from }}-{{ cut.range_to}}\">{{ cut.range_from }}-{{ cut.range_to}}</span></span>\n" +
-    "                        <button type=\"button\" class=\"btn btn-info btn-xs\" style=\"visibility: hidden; margin-left: -20px;\"><i class=\"fa fa-fw fa-info\"></i></button>\n" +
-    "                        <button ng-hide=\"view.getControlsHidden()\" type=\"button\" ng-click=\"showDimensionRangeFilter(view.cube.dimensionParts(cut.dimension).drilldownDimension)\" class=\"btn btn-secondary btn-xs hidden-print\" style=\"margin-left: 3px;\"><i class=\"fa fa-fw fa-search\"></i></button>\n" +
-    "                        <button ng-hide=\"view.getControlsHidden()\" type=\"button\" ng-click=\"selectRange(cut.dimension)\" class=\"btn btn-danger btn-xs hidden-print\" style=\"margin-left: 1px;\"><i class=\"fa fa-fw fa-trash\"></i></button>\n" +
+    "                    <div ng-repeat=\"cut in view.params.rangefilters\"\n" +
+    "                         class=\"label label-secondary cv-infopiece cv-view-viewinfo-rangefilter\"\n" +
+    "                         style=\"color: black; background-color: #ffcccc;\">\n" +
+    "                        <span style=\"max-width: 480px;\"><i class=\"fa fa-fw fa-filter\" title=\"Filter\"></i> <b\n" +
+    "                                class=\"hidden-xs hidden-sm\">Range filter:</b> <span\n" +
+    "                                title=\"{{ view.cube.dimensionParts(cut.dimension).label }}\">{{ view.cube.dimensionParts(cut.dimension).label }}</span> <span\n" +
+    "                                title=\"{{ cut.range_from }}-{{ cut.range_to}}\">{{ cut.range_from }}-{{ cut.range_to}}</span></span>\n" +
+    "                        <button type=\"button\" class=\"btn btn-info btn-xs\"\n" +
+    "                                style=\"visibility: hidden; margin-left: -20px;\"><i class=\"fa fa-fw fa-info\"></i>\n" +
+    "                        </button>\n" +
+    "                        <button ng-hide=\"view.getControlsHidden()\" type=\"button\"\n" +
+    "                                ng-click=\"showDimensionRangeFilter(view.cube.dimensionParts(cut.dimension).drilldownDimension)\"\n" +
+    "                                class=\"btn btn-secondary btn-xs hidden-print\" style=\"margin-left: 3px;\"><i\n" +
+    "                                class=\"fa fa-fw fa-search\"></i></button>\n" +
+    "                        <button ng-hide=\"view.getControlsHidden()\" type=\"button\" ng-click=\"selectRange(cut.dimension)\"\n" +
+    "                                class=\"btn btn-danger btn-xs hidden-print\" style=\"margin-left: 1px;\"><i\n" +
+    "                                class=\"fa fa-fw fa-trash\"></i></button>\n" +
     "                    </div>\n" +
     "                </div>\n" +
     "\n" +
@@ -9033,17 +9200,65 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "\n" +
     "                <div class=\"cv-view-viewinfo-extra\">\n" +
     "\n" +
-    "                    <div ng-if=\"view.params.mode == 'series' || view.params.mode == 'chart'\" class=\"label label-secondary cv-infopiece cv-view-viewinfo-extra\" style=\"color: black; background-color: #ccccff;\">\n" +
-    "                        <span style=\"max-width: 350px;\"><i class=\"fa fa-fw fa-crosshairs\" title=\"Measure\"></i> <b class=\"hidden-xs hidden-sm\">Measure:</b> {{ (view.params.yaxis != null) ? view.cube.aggregateFromName(view.params.yaxis).label : \"None\" }}</span>\n" +
-    "                        <button type=\"button\" class=\"btn btn-info btn-xs\" style=\"visibility: hidden; margin-left: -20px;\"><i class=\"fa fa-fw fa-info\"></i></button>\n" +
+    "                    <div ng-if=\"view.params.mode == 'series' || view.params.mode == 'chart' || view.params.mode == 'widget'\"\n" +
+    "                         class=\"label label-secondary cv-infopiece cv-view-viewinfo-extra\"\n" +
+    "                         style=\"color: black; background-color: #ccccff;\">\n" +
+    "                        <span style=\"max-width: 350px;\"><i class=\"fa fa-fw fa-crosshairs\" title=\"Measure\"></i> <b\n" +
+    "                                class=\"hidden-xs hidden-sm\">Measure:</b> {{ (view.params.yaxis != null) ? view.cube.aggregateFromName(view.params.yaxis).label : \"None\" }}</span>\n" +
+    "                        <button type=\"button\" class=\"btn btn-info btn-xs\"\n" +
+    "                                style=\"visibility: hidden; margin-left: -20px;\"><i class=\"fa fa-fw fa-info\"></i>\n" +
+    "                        </button>\n" +
     "                    </div>\n" +
     "\n" +
-    "                    <div ng-if=\"view.params.mode == 'series' || view.params.mode == 'chart'\" class=\"label label-secondary cv-infopiece cv-view-viewinfo-extra\" style=\"color: black; background-color: #ccddff;\">\n" +
-    "                        <span style=\"max-width: 350px;\"><i class=\"fa fa-fw fa-long-arrow-right\" title=\"Horizontal dimension\"></i> <b class=\"hidden-xs hidden-sm\">Horizontal dimension:</b> {{ (view.params.xaxis != null) ? view.cube.dimensionParts(view.params.xaxis).labelShort : \"None\" }}</span>\n" +
-    "                        <button type=\"button\" class=\"btn btn-info btn-xs\" style=\"visibility: hidden; margin-left: -20px;\"><i class=\"fa fa-fw fa-info\"></i></button>\n" +
+    "                    <div ng-if=\"view.params.mode == 'series' || view.params.mode == 'chart' || view.params.mode == 'widget'\"\n" +
+    "                         class=\"label label-secondary cv-infopiece cv-view-viewinfo-extra\"\n" +
+    "                         style=\"color: black; background-color: #ccddff;\">\n" +
+    "                        <span style=\"max-width: 350px;\"><i class=\"fa fa-fw fa-long-arrow-right\"\n" +
+    "                                                           title=\"Horizontal dimension\"></i> <b\n" +
+    "                                class=\"hidden-xs hidden-sm\">Horizontal dimension:</b> {{ (view.params.xaxis != null) ? view.cube.dimensionParts(view.params.xaxis).labelShort : \"None\" }}</span>\n" +
+    "                        <button type=\"button\" class=\"btn btn-info btn-xs\"\n" +
+    "                                style=\"visibility: hidden; margin-left: -20px;\"><i class=\"fa fa-fw fa-info\"></i>\n" +
+    "                        </button>\n" +
     "\n" +
-    "                        <button ng-hide=\"view.getControlsHidden() || !view.params.xaxis || view.cube.dimensionParts(view.params.xaxis).hierarchy.levels.length < 2\" ng-disabled=\"! view.cube.dimensionParts(view.params.xaxis).drilldownDimensionMinus\" type=\"button\" ng-click=\"selectXAxis(view.cube.dimensionParts(view.params.xaxis).drilldownDimensionMinus, true)\" class=\"btn btn-secondary btn-xs hidden-print\" style=\"margin-left: 3px;\"><i class=\"fa fa-fw fa-minus\"></i></button>\n" +
-    "                        <button ng-hide=\"view.getControlsHidden() || !view.params.xaxis || view.cube.dimensionParts(view.params.xaxis).hierarchy.levels.length < 2\" ng-disabled=\"! view.cube.dimensionParts(view.params.xaxis).drilldownDimensionPlus\" type=\"button\" ng-click=\"selectXAxis(view.cube.dimensionParts(view.params.xaxis).drilldownDimensionPlus, true)\" class=\"btn btn-secondary btn-xs hidden-print\" style=\"margin-left: 0px;\"><i class=\"fa fa-fw fa-plus\"></i></button>\n" +
+    "                        <button ng-hide=\"view.getControlsHidden() || !view.params.xaxis || view.cube.dimensionParts(view.params.xaxis).hierarchy.levels.length < 2\"\n" +
+    "                                ng-disabled=\"! view.cube.dimensionParts(view.params.xaxis).drilldownDimensionMinus\"\n" +
+    "                                type=\"button\"\n" +
+    "                                ng-click=\"selectXAxis(view.cube.dimensionParts(view.params.xaxis).drilldownDimensionMinus, true)\"\n" +
+    "                                class=\"btn btn-secondary btn-xs hidden-print\" style=\"margin-left: 3px;\"><i\n" +
+    "                                class=\"fa fa-fw fa-minus\"></i></button>\n" +
+    "                        <button ng-hide=\"view.getControlsHidden() || !view.params.xaxis || view.cube.dimensionParts(view.params.xaxis).hierarchy.levels.length < 2\"\n" +
+    "                                ng-disabled=\"! view.cube.dimensionParts(view.params.xaxis).drilldownDimensionPlus\"\n" +
+    "                                type=\"button\"\n" +
+    "                                ng-click=\"selectXAxis(view.cube.dimensionParts(view.params.xaxis).drilldownDimensionPlus, true)\"\n" +
+    "                                class=\"btn btn-secondary btn-xs hidden-print\" style=\"margin-left: 0px;\"><i\n" +
+    "                                class=\"fa fa-fw fa-plus\"></i></button>\n" +
+    "\n" +
+    "                        <!-- <button type=\"button\" ng-click=\"showDimensionFilter(view.params.xaxis)\" class=\"btn btn-secondary btn-xs\" style=\"margin-left: 3px;\"><i class=\"fa fa-fw fa-search\"></i></button>  -->\n" +
+    "                        <!-- <button type=\"button\" ng-click=\"selectXAxis(null)\" class=\"btn btn-danger btn-xs\" style=\"margin-left: 1px;\"><i class=\"fa fa-fw fa-trash\"></i></button>  -->\n" +
+    "                    </div>\n" +
+    "\n" +
+    "                    <div ng-if=\"view.params.mode == 'series' || view.params.mode == 'chart' || view.params.mode == 'widget'\"\n" +
+    "                         class=\"label label-secondary cv-infopiece cv-view-viewinfo-extra\"\n" +
+    "                         style=\"color: black; background-color: #ccddff;\">\n" +
+    "                        <span style=\"max-width: 350px;\"><i class=\"fa fa-fw fa-paper-plane-o\"\n" +
+    "                                                           title=\"History dimension\"></i> <b\n" +
+    "                                class=\"hidden-xs hidden-sm\">History dimension:</b> {{ (view.params.zaxis != null) ? view.cube.dimensionParts(view.params.zaxis).labelShort : \"None\" }}</span>\n" +
+    "                        <button type=\"button\" class=\"btn btn-info btn-xs\"\n" +
+    "                                style=\"visibility: hidden; margin-left: -20px;\"><i class=\"fa fa-fw fa-info\"></i>\n" +
+    "                        </button>\n" +
+    "\n" +
+    "                        <button ng-hide=\"view.getControlsHidden() || !view.params.zaxis || view.cube.dimensionParts(view.params.zaxis).hierarchy.levels.length < 2\"\n" +
+    "                                ng-disabled=\"! view.cube.dimensionParts(view.params.zaxis).drilldownDimensionMinus\"\n" +
+    "                                type=\"button\"\n" +
+    "                                ng-click=\"selectZAxis(view.cube.dimensionParts(view.params.zaxis).drilldownDimensionMinus, true)\"\n" +
+    "                                class=\"btn btn-secondary btn-xs hidden-print\" style=\"margin-left: 3px;\"><i\n" +
+    "                                class=\"fa fa-fw fa-minus\"></i></button>\n" +
+    "                        <button ng-hide=\"view.getControlsHidden() || !view.params.zaxis || view.cube.dimensionParts(view.params.zaxis).hierarchy.levels.length < 2\"\n" +
+    "                                ng-disabled=\"! view.cube.dimensionParts(view.params.zaxis).drilldownDimensionPlus\"\n" +
+    "                                type=\"button\"\n" +
+    "                                ng-click=\"selectZAxis(view.cube.dimensionParts(view.params.zaxis).drilldownDimensionPlus, true)\"\n" +
+    "                                class=\"btn btn-secondary btn-xs hidden-print\" style=\"margin-left: 0px;\"><i\n" +
+    "                                class=\"fa fa-fw fa-plus\"></i></button>\n" +
     "\n" +
     "                        <!-- <button type=\"button\" ng-click=\"showDimensionFilter(view.params.xaxis)\" class=\"btn btn-secondary btn-xs\" style=\"margin-left: 3px;\"><i class=\"fa fa-fw fa-search\"></i></button>  -->\n" +
     "                        <!-- <button type=\"button\" ng-click=\"selectXAxis(null)\" class=\"btn btn-danger btn-xs\" style=\"margin-left: 1px;\"><i class=\"fa fa-fw fa-trash\"></i></button>  -->\n" +
@@ -9394,6 +9609,14 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "            <span style=\"font-size: 150%;\">{{point['x']}}</span>\n" +
     "        </div>\n" +
     "    </div>\n" +
+    "</div>\n" +
+    "<div ng-if=\"view.params.zaxis == null\" class=\"alert alert-info\" style=\"margin-bottom: 0px;\">\n" +
+    "    <p>\n" +
+    "        Cannot present widget: no <b>history dimension</b> has been selected.\n" +
+    "    </p>\n" +
+    "    <p>\n" +
+    "        Tip: use the <kbd><i class=\"fa fa-fw fa-cogs\"></i> View &gt; <i class=\"fa fa-fw fa-crosshairs\"></i> History dimension</kbd> menu.\n" +
+    "    </p>\n" +
     "</div>"
   );
 

@@ -143,7 +143,7 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
 	/*
 	 * Builds Cubes Server query parameters based on current view values.
 	 */
-	this.buildBrowserArgs = function(view, includeXAxis, onlyCuts) {
+	this.buildBrowserArgs = function(view, includeXAxis, onlyCuts, includeZAxis) {
 
 		// "lang": view.cubesviewer.options.cubesLang
 
@@ -158,6 +158,10 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
 			// Include X Axis if necessary
 			if (includeXAxis) {
 				drilldowns.splice(0, 0, view.params.xaxis);
+			}
+			// Include Z Axis if necessary
+			if (includeZAxis) {
+				drilldowns.splice(0, 0, view.params.zaxis);
 			}
 
 			// Preprocess
