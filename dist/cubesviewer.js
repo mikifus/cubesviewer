@@ -4059,7 +4059,7 @@ cubesviewer._seriesAddRows = function($scope, data) {
     if (view.params.zaxis != null) {
         drilldown.splice(1, 0, view.params.zaxis);
     }
-    console.log(drilldown);
+
 	var baseidx = ((view.params.xaxis == null) ? 0 : 1);
 
 	var addedCols = [];
@@ -8841,29 +8841,8 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "            </li>\n" +
     "            <li ng-click=\"selectChartType('variance')\"><a href=\"\"><i class=\"fa fa-fw fa-bullseye\"></i> Lines\n" +
     "                Variance</a></li>\n" +
-    "\n" +
-    "            <!-- <div class=\"divider\"></div>  -->\n" +
-    "\n" +
-    "            <!--\n" +
-    "            <li><a href=\"\"><i class=\"fa fa-fw fa-dot-circle-o\"></i> Bubbles</a></li>\n" +
-    "            <li><a href=\"\"><i class=\"fa fa-fw fa-square\"></i> Treemap</a></li>\n" +
-    "            <li ng-click=\"selectChartType('sunburst')\"><a href=\"\"><i class=\"fa fa-fw fa-sun-o\"></i> Sunburst</a></li>\n" +
-    "            -->\n" +
-    "\n" +
-    "            <!--\n" +
-    "            <div class=\"divider\"></div>\n" +
-    "\n" +
-    "            <li><a href=\"\"><i class=\"fa fa-fw fa-globe\"></i> Map</a></li>\n" +
-    "             -->\n" +
-    "\n" +
     "        </ul>\n" +
     "    </li>\n" +
-    "\n" +
-    "    <!--\n" +
-    "    <li ng-show=\"view.params.mode == 'chart' && (view.params.charttype == 'lines-stacked' || view.params.charttype == 'lines' || view.params.charttype == 'bars-horizontal')\" class=\"dropdown-submenu\">\n" +
-    "        <a tabindex=\"0\" ><i class=\"fa fa-fw fa-sliders\"></i> Chart options</a>\n" +
-    "        <ul class=\"dropdown-menu\">\n" +
-    "    -->\n" +
     "    <li class=\"dropdown-submenu\"\n" +
     "        ng-show=\"(view.params.mode == 'chart' || view.params.mode == 'widget') && (view.params.charttype == 'lines-stacked' || view.params.charttype == 'lines')\">\n" +
     "        <a href=\"\"><i class=\"fa fa-fw fa-angle-up\"></i> Curve type</a>\n" +
@@ -8886,11 +8865,6 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "                  ng-class=\"{ 'label-success': view.params.chartoptions.mirrorSerie2 }\">{{ view.params.chartoptions.mirrorSerie2 ? \"ON\" : \"OFF\" }}</span>\n" +
     "        </a>\n" +
     "    </li>\n" +
-    "\n" +
-    "    <!--\n" +
-    "        </ul>\n" +
-    "    </li>\n" +
-    "     -->\n" +
     "\n" +
     "    <li ng-show=\"view.params.mode == 'chart'\"\n" +
     "        ng-click=\"view.params.chartoptions.showLegend = !view.params.chartoptions.showLegend; refreshView();\">\n" +
@@ -9014,11 +8988,6 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "                Difference</a></li>\n" +
     "            <li ng-click=\"selectOperation('percentage')\"><a href=\"\"><i class=\"fa fa-fw fa-percent\"></i> Change rate</a>\n" +
     "            </li>\n" +
-    "            <!--\n" +
-    "            <li ng-click=\"selectOperation('accum')\"><a href=\"\"><i class=\"fa fa-fw\">&sum;</i> Accumulated</a></li>\n" +
-    "            <div class=\"divider\"></div>\n" +
-    "            <li ng-click=\"selectOperation('fill-zeros')\"><a href=\"\"><i class=\"fa fa-fw\">0</i> Replace blanks with zeroes</a></li>\n" +
-    "             -->\n" +
     "            <div class=\"divider\"></div>\n" +
     "            <li ng-click=\"selectOperation(null)\"><a href=\"\"><i class=\"fa fa-fw fa-times\"></i> Clear operations</a></li>\n" +
     "        </ul>\n" +
@@ -9057,7 +9026,8 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "\n" +
     "    <div>\n" +
     "        <h2 ng-show=\"view.getControlsHidden()\" style=\"margin-top: 5px;\">\n" +
-    "            <i class=\"fa fa-fw fa-file-o\"></i> <span ng-if=\"view.params.menu_path\">{{view.params.menu_path}}&colon;&nbsp;</span>{{ view.params.name }}\n" +
+    "            <i class=\"fa fa-fw fa-file-o\"></i> <span ng-if=\"view.params.menu_path\">{{view.params.menu_path}}&colon;&nbsp;</span>{{\n" +
+    "            view.params.name }}\n" +
     "        </h2>\n" +
     "\n" +
     "        <div ng-include=\"'views/cube/alerts.html'\"></div>\n" +
@@ -9166,12 +9136,6 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "\n" +
     "                </div>\n" +
     "                <div class=\"cv-view-viewinfo-cut\">\n" +
-    "                    <!--\n" +
-    "                        var dimensionString = $(this).parents('.cv-view-infopiece-cut').first().attr('data-dimension');\n" +
-    "                        var parts = view.cube.dimensionParts(dimensionString);\n" +
-    "                        var depth = $(this).parents('.cv-view-infopiece-cut').first().attr('data-value').split(';')[0].split(\",\").length;\n" +
-    "                        cubesviewer.views.cube.dimensionfilter.drawDimensionFilter(view, dimensionString + \":\" + parts.hierarchy.levels[depth - 1] );\n" +
-    "                     -->\n" +
     "                    <div ng-repeat=\"cut in view.params.cuts\" ng-init=\"equality = cut.invert ? ' &ne; ' : ' = ';\"\n" +
     "                         class=\"label label-secondary cv-infopiece cv-view-viewinfo-cut\"\n" +
     "                         style=\"color: black; background-color: #ffcccc;\">\n" +
@@ -9249,9 +9213,6 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "                                ng-click=\"selectXAxis(view.cube.dimensionParts(view.params.xaxis).drilldownDimensionPlus, true)\"\n" +
     "                                class=\"btn btn-secondary btn-xs hidden-print\" style=\"margin-left: 0px;\"><i\n" +
     "                                class=\"fa fa-fw fa-plus\"></i></button>\n" +
-    "\n" +
-    "                        <!-- <button type=\"button\" ng-click=\"showDimensionFilter(view.params.xaxis)\" class=\"btn btn-secondary btn-xs\" style=\"margin-left: 3px;\"><i class=\"fa fa-fw fa-search\"></i></button>  -->\n" +
-    "                        <!-- <button type=\"button\" ng-click=\"selectXAxis(null)\" class=\"btn btn-danger btn-xs\" style=\"margin-left: 1px;\"><i class=\"fa fa-fw fa-trash\"></i></button>  -->\n" +
     "                    </div>\n" +
     "\n" +
     "                    <div ng-if=\"view.params.mode == 'series' || view.params.mode == 'chart' || view.params.mode == 'widget'\"\n" +
@@ -9276,9 +9237,6 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "                                ng-click=\"selectZAxis(view.cube.dimensionParts(view.params.zaxis).drilldownDimensionPlus, true)\"\n" +
     "                                class=\"btn btn-secondary btn-xs hidden-print\" style=\"margin-left: 0px;\"><i\n" +
     "                                class=\"fa fa-fw fa-plus\"></i></button>\n" +
-    "\n" +
-    "                        <!-- <button type=\"button\" ng-click=\"showDimensionFilter(view.params.xaxis)\" class=\"btn btn-secondary btn-xs\" style=\"margin-left: 3px;\"><i class=\"fa fa-fw fa-search\"></i></button>  -->\n" +
-    "                        <!-- <button type=\"button\" ng-click=\"selectXAxis(null)\" class=\"btn btn-danger btn-xs\" style=\"margin-left: 1px;\"><i class=\"fa fa-fw fa-trash\"></i></button>  -->\n" +
     "                    </div>\n" +
     "\n" +
     "                </div>\n" +
