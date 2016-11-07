@@ -186,7 +186,9 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesContro
 	        	  for (var i = 0; i < newState.disabled.length; i++) {
 	        		  view.params["chart-disabledseries"]["disabled"][d[i]["key"]] =  newState.disabled[i];
 	        	  }
-	        	  view.updateUndo();
+				  if (view.updateUndo) {
+					  view.updateUndo();
+				  }
 	          });
 
 	          $scope.chartCtrl.chart = chart;

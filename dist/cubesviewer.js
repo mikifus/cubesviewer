@@ -2339,7 +2339,9 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
         		$scope.view.params.columnHide[column.field] = true;
         		delete ($scope.view.params.columnWidths[column.field]);
         	}
-        	$scope.view.updateUndo();
+			if ($scope.view.updateUndo) {
+				$scope.view.updateUndo();
+			}
         });
         gridApi.core.on.sortChanged($scope, function(grid, sortColumns){
             // do something
@@ -2347,7 +2349,9 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
         	$(sortColumns).each(function (idx, col) {
         		$scope.view.params.columnSort[$scope.view.params.mode][col.field] = { direction: col.sort.direction, priority: col.sort.priority };
         	});
-        	$scope.view.updateUndo();
+        	if ($scope.view.updateUndo) {
+				$scope.view.updateUndo();
+			}
         });
         gridApi.colResizable.on.columnSizeChanged($scope, function(colDef, deltaChange) {
         	var colIndex = -1;
@@ -2357,7 +2361,9 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
         	if (colIndex >= 0) {
         		$scope.view.params.columnWidths[colDef.field] = gridApi.grid.columns[colIndex].width;
         	}
-        	$scope.view.updateUndo();
+            if ($scope.view.updateUndo) {
+                $scope.view.updateUndo();
+            }
         });
     };
 
@@ -2409,7 +2415,8 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
 			return $scope.view.cube.dimensionParts(e).dimension.name == $scope.view.cube.dimensionParts(drilldown).dimension.name;
 		}, true);
 
-		$scope.refreshView();
+		$scope.view.pendingActions++;
+		// $scope.refreshView();
 	};
 
 
@@ -4703,7 +4710,9 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartBarsVertica
             	for (var i = 0; i < newState.disabled.length; i++) {
             		view.params["chart-disabledseries"]["disabled"][d[i]["key"]] =  newState.disabled[i];
             	}
-            	view.updateUndo();
+            	if (view.updateUndo) {
+					view.updateUndo();
+				}
             });
 
 	        //chart.dispatch.on('stateChange', function(e) { nv.log('New State:', JSON.stringify(e)); });
@@ -4867,7 +4876,9 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartBarsHorizon
             	for (var i = 0; i < newState.disabled.length; i++) {
             		view.params["chart-disabledseries"]["disabled"][d[i]["key"]] =  newState.disabled[i];
             	}
-            	view.updateUndo();
+				if (view.updateUndo) {
+					view.updateUndo();
+				}
             });
 
 	        //chart.dispatch.on('stateChange', function(e) { nv.log('New State:', JSON.stringify(e)); });
@@ -5073,7 +5084,9 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesContro
 	        	  for (var i = 0; i < newState.disabled.length; i++) {
 	        		  view.params["chart-disabledseries"]["disabled"][d[i]["key"]] =  newState.disabled[i];
 	        	  }
-	        	  view.updateUndo();
+				  if (view.updateUndo) {
+					  view.updateUndo();
+				  }
 	          });
 
 	          $scope.chartCtrl.chart = chart;
@@ -5289,7 +5302,9 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartPieControll
 	        	for (var i = 0; i < newState.disabled.length; i++) {
 	        		view.params["chart-disabledseries"]["disabled"][d[i]["key"]] =  newState.disabled[i];
 	        	}
-	        	view.updateUndo();
+				if (view.updateUndo) {
+					view.updateUndo();
+				}
 	        });
 
 	        $scope.chartCtrl.chart = chart;
@@ -6220,7 +6235,9 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesVarian
 	        	  for (var i = 0; i < newState.disabled.length; i++) {
 	        		  view.params["chart-disabledseries"]["disabled"][d[i]["key"]] =  newState.disabled[i];
 	        	  }
-	        	  view.updateUndo();
+				  if (view.updateUndo) {
+					  view.updateUndo();
+				  }
 	          });
 
 	          $scope.chartCtrl.chart = chart;
