@@ -32,7 +32,7 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMaxValueController"
     ['$rootScope', '$scope', '$element', '$timeout', 'cvOptions', 'cubesService', 'viewsService',
         function ($rootScope, $scope, $element, $timeout, cvOptions, cubesService, viewsService) {
 
-            $scope.diff_abs = function(num){
+            var diff_abs = function(num){
                 if (num || num == 0) {
                     return Math.abs(num).toFixed(1);
                 } else {
@@ -55,6 +55,9 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMaxValueController"
                 var dataRows = $scope.view.grid.data;
                 var columnDefs = view.grid.columnDefs;
                 var zaxis = view.params.zaxis;
+                $scope.view.zaxis_compare = null;
+                $scope.series = null;
+
                 if (!zaxis) {
                     return;
                 }
@@ -95,6 +98,9 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMaxValueController"
                 if (!current_key) {
                     current_key = prev_key;
                 }
+
+                $scope.view.zaxis_compare = prev_key + ' – ' + current_key;
+
                 var prev_series = $.grep(d, function (serie) {
                     return serie.zkey == prev_key;
                 });
@@ -110,7 +116,7 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMaxValueController"
                         prev_values = prev_values[0]['values'];
                         $(serie['values']).each(function (i, v) {
                             v['prev'] = prev_values[i]['y'];
-                            v['diff'] = (v['y'] - prev_values[i]['y']) / v['y'] * 100;
+                            v['diff'] = diff_abs((v['y'] - prev_values[i]['y']) / v['y'] * 100);
                         });
                     }
 

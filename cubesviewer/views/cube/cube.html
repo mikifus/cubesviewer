@@ -204,7 +204,7 @@
                                 class="fa fa-fw fa-plus"></i></button>
                     </div>
 
-                    <div ng-if="view.params.mode == 'series' || view.params.mode == 'chart' || view.params.mode == 'widget'"
+                    <div ng-if="view.params.mode == 'widget'"
                          class="label label-secondary cv-infopiece cv-view-viewinfo-extra"
                          style="color: black; background-color: #ccddff;">
                         <span style="max-width: 350px;"><i class="fa fa-fw fa-paper-plane-o"
@@ -226,6 +226,14 @@
                                 ng-click="selectZAxis(view.cube.dimensionParts(view.params.zaxis).drilldownDimensionPlus, true)"
                                 class="btn btn-secondary btn-xs hidden-print" style="margin-left: 0px;"><i
                                 class="fa fa-fw fa-plus"></i></button>
+                    </div>
+
+                    <div ng-if="view.zaxis_compare"
+                         class="label label-secondary cv-infopiece cv-view-viewinfo-extra"
+                         style="color: black; background-color: #ccddff;">
+                        <span style="max-width: 350px;"><i class="fa fa-fw fa-hand-o-right"
+                                                           title="Compare"></i> <b
+                                class="hidden-xs hidden-sm">Compare:</b> {{ view.zaxis_compare }}</span>
                     </div>
 
                 </div>

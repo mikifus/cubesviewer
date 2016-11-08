@@ -1,14 +1,13 @@
-<div class="container">
+<div class="container-fluid">
     <div ng-repeat="serie in series" class="row" style="margin-top: 1em;">
-        <h3 class="" style="color: #337ab7;">{{serie['key']}}</h3>
-        <div ng-repeat="point in serie['values']" class="col-md-3">
+        <div class="col-sm-12"><h3 class="" style="color: #337ab7;">{{serie['key']}}</h3></div>
+        <div ng-repeat="point in serie['values']" class="col-sm-3">
             <span style="font-size: 200%">{{point['y'].toFixed(2)}}</span>
             <span ng-class="{'text-success': point['diff'] > 0, 'text-danger': point['diff'] < 0}"><i
                     ng-class="{'fa-chevron-up text-success': point['diff'] > 0,
         'fa-chevron-down text-danger': point['diff'] < 0}" class="fa fa-fw" style="font-size: 150%"></i>
-        <span style="font-size: 150%;">({{diff_abs(point['diff'])}}%)</span></span>
-            on {{view.cube.dimensionParts(view.params.xaxis).labelShort}}:
-            <span style="font-size: 150%;">{{point['x']}}</span>
+        <span style="font-size: 150%;">({{point['diff']}}%)</span></span>
+            on&nbsp;{{view.cube.dimensionParts(view.params.xaxis).labelShort}}:&nbsp;<span style="font-size: 150%;">{{point['x']}}</span>
         </div>
     </div>
 </div>
@@ -17,6 +16,7 @@
         Cannot present widget: no <b>history dimension</b> has been selected.
     </p>
     <p>
-        Tip: use the <kbd><i class="fa fa-fw fa-cogs"></i> View &gt; <i class="fa fa-fw fa-crosshairs"></i> History dimension</kbd> menu.
+        Tip: use the <kbd><i class="fa fa-fw fa-cogs"></i> View &gt; <i class="fa fa-fw fa-paper-plane-o"></i> History
+        dimension</kbd> menu.
     </p>
 </div>
