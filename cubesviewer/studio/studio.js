@@ -394,6 +394,23 @@ angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootSco
 			$('.cv-views-container').masonry('layout');
 		}, 100);
 	};
+
+    /*
+	 * Clone a dashboard.
+	 */
+	$scope.cloneDashboard = function () {
+        var d = JSON.parse(JSON.stringify(reststoreService.dashboard));
+        d.id = 0;
+		d.name = 'Clone of ' + d.name;
+		d.owner = cvOptions.user;
+        d.shared = false;
+        d.is_default = false;
+		reststoreService.dashboard = d;
+	};
+
+	/*
+	 * Save a dashboard.
+	 */
 	$scope.saveDashboard = function () {
 		reststoreService.dashboard.views = [];
 		studioViewsService.views.forEach(function (v) {reststoreService.dashboard.views.unshift(v.savedId)});
@@ -435,7 +452,21 @@ angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootSco
        if (newValue != oldValue) {
            reststoreService.dashboardList();
        }
+    });
+
+   $scope.$watch('reststoreService.savedDashboards', function (newValue, oldValue) {
+       // First load
+       if (newValue != oldValue && newValue.length != 0 && oldValue.length == 0) {
+           reststoreService.savedDashboards.forEach(function (d) {
+               if (d.is_default) {
+                   reststoreService.dashboard = d;
+                   reststoreService.restoreDashboard(d);
+                   return;
+               }
+           });
+       }
    });
+
 }]);
 
 

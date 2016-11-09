@@ -32,21 +32,14 @@ angular.module('cv.studio').service("reststoreService", ['$rootScope', '$http', 
 
     reststoreService.savedDashboards = [];
 
-    reststoreService.dashboard = new_dashboard();
+    reststoreService.dashboard = null;
 
 	reststoreService.initialize = function() {
 		if (! cvOptions.backendUrl) return;
 		reststoreService.viewList();
+        reststoreService.newDashboard();
 	};
 
-	function new_dashboard() {
-        return {
-            'id': 0,
-            'name': 'New',
-            'views': [],
-            'shared': false
-        }
-    }
     /**
      * Returns a stored view from memory.
      */
@@ -229,6 +222,17 @@ angular.module('cv.studio').service("reststoreService", ['$rootScope', '$http', 
 
     };
 
+    reststoreService.newDashboard = function() {
+        reststoreService.dashboard = {
+            'id': 0,
+            'name': 'New',
+            'views': [],
+            'shared': false,
+            'is_default': false,
+            'saved': false
+        }
+    };
+
     reststoreService.restoreDashboard = function(dashboard){
         reststoreService.dashboard = dashboard;
         reststoreService.dashboard.views.forEach(function(v){
@@ -244,6 +248,18 @@ angular.module('cv.studio').service("reststoreService", ['$rootScope', '$http', 
         }
 
         reststoreService.dashboard.shared = !reststoreService.dashboard.shared;
+        reststoreService.saveDashboard();
+
+    };
+
+    reststoreService.makeDefaultDashboard = function() {
+        var dashboard = reststoreService.dashboard;
+        if (reststoreService.dashboard.owner != cvOptions.user) {
+            dialogService.show('Cannot mark/unmark default a dashboard that belongs to other user (try cloning the dashboard).');
+            return;
+        }
+
+        reststoreService.dashboard.is_default = !reststoreService.dashboard.is_default;
         reststoreService.saveDashboard();
 
     };
@@ -275,7 +291,16 @@ angular.module('cv.studio').service("reststoreService", ['$rootScope', '$http', 
     */
    reststoreService._saveDashboardCallback = function (data, status) {
        data = data.data;
-       reststoreService.savedDashboards.push(data);
+       var _new = true;
+       reststoreService.savedDashboards.forEach(function(d){
+           if (d.id == data.id) {
+               d = data;
+               _new = false;
+           }
+       });
+       if (_new) {
+           reststoreService.savedDashboards.push(data);
+       }
        dialogService.show("Dashboard saved.");
    };
 
@@ -308,7 +333,7 @@ angular.module('cv.studio').service("reststoreService", ['$rootScope', '$http', 
     * Delete callback
     */
    reststoreService._deleteDashboardCallback = function (data, status) {
-       reststoreService.dashboard = new_dashboard();
+       reststoreService.newDashboard();
        var views = studioViewsService.views.slice();
        views.forEach(function(v){
            studioViewsService.closeView(v);

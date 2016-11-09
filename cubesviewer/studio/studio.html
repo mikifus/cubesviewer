@@ -46,10 +46,6 @@
 
                 <li class=""><a href="http://github.com/jjmontesl/cubesviewer/blob/master/doc/guide/cubesviewer-user-main.md" target="_blank"><i class="fa fa-fw fa-question"></i> User guide</a></li>
                 <li class=""><a data-toggle="modal" data-target="#cvAboutModal"><i class="fa fa-fw fa-info"></i> About CubesViewer...</a></li>
-
-                <div class="divider"></div>
-                <li class=""><a ng-click="saveDashboard()"><i class="fa fa-fw fa-save"></i> Save dashboard</a></li>
-
             </ul>
         </div>
 
@@ -97,12 +93,14 @@
                     <li ng-repeat="d in reststoreService.savedDashboards | orderBy:'d.name'"
                         ng-if="d.owner == cvOptions.user" ng-click="reststoreService.restoreDashboard(d)"><a
                             style="max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;"><i
-                            class="fa fa-fw"></i> {{ d.name }}</a></li>
+                            class="fa fa-fw"></i> {{ d.name }} <i ng-if="d.is_default"
+                                                                  class="fa fa-fw fa-star-o"></i></a></li>
                     <li class="dropdown-header">Shared by others</li>
                     <li ng-repeat="d in reststoreService.savedDashboards | orderBy:'d.name'"
                         ng-if="d.owner != cvOptions.user" ng-click="reststoreService.restoreDashboard(d)"><a
                             style="max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;"><i
-                            class="fa fa-fw"></i> {{ d.name }}</a></li>
+                            class="fa fa-fw"></i> {{ d.name }} <i ng-if="d.is_default"
+                                                                  class="fa fa-fw fa-star-o"></i></a></li>
                 </ul>
             </div>
             <div class="dropdown" style="display: inline-block;">
@@ -111,15 +109,23 @@
                 </button>
 
                 <ul class="dropdown-menu">
-                    <li><a ng-click="saveDashboard()"><i class="fa fa-fw fa-save"></i> Save dashboard</a></li>
+                    <li class="dropdown-header">Current</li>
+                    <li><a ng-if="reststoreService.dashboard">{{reststoreService.dashboard.name}}</a></li>
                     <div class="divider"></div>
-                    <li><a ng-click="reststoreService.shareDashboard()"><i class="fa fa-fw fa-share"></i> {{ reststoreService.dashboard.shared ? "Unshare" : "Share" }} dashboard</a>
-                    <li><a ng-click="renameDashboard()"><i class="fa fa-fw fa-pencil"></i> Rename dashboard</a>
+                    <li><a ng-click="renameDashboard()"><i class="fa fa-fw fa-pencil"></i> Rename...</a>
+                    <li ng-class="{disabled:reststoreService.dashboard == null}"><a ng-click="cloneDashboard()"><i
+                            class="fa fa-fw fa-clone"></i> Clone</a></li>
+                    <li><a ng-click="saveDashboard()"><i class="fa fa-fw fa-save"></i> Save</a></li>
+                    <div class="divider"></div>
+                    <li ng-class="{disabled:reststoreService.dashboard == null}"><a
+                            ng-click="reststoreService.shareDashboard()"><i class="fa fa-fw fa-share"></i>{{reststoreService.dashboard.shared
+                        ? "Unshare" : "Share" }}</a>
+                    <li ng-class="{disabled:reststoreService.dashboard == null}"><a
+                            ng-click="reststoreService.makeDefaultDashboard()"><i class="fa fa-fw fa-star-o"></i>
+                        {{reststoreService.dashboard.is_default ? "Unmark" : "Mark" }} default</a>
                     </li>
-
-                    <div class="divider"></div>
-
-                    <li ng-class="{disabled:reststoreService.dashboard.id == 0}"><a ng-click="reststoreService.deleteDashboard()"><i class="fa fa-fw fa-trash-o"></i> Delete dashboard</a>
+                    <li ng-class="{disabled:reststoreService.dashboard == null}"><a
+                            ng-click="reststoreService.deleteDashboard()"><i class="fa fa-fw fa-trash-o"></i> Delete...</a>
                 </ul>
             </div>
         </div>
