@@ -30,6 +30,7 @@
         <ul class="dropdown-menu">
             <li ng-click="selectWidgetType('max-value')"><a href=""><i class="fa fa-fw fa-sort-amount-asc"></i> Max value</a></li>
             <li ng-click="selectWidgetType('threshold')"><a href=""><i class="fa fa-fw fa-text-width"></i> Threshold</a></li>
+            <li ng-click="selectWidgetType('movement')"><a href=""><i class="fa fa-fw fa-map-signs"></i> Movement</a></li>
         </ul>
     </li>
 
@@ -132,7 +133,7 @@
 
     <li ng-show="view.params.mode == 'widget'"
         class="dropdown-submenu">
-        <a tabindex="0"><i class="fa fa-fw fa-paper-plane-o"></i> History dimension</a>
+        <a tabindex="0"><i class="fa fa-fw fa-balance-scale"></i> Compare dimension</a>
         <ul class="dropdown-menu">
 
             <li on-repeat-done ng-repeat-start="dimension in view.getEnabledHorizontalDimensions()"

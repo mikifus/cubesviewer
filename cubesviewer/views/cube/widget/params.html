@@ -1,8 +1,8 @@
 <div class="label label-secondary cv-infopiece cv-view-viewinfo-extra"
      style="color: black; background-color: #ffcc99;">
-                        <span style="max-width: 350px;"><i class="fa fa-fw fa-paper-plane-o"
+                        <span style="max-width: 350px;"><i class="fa fa-fw fa-balance-scale"
                                                            title="History dimension"></i> <b
-                                class="hidden-xs hidden-sm">History dimension:</b> {{ (view.params.zaxis != null) ? view.cube.dimensionParts(view.params.zaxis).labelShort : "None" }}</span>
+                                class="hidden-xs hidden-sm">Compare dimension:</b> {{ (view.params.zaxis != null) ? view.cube.dimensionParts(view.params.zaxis).labelShort : "None" }}</span>
     <button type="button" class="btn btn-info btn-xs"
             style="visibility: hidden; margin-left: -20px;"><i class="fa fa-fw fa-info"></i>
     </button>
@@ -37,5 +37,14 @@
                 class="hidden-xs hidden-sm">Threshold:</b> <input type="number"
                                                                   ng-model="view.params.widget.threshold"
                                                                   style="width: 4em;"></span>
+    </div>
+
+    <div ng-if="view.params.widgettype == 'movement'"
+         class="label label-secondary cv-infopiece cv-view-viewinfo-cut text-left"
+         style="color: black; background-color: #ffdddd; text-align: left;">
+        <span style="white-space: nowrap;"><i class="fa fa-fw fa-map-signs"></i> <b
+                class="hidden-xs hidden-sm">Min. change:</b> <input type="number"
+                                                                  ng-model="view.params.widget.movement"
+                                                                  style="width: 4em;" step="0.1" min="0"></span>
     </div>
 </div>

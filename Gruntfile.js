@@ -37,6 +37,7 @@ module.exports = function(grunt) {
               'cubesviewer/views/cube/widget/widget.js',
               'cubesviewer/views/cube/widget/max-value.js',
               'cubesviewer/views/cube/widget/threshold.js',
+              'cubesviewer/views/cube/widget/movement.js',
               //'cubesviewer/cubesviewer.views.cube.rangefilter.js',
               'cubesviewer/views/cube/export.js',
               'cubesviewer/views/undo.js',

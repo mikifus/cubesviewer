@@ -28,7 +28,7 @@
 
 "use strict";
 
-angular.module('cv.views.cube').controller("CubesViewerWidgetThresholdController",
+angular.module('cv.views.cube').controller("CubesViewerWidgetMovementController",
     ['$rootScope', '$scope', '$element', '$timeout', 'cvOptions', 'cubesService', 'viewsService',
         function ($rootScope, $scope, $element, $timeout, cvOptions, cubesService, viewsService) {
 
@@ -36,7 +36,7 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetThresholdController
                 $scope.view.params.widget = $.extend(
                     {},
                     {
-                        "threshold": 90
+                        "movement": 0.1
                     },
                     $scope.view.params.widget
                 );
@@ -44,14 +44,14 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetThresholdController
             };
 
             $scope.$on('gridDataUpdated', function () {
-                $scope.drawWidgetThreshold();
+                $scope.drawWidgetMovement();
             });
 
-            $scope.$watch('view.params.widget.threshold', function () {
-                $scope.drawWidgetThreshold();
+            $scope.$watch('view.params.widget.movement', function () {
+                $scope.drawWidgetMovement();
             });
 
-            $scope.drawWidgetThreshold = function () {
+            $scope.drawWidgetMovement = function () {
 
                 var view = $scope.view;
                 var dataRows = $scope.view.grid.data;
@@ -124,7 +124,10 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetThresholdController
                         var filtered_values = [];
                         $(serie['values']).each(function (i, v) {
                             var diff = $scope.toFixed((v['y'] - prev_values[i]['y']) / v['y'] * 100, 1);
-                            if (v['y'] >= view.params.widget.threshold) {
+                            if (!diff) {
+                                diff = 0;
+                            }
+                            if ($scope.diff_abs(diff) >= view.params.widget.movement) {
                                 filtered_values.push({
                                     'x': $scope.toFixed(v['x'], 2),
                                     'y': $scope.toFixed(v['y'], 2),
