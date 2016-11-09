@@ -1,0 +1,11 @@
+<div class="container-fluid">
+    <div ng-repeat="serie in series" class="row" style="margin-top: 1em;">
+        <div class="col-sm-12"><h3 class="" style="color: #337ab7;">{{serie['key']}}</h3></div>
+        <div ng-repeat="point in serie['values']" class="col-sm-3"
+             ng-init="color = point['diff'] > 0 ? '#669366' : '#dba4a3'; chevron = point['diff'] > 0 ? 'fa-chevron-up' : 'fa-chevron-down'">
+            <span style="font-size: 200%">{{point['x']}}</span>
+            <span style="font-size: 150%; color: #777;">({{point['y']}}<span ng-if="point['diff'] > 0">
+                <i ng-class="chevron" class="fa fa-fw" ng-style="{color: color}"></i>{{diff_abs(point['diff'])}}%</span>)</span>
+        </div>
+    </div>
+</div>

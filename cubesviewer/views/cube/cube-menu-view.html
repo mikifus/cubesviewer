@@ -24,6 +24,15 @@
                 Variance</a></li>
         </ul>
     </li>
+
+    <li ng-show="view.params.mode == 'widget'" class="dropdown-submenu">
+        <a tabindex="0"><i class="fa fa-fw fa-cubes"></i> Widget type</a>
+        <ul class="dropdown-menu">
+            <li ng-click="selectWidgetType('max-value')"><a href=""><i class="fa fa-fw fa-sort-amount-asc"></i> Max value</a></li>
+            <li ng-click="selectWidgetType('threshold')"><a href=""><i class="fa fa-fw fa-text-width"></i> Threshold</a></li>
+        </ul>
+    </li>
+
     <li class="dropdown-submenu"
         ng-show="(view.params.mode == 'chart' || view.params.mode == 'widget') && (view.params.charttype == 'lines-stacked' || view.params.charttype == 'lines')">
         <a href=""><i class="fa fa-fw fa-angle-up"></i> Curve type</a>

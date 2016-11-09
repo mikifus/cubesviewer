@@ -28,26 +28,36 @@
 
 "use strict";
 
-angular.module('cv.views.cube').controller("CubesViewerWidgetMaxValueController",
+angular.module('cv.views.cube').controller("CubesViewerWidgetThresholdController",
     ['$rootScope', '$scope', '$element', '$timeout', 'cvOptions', 'cubesService', 'viewsService',
         function ($rootScope, $scope, $element, $timeout, cvOptions, cubesService, viewsService) {
 
-
-            $scope.series = [];
-
             $scope.initialize = function () {
+                $scope.view.params.widget = $.extend(
+                    {},
+                    {
+                        "threshold": 90
+                    },
+                    $scope.view.params.widget
+                );
+                //$scope.refreshView();
             };
 
             $scope.$on('gridDataUpdated', function () {
-                $scope.drawWidgetMaxDifficulty();
+                $scope.drawWidgetThreshold();
             });
 
-            $scope.drawWidgetMaxDifficulty = function () {
+            $scope.$watch('view.params.widget.threshold', function () {
+                $scope.drawWidgetThreshold();
+            });
+
+            $scope.drawWidgetThreshold = function () {
 
                 var view = $scope.view;
                 var dataRows = $scope.view.grid.data;
                 var columnDefs = view.grid.columnDefs;
                 var zaxis = view.params.zaxis;
+
                 $scope.view.zaxis_compare = null;
                 $scope.series = null;
 
@@ -85,6 +95,7 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMaxValueController"
                 d.sort(function (a, b) {
                     return a.key < b.key ? -1 : (a.key > b.key ? +1 : 0)
                 });
+
                 zkeys.sort();
                 var prev_key = zkeys.slice(-2)[0];
                 var current_key = zkeys.slice(-2)[1];
@@ -92,7 +103,9 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMaxValueController"
                     current_key = prev_key;
                 }
 
-                $scope.view.zaxis_compare = prev_key + ' – ' + current_key;
+                if (prev_key && current_key) {
+                    $scope.view.zaxis_compare = prev_key + ' – ' + current_key;
+                }
 
                 var prev_series = $.grep(d, function (serie) {
                     return serie.zkey == prev_key;
@@ -101,16 +114,25 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMaxValueController"
                 var curr_series = $.grep(d, function (serie) {
                     return serie.zkey == current_key;
                 });
+
                 $(curr_series).each(function (i, serie) {
                     var prev_values = $.grep(prev_series, function (ps) {
                         return ps.key == serie.key;
                     });
                     if (prev_values.length > 0) {
                         prev_values = prev_values[0]['values'];
+                        var filtered_values = [];
                         $(serie['values']).each(function (i, v) {
-                            v['prev'] = prev_values[i]['y'];
-                            v['diff'] = $scope.toFixed((v['y'] - prev_values[i]['y']) / v['y'] * 100, 1);
+                            if (v['y'] >= view.params.widget.threshold) {
+                                filtered_values.push({
+                                    'x': $scope.toFixed(v['x'], 2),
+                                    'y': $scope.toFixed(v['y'], 2),
+                                    'prev': prev_values[i]['y'],
+                                    'diff': $scope.toFixed((v['y'] - prev_values[i]['y']) / v['y'] * 100, 1)
+                                });
+                            }
                         });
+                        serie['values'] = filtered_values;
                     }
 
                     var sort_values = serie['values'].slice(0);
@@ -125,6 +147,7 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMaxValueController"
                 });
                 $scope.series = curr_series;
             };
+
             $scope.initialize();
         }]);
 

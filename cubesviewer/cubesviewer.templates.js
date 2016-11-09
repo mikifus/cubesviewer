@@ -843,6 +843,15 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "                Variance</a></li>\n" +
     "        </ul>\n" +
     "    </li>\n" +
+    "\n" +
+    "    <li ng-show=\"view.params.mode == 'widget'\" class=\"dropdown-submenu\">\n" +
+    "        <a tabindex=\"0\"><i class=\"fa fa-fw fa-cubes\"></i> Widget type</a>\n" +
+    "        <ul class=\"dropdown-menu\">\n" +
+    "            <li ng-click=\"selectWidgetType('max-value')\"><a href=\"\"><i class=\"fa fa-fw fa-sort-amount-asc\"></i> Max value</a></li>\n" +
+    "            <li ng-click=\"selectWidgetType('threshold')\"><a href=\"\"><i class=\"fa fa-fw fa-text-width\"></i> Threshold</a></li>\n" +
+    "        </ul>\n" +
+    "    </li>\n" +
+    "\n" +
     "    <li class=\"dropdown-submenu\"\n" +
     "        ng-show=\"(view.params.mode == 'chart' || view.params.mode == 'widget') && (view.params.charttype == 'lines-stacked' || view.params.charttype == 'lines')\">\n" +
     "        <a href=\"\"><i class=\"fa fa-fw fa-angle-up\"></i> Curve type</a>\n" +
@@ -972,7 +981,7 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "\n" +
     "            <div class=\"divider\"></div>\n" +
     "\n" +
-    "            <li ng-click=\"selectXAxis(null);\"><a href=\"\"><i class=\"fa fa-fw fa-close\"></i> None</a></li>\n" +
+    "            <li ng-click=\"selectZAxis(null);\"><a href=\"\"><i class=\"fa fa-fw fa-close\"></i> None</a></li>\n" +
     "\n" +
     "        </ul>\n" +
     "    </li>\n" +
@@ -1214,31 +1223,10 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "                                class=\"btn btn-secondary btn-xs hidden-print\" style=\"margin-left: 0px;\"><i\n" +
     "                                class=\"fa fa-fw fa-plus\"></i></button>\n" +
     "                    </div>\n" +
+    "                </div>\n" +
     "\n" +
-    "                    <div ng-if=\"view.params.mode == 'series' || view.params.mode == 'chart' || view.params.mode == 'widget'\"\n" +
-    "                         class=\"label label-secondary cv-infopiece cv-view-viewinfo-extra\"\n" +
-    "                         style=\"color: black; background-color: #ccddff;\">\n" +
-    "                        <span style=\"max-width: 350px;\"><i class=\"fa fa-fw fa-paper-plane-o\"\n" +
-    "                                                           title=\"History dimension\"></i> <b\n" +
-    "                                class=\"hidden-xs hidden-sm\">History dimension:</b> {{ (view.params.zaxis != null) ? view.cube.dimensionParts(view.params.zaxis).labelShort : \"None\" }}</span>\n" +
-    "                        <button type=\"button\" class=\"btn btn-info btn-xs\"\n" +
-    "                                style=\"visibility: hidden; margin-left: -20px;\"><i class=\"fa fa-fw fa-info\"></i>\n" +
-    "                        </button>\n" +
-    "\n" +
-    "                        <button ng-hide=\"view.getControlsHidden() || !view.params.zaxis || view.cube.dimensionParts(view.params.zaxis).hierarchy.levels.length < 2\"\n" +
-    "                                ng-disabled=\"! view.cube.dimensionParts(view.params.zaxis).drilldownDimensionMinus\"\n" +
-    "                                type=\"button\"\n" +
-    "                                ng-click=\"selectZAxis(view.cube.dimensionParts(view.params.zaxis).drilldownDimensionMinus, true)\"\n" +
-    "                                class=\"btn btn-secondary btn-xs hidden-print\" style=\"margin-left: 3px;\"><i\n" +
-    "                                class=\"fa fa-fw fa-minus\"></i></button>\n" +
-    "                        <button ng-hide=\"view.getControlsHidden() || !view.params.zaxis || view.cube.dimensionParts(view.params.zaxis).hierarchy.levels.length < 2\"\n" +
-    "                                ng-disabled=\"! view.cube.dimensionParts(view.params.zaxis).drilldownDimensionPlus\"\n" +
-    "                                type=\"button\"\n" +
-    "                                ng-click=\"selectZAxis(view.cube.dimensionParts(view.params.zaxis).drilldownDimensionPlus, true)\"\n" +
-    "                                class=\"btn btn-secondary btn-xs hidden-print\" style=\"margin-left: 0px;\"><i\n" +
-    "                                class=\"fa fa-fw fa-plus\"></i></button>\n" +
-    "                    </div>\n" +
-    "\n" +
+    "                <div class=\"cv-view-info-widget\" ng-if=\"view.params.mode == 'widget'\">\n" +
+    "                    <div ng-include=\"'views/cube/widget/params.html'\"></div>\n" +
     "                </div>\n" +
     "            </div>\n" +
     "        </div>\n" +
@@ -1570,42 +1558,116 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
   );
 
 
-  $templateCache.put('views/cube/widget/widget-max-value.html',
-    "<div class=\"container\">\n" +
+  $templateCache.put('views/cube/widget/max-value.html',
+    "<div class=\"container-fluid\">\n" +
     "    <div ng-repeat=\"serie in series\" class=\"row\" style=\"margin-top: 1em;\">\n" +
-    "        <h3 class=\"\" style=\"color: #337ab7;\">{{serie['key']}}</h3>\n" +
-    "        <div ng-repeat=\"point in serie['values']\" class=\"col-md-3\">\n" +
-    "            <span style=\"font-size: 200%\">{{point['y'].toFixed(2)}}</span>\n" +
-    "            <span ng-class=\"{'text-success': point['diff'] > 0, 'text-danger': point['diff'] < 0}\"><i\n" +
-    "                    ng-class=\"{'fa-chevron-up text-success': point['diff'] > 0,\n" +
-    "        'fa-chevron-down text-danger': point['diff'] < 0}\" class=\"fa fa-fw\" style=\"font-size: 150%\"></i>\n" +
-    "        <span style=\"font-size: 150%;\">({{diff_abs(point['diff'])}}%)</span></span>\n" +
-    "            on {{view.cube.dimensionParts(view.params.xaxis).labelShort}}:\n" +
-    "            <span style=\"font-size: 150%;\">{{point['x']}}</span>\n" +
+    "        <div class=\"col-sm-12\"><h3 class=\"\" style=\"color: #337ab7;\">{{serie['key']}}</h3></div>\n" +
+    "        <div ng-repeat=\"point in serie['values']\" class=\"col-sm-3\"\n" +
+    "             ng-init=\"chevron = point['diff'] > 0 ? 'fa-chevron-up text-success' : 'fa-chevron-down text-danger'\">\n" +
+    "            <span style=\"font-size: 200%\">{{toFixed(point['y'], 2)}}</span>\n" +
+    "            <span ng-if=\"point['diff'] > 0\"><i ng-class=\"chevron\" class=\"fa fa-fw\" style=\"font-size: 150%\"></i>\n" +
+    "            <span style=\"font-size: 150%;\">{{diff_abs(point['diff'])}}%</span></span>\n" +
+    "            <span style=\"font-size: 150%; color: #777;\">\n" +
+    "                (<span\n" +
+    "                    style=\"font-size: 75%;\">{{view.cube.dimensionParts(view.params.xaxis).labelShort}} </span>&nbsp;<span>{{point['x']}})</span>\n" +
+    "            </span>\n" +
     "        </div>\n" +
     "    </div>\n" +
+    "</div>"
+  );
+
+
+  $templateCache.put('views/cube/widget/params.html',
+    "<div class=\"label label-secondary cv-infopiece cv-view-viewinfo-extra\"\n" +
+    "     style=\"color: black; background-color: #ffcc99;\">\n" +
+    "                        <span style=\"max-width: 350px;\"><i class=\"fa fa-fw fa-paper-plane-o\"\n" +
+    "                                                           title=\"History dimension\"></i> <b\n" +
+    "                                class=\"hidden-xs hidden-sm\">History dimension:</b> {{ (view.params.zaxis != null) ? view.cube.dimensionParts(view.params.zaxis).labelShort : \"None\" }}</span>\n" +
+    "    <button type=\"button\" class=\"btn btn-info btn-xs\"\n" +
+    "            style=\"visibility: hidden; margin-left: -20px;\"><i class=\"fa fa-fw fa-info\"></i>\n" +
+    "    </button>\n" +
+    "\n" +
+    "    <button ng-hide=\"view.getControlsHidden() || !view.params.zaxis || view.cube.dimensionParts(view.params.zaxis).hierarchy.levels.length < 2\"\n" +
+    "            ng-disabled=\"! view.cube.dimensionParts(view.params.zaxis).drilldownDimensionMinus\"\n" +
+    "            type=\"button\"\n" +
+    "            ng-click=\"selectZAxis(view.cube.dimensionParts(view.params.zaxis).drilldownDimensionMinus, true)\"\n" +
+    "            class=\"btn btn-secondary btn-xs hidden-print\" style=\"margin-left: 3px;\"><i\n" +
+    "            class=\"fa fa-fw fa-minus\"></i></button>\n" +
+    "    <button ng-hide=\"view.getControlsHidden() || !view.params.zaxis || view.cube.dimensionParts(view.params.zaxis).hierarchy.levels.length < 2\"\n" +
+    "            ng-disabled=\"! view.cube.dimensionParts(view.params.zaxis).drilldownDimensionPlus\"\n" +
+    "            type=\"button\"\n" +
+    "            ng-click=\"selectZAxis(view.cube.dimensionParts(view.params.zaxis).drilldownDimensionPlus, true)\"\n" +
+    "            class=\"btn btn-secondary btn-xs hidden-print\" style=\"margin-left: 0px;\"><i\n" +
+    "            class=\"fa fa-fw fa-plus\"></i></button>\n" +
     "</div>\n" +
-    "<div ng-if=\"view.params.zaxis == null\" class=\"alert alert-info\" style=\"margin-bottom: 0px;\">\n" +
-    "    <p>\n" +
-    "        Cannot present widget: no <b>history dimension</b> has been selected.\n" +
-    "    </p>\n" +
-    "    <p>\n" +
-    "        Tip: use the <kbd><i class=\"fa fa-fw fa-cogs\"></i> View &gt; <i class=\"fa fa-fw fa-crosshairs\"></i> History dimension</kbd> menu.\n" +
-    "    </p>\n" +
+    "\n" +
+    "<div ng-if=\"view.zaxis_compare\"\n" +
+    "     class=\"label label-secondary cv-infopiece cv-view-viewinfo-extra\"\n" +
+    "     style=\"color: black; background-color: #ffcc99;\">\n" +
+    "                        <span style=\"max-width: 350px;\"><i class=\"fa fa-fw fa-balance-scale\"\n" +
+    "                                                           title=\"Compare\"></i> <b\n" +
+    "                                class=\"hidden-xs hidden-sm\">Compare:</b> {{ view.zaxis_compare }}</span>\n" +
+    "</div>\n" +
+    "\n" +
+    "<div>\n" +
+    "    <div ng-if=\"view.params.widgettype == 'threshold'\"\n" +
+    "         class=\"label label-secondary cv-infopiece cv-view-viewinfo-cut text-left\"\n" +
+    "         style=\"color: black; background-color: #ffdddd; text-align: left;\">\n" +
+    "        <span style=\"white-space: nowrap;\"><i class=\"fa fa-fw fa-text-width\"></i> <b\n" +
+    "                class=\"hidden-xs hidden-sm\">Threshold:</b> <input type=\"number\"\n" +
+    "                                                                  ng-model=\"view.params.widget.threshold\"\n" +
+    "                                                                  style=\"width: 4em;\"></span>\n" +
+    "    </div>\n" +
+    "</div>"
+  );
+
+
+  $templateCache.put('views/cube/widget/threshold.html',
+    "<div class=\"container-fluid\">\n" +
+    "    <div ng-repeat=\"serie in series\" class=\"row\" style=\"margin-top: 1em;\">\n" +
+    "        <div class=\"col-sm-12\"><h3 class=\"\" style=\"color: #337ab7;\">{{serie['key']}}</h3></div>\n" +
+    "        <div ng-repeat=\"point in serie['values']\" class=\"col-sm-3\"\n" +
+    "             ng-init=\"color = point['diff'] > 0 ? '#669366' : '#dba4a3'; chevron = point['diff'] > 0 ? 'fa-chevron-up' : 'fa-chevron-down'\">\n" +
+    "            <span style=\"font-size: 200%\">{{point['x']}}</span>\n" +
+    "            <span style=\"font-size: 150%; color: #777;\">({{point['y']}}<span ng-if=\"point['diff'] > 0\">\n" +
+    "                <i ng-class=\"chevron\" class=\"fa fa-fw\" ng-style=\"{color: color}\"></i>{{diff_abs(point['diff'])}}%</span>)</span>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
     "</div>"
   );
 
 
   $templateCache.put('views/cube/widget/widget.html',
     "<div ng-controller=\"CubesViewerWidgetController\">\n" +
-    "    <div ng-if=\"view.params.widgettype == 'max-difficulty'\">\n" +
+    "    <div ng-if=\"view.params.widgettype == 'max-value'\">\n" +
     "\n" +
     "        <div ng-if=\"view.pendingRequests > 0\" class=\"loadingbar-content\">\n" +
     "            <span class=\"loadingbar-expand\"></span>\n" +
     "        </div>\n" +
     "        <div ng-controller=\"CubesViewerWidgetMaxValueController\">\n" +
-    "            <div ng-include=\"'views/cube/widget/widget-max-value.html'\"></div>\n" +
+    "            <div ng-include=\"'views/cube/widget/max-value.html'\"></div>\n" +
     "        </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div ng-if=\"view.params.widgettype == 'threshold'\">\n" +
+    "\n" +
+    "        <div ng-if=\"view.pendingRequests > 0\" class=\"loadingbar-content\">\n" +
+    "            <span class=\"loadingbar-expand\"></span>\n" +
+    "        </div>\n" +
+    "        <div ng-controller=\"CubesViewerWidgetThresholdController\">\n" +
+    "            <div ng-include=\"'views/cube/widget/threshold.html'\"></div>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div ng-if=\"view.params.zaxis == null\" class=\"alert alert-info\" style=\"margin-bottom: 0px;\">\n" +
+    "        <p>\n" +
+    "            Cannot present widget: no <b>history dimension</b> has been selected.\n" +
+    "        </p>\n" +
+    "        <p>\n" +
+    "            Tip: use the <kbd><i class=\"fa fa-fw fa-cogs\"></i> View &gt; <i class=\"fa fa-fw fa-paper-plane-o\"></i>\n" +
+    "            History\n" +
+    "            dimension</kbd> menu.\n" +
+    "        </p>\n" +
     "    </div>\n" +
     "</div>"
   );
