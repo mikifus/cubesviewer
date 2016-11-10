@@ -123,20 +123,23 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetThresholdController
                         prev_values = prev_values[0]['values'];
                         var filtered_values = [];
                         $(serie['values']).each(function (i, v) {
-                            var diff;
-                            if (prev_values[i]['y'] == 0 && v['y'] == 0) {
-                                diff = 0;
-                            }
-                            else if (v['y'] == 0) {
-                                diff = -100;
-                            } else {
-                                diff = $scope.toFixed((v['y'] - prev_values[i]['y']) / v['y'] * 100, 1);
-                            }
-                            if (v['y'] >= view.params.widget.threshold) {
+                            var y = $scope.toFixed(v['y'], 2);
+                            if (y >= view.params.widget.threshold) {
+                                var x = $scope.toFixed(v['x'], 2);
+                                var prev_y = $scope.toFixed(prev_values[i]['y'], 2);
+                                var diff;
+                                if (prev_y == 0 && y == 0) {
+                                    diff = 0;
+                                }
+                                else if (y == 0) {
+                                    diff = -100;
+                                } else {
+                                    diff = $scope.toFixed((y - prev_y) / y * 100, 1);
+                                }
                                 filtered_values.push({
                                     'x': $scope.toFixed(v['x'], 2),
                                     'y': $scope.toFixed(v['y'], 2),
-                                    'prev': prev_values[i]['y'],
+                                    'prev': prev_y,
                                     'diff': diff
                                 });
                             }
