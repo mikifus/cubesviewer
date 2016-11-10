@@ -85,7 +85,7 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMaxValueController"
                 d.sort(function (a, b) {
                     return a.key < b.key ? -1 : (a.key > b.key ? +1 : 0)
                 });
-                zkeys.sort();
+
                 var prev_key = zkeys.slice(-2)[0];
                 var current_key = zkeys.slice(-2)[1];
                 if (!current_key) {

@@ -178,44 +178,26 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
 		var cuts = this.buildQueryCuts(view);
 		if (cuts.length > 0) args.cut = new cubes.Cell(view.cube, cuts);
 
+		var orders = [];
         //Order
         if (includeXAxis && view.params.xaxis) {
-            var orders = [];
-            try {
-                var dimension = view.params.xaxis.split('@')[0];
-                var hierarchy_combo = view.params.xaxis.split('@')[1];
-                var hierarchy_name;
-                if (!hierarchy_combo) {
-                    dimension = dimension.split(':')[0];
-                    hierarchy_name = $.grep(view.cube.dimensions, function (e) {
-                        return e['name'] === dimension
-                    })[0]['default_hierarchy_name'];
-                } else {
-                    hierarchy_name = hierarchy_combo.split(':')[0];
-                }
-
-
-                var levels = $.grep(view.cube.dimensions, function (e) {
-                    return e['name'] === dimension
-                })[0].hierarchies[hierarchy_name].levels;
-                for (var j = 0; j < levels.length; j++) {
-                    if (dimension == levels[j].name) {
-                        orders.push(levels[j].name);
-                    } else {
-                        orders.push(dimension + '.' + levels[j].name);
-                    }
-                }
-            }
-            catch (e) {
-
-            }
-
-            if (orders.length) {
-                args.order = orders.join(',');
-            }
-
+			var xaxis_order = dim_to_arr(view, view.params.xaxis);
+			if (xaxis_order.length) {
+				orders.push.apply(orders, xaxis_order);
+			}
             args.aggregates = [view.params.yaxis];
         }
+
+        if (includeZAxis && view.params.zaxis) {
+			var zaxis_order = dim_to_arr(view, view.params.zaxis);
+			if (zaxis_order.length) {
+				orders.push.apply(orders, zaxis_order);
+			}
+        }
+
+		if (orders.length) {
+			args.order = orders.join(',');
+		}
 
         // Include variance
         if (view.params.charttype == 'variance') {
@@ -401,6 +383,39 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
 	    return weekNo;
 	};
 
+    var dim_to_arr = function (view, d) {
+		var ret = [];
+		try {
+			var dimension = d.split('@')[0];
+			var hierarchy_combo = d.split('@')[1];
+			var hierarchy_name;
+			if (!hierarchy_combo) {
+				dimension = dimension.split(':')[0];
+				hierarchy_name = $.grep(view.cube.dimensions, function (e) {
+					return e['name'] === dimension
+				})[0]['default_hierarchy_name'];
+			} else {
+				hierarchy_name = hierarchy_combo.split(':')[0];
+			}
+
+
+			var levels = $.grep(view.cube.dimensions, function (e) {
+				return e['name'] === dimension
+			})[0].hierarchies[hierarchy_name].levels;
+			for (var j = 0; j < levels.length; j++) {
+				if (dimension == levels[j].name) {
+					ret.push(levels[j].name);
+				} else {
+					ret.push(dimension + '.' + levels[j].name);
+				}
+			}
+		}
+		catch (e) {
+            console.log(e);
+		}
+
+		return ret;
+	};
 
 	this.initialize();
 
