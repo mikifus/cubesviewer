@@ -6537,8 +6537,17 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMaxValueController"
                     if (prev_values.length > 0) {
                         prev_values = prev_values[0]['values'];
                         $(serie['values']).each(function (i, v) {
+                            var diff;
+                            if (prev_values[i]['y'] == 0 && v['y'] == 0) {
+                                diff = 0;
+                            }
+                            else if (v['y'] == 0) {
+                                diff = -100;
+                            } else {
+                                diff = $scope.toFixed((v['y'] - prev_values[i]['y']) / v['y'] * 100, 1);
+                            }
                             v['prev'] = prev_values[i]['y'];
-                            v['diff'] = $scope.toFixed((v['y'] - prev_values[i]['y']) / v['y'] * 100, 1);
+                            v['diff'] = diff;
                         });
                     }
 
@@ -6683,7 +6692,15 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetThresholdController
                         prev_values = prev_values[0]['values'];
                         var filtered_values = [];
                         $(serie['values']).each(function (i, v) {
-                            var diff = $scope.toFixed((v['y'] - prev_values[i]['y']) / v['y'] * 100, 1);
+                            var diff;
+                            if (prev_values[i]['y'] == 0 && v['y'] == 0) {
+                                diff = 0;
+                            }
+                            else if (v['y'] == 0) {
+                                diff = -100;
+                            } else {
+                                diff = $scope.toFixed((v['y'] - prev_values[i]['y']) / v['y'] * 100, 1);
+                            }
                             if (v['y'] >= view.params.widget.threshold) {
                                 filtered_values.push({
                                     'x': $scope.toFixed(v['x'], 2),
@@ -6837,9 +6854,14 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMovementController"
                         prev_values = prev_values[0]['values'];
                         var filtered_values = [];
                         $(serie['values']).each(function (i, v) {
-                            var diff = $scope.toFixed((v['y'] - prev_values[i]['y']) / v['y'] * 100, 1);
-                            if (!diff) {
+                            var diff;
+                            if (prev_values[i]['y'] == 0 && v['y'] == 0) {
                                 diff = 0;
+                            }
+                            else if (v['y'] == 0) {
+                                diff = -100;
+                            } else {
+                                diff = $scope.toFixed((v['y'] - prev_values[i]['y']) / v['y'] * 100, 1);
                             }
                             if ($scope.diff_abs(diff) >= view.params.widget.movement) {
                                 filtered_values.push({
@@ -7583,7 +7605,6 @@ angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootSco
         d.shared = false;
         d.is_default = false;
 		reststoreService.dashboard = d;
-		console.log(d);
 	};
 
 	/*
@@ -8715,66 +8736,49 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "    <div class=\"cv-gui-panel hidden-print\">\n" +
     "\n" +
     "        <div class=\"dropdown m-b\" style=\"display: inline-block;\">\n" +
-    "            <button class=\"btn btn-primary dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\" data-submenu>\n" +
-    "                <i class=\"fa fa-fw fa-cube\"></i> Cubes <span class=\"caret\"></span>\n" +
-    "            </button>\n" +
+    "          <button class=\"btn btn-primary dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\" data-submenu>\n" +
+    "            <i class=\"fa fa-fw fa-cube\"></i> Cubes <span class=\"caret\"></span>\n" +
+    "          </button>\n" +
     "\n" +
-    "            <ul class=\"dropdown-menu cv-gui-cubeslist-menu\">\n" +
+    "          <ul class=\"dropdown-menu cv-gui-cubeslist-menu\">\n" +
     "\n" +
-    "                <li ng-show=\"cubesService.state === 1\" class=\"disabled\"><a>Loading...</a></li>\n" +
-    "                <li ng-show=\"cubesService.state === 2 && cubesService.cubesserver._cube_list.length === 0\"\n" +
-    "                    class=\"disabled\"><a>No cubes found</a></li>\n" +
-    "                <li ng-show=\"cubesService.state === 3\" class=\"disabled text-danger\"><a>Loading failed</a></li>\n" +
+    "            <li ng-show=\"cubesService.state === 1\" class=\"disabled\"><a>Loading...</a></li>\n" +
+    "            <li ng-show=\"cubesService.state === 2 && cubesService.cubesserver._cube_list.length === 0\" class=\"disabled\"><a>No cubes found</a></li>\n" +
+    "            <li ng-show=\"cubesService.state === 3\" class=\"disabled text-danger\"><a>Loading failed</a></li>\n" +
     "\n" +
-    "                <li ng-repeat=\"cube in cubesService.cubesserver._cube_list | orderBy:'label'\"\n" +
-    "                    ng-click=\"studioViewsService.addViewCube(cube.name)\"><a>{{ cube.label }}</a></li>\n" +
+    "            <li ng-repeat=\"cube in cubesService.cubesserver._cube_list | orderBy:'label'\" ng-click=\"studioViewsService.addViewCube(cube.name)\"><a>{{ cube.label }}</a></li>\n" +
     "\n" +
-    "            </ul>\n" +
+    "          </ul>\n" +
     "        </div>\n" +
     "\n" +
     "        <div class=\"dropdown m-b\" style=\"display: inline-block; margin-left: 5px;\">\n" +
-    "            <button class=\"btn btn-primary dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\" data-submenu>\n" +
-    "                <i class=\"fa fa-fw fa-wrench\"></i> Tools <span class=\"caret\"></span>\n" +
-    "            </button>\n" +
+    "          <button class=\"btn btn-primary dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\" data-submenu>\n" +
+    "            <i class=\"fa fa-fw fa-wrench\"></i> Tools <span class=\"caret\"></span>\n" +
+    "          </button>\n" +
     "\n" +
-    "            <ul class=\"dropdown-menu\">\n" +
+    "          <ul class=\"dropdown-menu\">\n" +
     "\n" +
-    "                <li ng-click=\"showSerializeAdd()\"><a tabindex=\"0\"><i class=\"fa fa-fw fa-code\"></i> Add view from JSON...</a>\n" +
-    "                </li>\n" +
+    "                <li ng-click=\"showSerializeAdd()\"><a tabindex=\"0\"><i class=\"fa fa-fw fa-code\"></i> Add view from JSON...</a></li>\n" +
     "\n" +
     "                <div class=\"divider\"></div>\n" +
     "\n" +
-    "                <li ng-click=\"toggleTwoColumn()\"\n" +
-    "                    ng-class=\"{ 'hidden-xs': ! cvOptions.studioTwoColumn, 'disabled': studioViewsService.views.length == 0 }\">\n" +
-    "                    <a tabindex=\"0\"><i class=\"fa fa-fw fa-columns\"></i> 2 column\n" +
-    "                        <span class=\"label label-default\" style=\"margin-left: 10px;\"\n" +
-    "                              ng-class=\"{ 'label-success': cvOptions.studioTwoColumn }\">{{ cvOptions.studioTwoColumn ? \"ON\" : \"OFF\" }}</span></a>\n" +
+    "                <li ng-click=\"toggleTwoColumn()\" ng-class=\"{ 'hidden-xs': ! cvOptions.studioTwoColumn, 'disabled': studioViewsService.views.length == 0 }\"><a tabindex=\"0\"><i class=\"fa fa-fw fa-columns\"></i> 2 column\n" +
+    "                    <span class=\"label label-default\" style=\"margin-left: 10px;\" ng-class=\"{ 'label-success': cvOptions.studioTwoColumn }\">{{ cvOptions.studioTwoColumn ? \"ON\" : \"OFF\" }}</span></a>\n" +
     "                </li>\n" +
-    "                <li ng-click=\"toggleHideControls()\" ng-class=\"{ 'disabled': studioViewsService.views.length == 0 }\"><a\n" +
-    "                        tabindex=\"0\"><i class=\"fa fa-fw fa-unlock-alt\"></i> Hide controls\n" +
-    "                    <span class=\"label label-default\" style=\"margin-left: 10px;\"\n" +
-    "                          ng-class=\"{ 'label-success': cvOptions.hideControls }\">{{ cvOptions.hideControls ? \"ON\" : \"OFF\" }}</span></a>\n" +
+    "                <li ng-click=\"toggleHideControls()\" ng-class=\"{ 'disabled': studioViewsService.views.length == 0 }\"><a tabindex=\"0\"><i class=\"fa fa-fw fa-unlock-alt\"></i> Hide controls\n" +
+    "                    <span class=\"label label-default\" style=\"margin-left: 10px;\" ng-class=\"{ 'label-success': cvOptions.hideControls }\">{{ cvOptions.hideControls ? \"ON\" : \"OFF\" }}</span></a>\n" +
     "                </li>\n" +
     "\n" +
     "                <div class=\"divider\"></div>\n" +
     "\n" +
     "\n" +
     "                <!-- <li class=\"\"><a data-toggle=\"modal\" data-target=\"#cvServerInfo\"><i class=\"fa fa-fw fa-server\"></i> Data model</a></li> -->\n" +
-    "                <li class=\"\" ng-class=\"{ 'disabled': cubesService.state != 2 }\"><a data-toggle=\"modal\"\n" +
-    "                                                                                   data-target=\"#cvServerInfo\"><i\n" +
-    "                        class=\"fa fa-fw fa-database\"></i> Server info</a></li>\n" +
+    "                <li class=\"\" ng-class=\"{ 'disabled': cubesService.state != 2 }\"><a data-toggle=\"modal\" data-target=\"#cvServerInfo\" ><i class=\"fa fa-fw fa-database\"></i> Server info</a></li>\n" +
     "\n" +
     "                <div class=\"divider\"></div>\n" +
     "\n" +
-    "                <li class=\"\"><a\n" +
-    "                        href=\"http://github.com/jjmontesl/cubesviewer/blob/master/doc/guide/cubesviewer-user-main.md\"\n" +
-    "                        target=\"_blank\"><i class=\"fa fa-fw fa-question\"></i> User guide</a></li>\n" +
-    "                <li class=\"\"><a data-toggle=\"modal\" data-target=\"#cvAboutModal\"><i class=\"fa fa-fw fa-info\"></i> About\n" +
-    "                    CubesViewer...</a></li>\n" +
-    "\n" +
-    "                <div class=\"divider\"></div>\n" +
-    "                <li class=\"\"><a ng-click=\"saveDashboard()\"><i class=\"fa fa-fw fa-save\"></i> Save dashboard</a></li>\n" +
-    "\n" +
+    "                <li class=\"\"><a href=\"http://github.com/jjmontesl/cubesviewer/blob/master/doc/guide/cubesviewer-user-main.md\" target=\"_blank\"><i class=\"fa fa-fw fa-question\"></i> User guide</a></li>\n" +
+    "                <li class=\"\"><a data-toggle=\"modal\" data-target=\"#cvAboutModal\"><i class=\"fa fa-fw fa-info\"></i> About CubesViewer...</a></li>\n" +
     "            </ul>\n" +
     "        </div>\n" +
     "\n" +
@@ -8861,17 +8865,12 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "\n" +
     "        <div style=\"display: inline-block; margin-left: 10px; margin-bottom: 0px;\">\n" +
     "\n" +
-    "            <div class=\"form-group hidden-xs\" style=\"display: inline-block; margin-bottom: 0px;\">\n" +
-    "                <button class=\"btn\" type=\"button\" title=\"2 column\" ng-disabled=\"studioViewsService.views.length == 0\"\n" +
-    "                        ng-class=\"cvOptions.studioTwoColumn ? 'btn-active btn-success' : 'btn-primary'\"\n" +
-    "                        ng-click=\"toggleTwoColumn()\"><i class=\"fa fa-fw fa-columns\"></i></button>\n" +
-    "            </div>\n" +
-    "            <div class=\"form-group\" style=\"display: inline-block; margin-bottom: 0px;\">\n" +
-    "                <button class=\"btn\" type=\"button\" title=\"Hide controls\"\n" +
-    "                        ng-disabled=\"studioViewsService.views.length == 0\"\n" +
-    "                        ng-class=\"cvOptions.hideControls ? 'btn-active btn-success' : 'btn-primary'\"\n" +
-    "                        ng-click=\"toggleHideControls()\"><i class=\"fa fa-fw fa-unlock-alt\"></i></button>\n" +
-    "            </div>\n" +
+    "             <div class=\"form-group hidden-xs\" style=\"display: inline-block; margin-bottom: 0px;\">\n" +
+    "                <button class=\"btn\" type=\"button\" title=\"2 column\" ng-disabled=\"studioViewsService.views.length == 0\" ng-class=\"cvOptions.studioTwoColumn ? 'btn-active btn-success' : 'btn-primary'\" ng-click=\"toggleTwoColumn()\"><i class=\"fa fa-fw fa-columns\"></i></button>\n" +
+    "             </div>\n" +
+    "             <div class=\"form-group\" style=\"display: inline-block; margin-bottom: 0px;\">\n" +
+    "                <button class=\"btn\" type=\"button\" title=\"Hide controls\" ng-disabled=\"studioViewsService.views.length == 0\" ng-class=\"cvOptions.hideControls ? 'btn-active btn-success' : 'btn-primary'\" ng-click=\"toggleHideControls()\"><i class=\"fa fa-fw fa-unlock-alt\"></i></button>\n" +
+    "             </div>\n" +
     "\n" +
     "        </div>\n" +
     "\n" +
@@ -8893,15 +8892,12 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "            </div>\n" +
     "        </div>\n" +
     "\n" +
-    "        <div class=\"row cv-views-container\"\n" +
-    "             data-masonry='{ \"itemSelector\": \".cv-view-container\", \"columnWidth\": \".cv-views-gridsizer\", \"percentPosition\": true }'>\n" +
+    "        <div class=\"row cv-views-container\" data-masonry='{ \"itemSelector\": \".cv-view-container\", \"columnWidth\": \".cv-views-gridsizer\", \"percentPosition\": true }'>\n" +
     "\n" +
     "            <div class=\"col-xs-1 cv-views-gridsizer\"></div>\n" +
     "\n" +
-    "            <div ng-repeat=\"studioView in studioViewsService.views\" style=\"display: none;\"\n" +
-    "                 class=\"col-xs-12 cv-view-container sv{{ studioView.id }}\"\n" +
-    "                 ng-class=\"(cvOptions.studioTwoColumn ? 'col-sm-6' : 'col-sm-12')\">\n" +
-    "                <div>\n" +
+    "            <div ng-repeat=\"studioView in studioViewsService.views\" style=\"display: none;\" class=\"col-xs-12 cv-view-container sv{{ studioView.id }}\" ng-class=\"(cvOptions.studioTwoColumn ? 'col-sm-6' : 'col-sm-12')\">\n" +
+    "                <div >\n" +
     "                    <div cv-studio-view view=\"studioView\"></div>\n" +
     "                </div>\n" +
     "            </div>\n" +

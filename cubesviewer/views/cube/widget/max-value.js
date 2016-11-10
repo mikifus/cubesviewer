@@ -108,8 +108,17 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMaxValueController"
                     if (prev_values.length > 0) {
                         prev_values = prev_values[0]['values'];
                         $(serie['values']).each(function (i, v) {
+                            var diff;
+                            if (prev_values[i]['y'] == 0 && v['y'] == 0) {
+                                diff = 0;
+                            }
+                            else if (v['y'] == 0) {
+                                diff = -100;
+                            } else {
+                                diff = $scope.toFixed((v['y'] - prev_values[i]['y']) / v['y'] * 100, 1);
+                            }
                             v['prev'] = prev_values[i]['y'];
-                            v['diff'] = $scope.toFixed((v['y'] - prev_values[i]['y']) / v['y'] * 100, 1);
+                            v['diff'] = diff;
                         });
                     }
 

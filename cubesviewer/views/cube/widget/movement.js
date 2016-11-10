@@ -123,9 +123,14 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMovementController"
                         prev_values = prev_values[0]['values'];
                         var filtered_values = [];
                         $(serie['values']).each(function (i, v) {
-                            var diff = $scope.toFixed((v['y'] - prev_values[i]['y']) / v['y'] * 100, 1);
-                            if (!diff) {
+                            var diff;
+                            if (prev_values[i]['y'] == 0 && v['y'] == 0) {
                                 diff = 0;
+                            }
+                            else if (v['y'] == 0) {
+                                diff = -100;
+                            } else {
+                                diff = $scope.toFixed((v['y'] - prev_values[i]['y']) / v['y'] * 100, 1);
                             }
                             if ($scope.diff_abs(diff) >= view.params.widget.movement) {
                                 filtered_values.push({
