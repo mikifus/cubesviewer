@@ -36,20 +36,23 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetController", ['$roo
 
         $scope.initialize = function () {
             // Add widget view parameters to view definition
+            console.log(JSON.stringify($scope.view.params.widget));
             $scope.view.params = $.extend(
                 {},
                 {
                     "widgettype": "max-value",
                     "zaxis": null,
                     "widget": {
-                        "type": "max-value", "zaxis": null
+                        "type": "max-value",
+                        "zaxis": null,
+                        'zoom': null
                     }
                 },
                 $scope.view.params
             );
+            console.log(JSON.stringify($scope.view.params.widget));
             //$scope.refreshView();
         };
-
         $scope.$watch("view.params.widgettype", function () {
             $scope.loadData();
         });
@@ -149,13 +152,13 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetController", ['$roo
 
         $scope.initialize();
 
-        $scope.diff_abs = function(num){
-                if (num || num == 0) {
-                    return Math.abs(num).toFixed(1);
-                } else {
-                    return 0;
-                }
-            };
+        $scope.diff_abs = function (num) {
+            if (num || num == 0) {
+                return Math.abs(num).toFixed(1);
+            } else {
+                return 0;
+            }
+        };
 
         $scope.toFixed = function (n, digits) {
             if (typeof n == 'number') {

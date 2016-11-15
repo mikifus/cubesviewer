@@ -1567,17 +1567,25 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
 
   $templateCache.put('views/cube/widget/max-value.html',
     "<div class=\"container-fluid\">\n" +
-    "    <div ng-repeat=\"serie in series\" class=\"row\" style=\"margin-top: 1em;\">\n" +
-    "        <div class=\"col-sm-12\"><h3 class=\"\" style=\"color: #337ab7;\">{{serie['key']}}</h3></div>\n" +
-    "        <div ng-repeat=\"point in serie['values']\" class=\"col-sm-3\"\n" +
-    "             ng-init=\"chevron = point['diff'] > 0 ? 'fa-chevron-up text-success' : 'fa-chevron-down text-danger'\">\n" +
-    "            <span style=\"font-size: 200%\">{{toFixed(point['y'], 2)}}</span>\n" +
-    "            <span ng-if=\"point['diff'] > 0\"><i ng-class=\"chevron\" class=\"fa fa-fw\" style=\"font-size: 150%\"></i>\n" +
+    "    <div ng-style=\"{'font-size': view.params.widget.zoom + '%'}\">\n" +
+    "        <div ng-repeat=\"serie in series\" class=\"row\" style=\"margin-top: 1em;\">\n" +
+    "            <div class=\"col-sm-12\"><h3 class=\"\" style=\"color: #337ab7;\">{{serie['key']}}</h3></div>\n" +
+    "            <div ng-repeat=\"point in serie['values']\" class=\"col-sm-3\"\n" +
+    "                 ng-init=\"chevron = point['diff'] > 0 ? 'fa-chevron-up text-success' : 'fa-chevron-down text-danger'\">\n" +
+    "                <span style=\"font-size: 200%\">{{toFixed(point['y'], 2)}}</span>\n" +
+    "                <span ng-if=\"point['diff'] > 0\"><i ng-class=\"chevron\" class=\"fa fa-fw\" style=\"font-size: 150%\"></i>\n" +
     "            <span style=\"font-size: 150%;\">{{diff_abs(point['diff'])}}%</span></span>\n" +
-    "            <span style=\"font-size: 150%; color: #777;\">\n" +
+    "                <span style=\"font-size: 150%; color: #777;\">\n" +
     "                (<span\n" +
-    "                    style=\"font-size: 75%;\">{{view.cube.dimensionParts(view.params.xaxis).labelShort}} </span>&nbsp;<span>{{point['x']}})</span>\n" +
+    "                        style=\"font-size: 75%;\">{{view.cube.dimensionParts(view.params.xaxis).labelShort}} </span>&nbsp;<span>{{point['x']}})</span>\n" +
     "            </span>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "    <div class=\"row\">\n" +
+    "        <div class=\"pull-right\">Zoom: <a ng-click=\"view.params.widget.zoom=view.params.widget.zoom-5;\"><i\n" +
+    "                class=\"fa fa-minus-circle\"></i></a>\n" +
+    "            <a ng-click=\"view.params.widget.zoom=view.params.widget.zoom+5;\"><i class=\"fa fa-plus-circle\"></i></a>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "</div>"
@@ -1586,13 +1594,21 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
 
   $templateCache.put('views/cube/widget/movement.html',
     "<div class=\"container-fluid\">\n" +
-    "    <div ng-repeat=\"serie in series\" class=\"row\" style=\"margin-top: 1em;\">\n" +
-    "        <div class=\"col-sm-12\"><h3 class=\"\" style=\"color: #337ab7;\">{{serie['key']}}</h3></div>\n" +
-    "        <div ng-repeat=\"point in serie['values']\" class=\"col-sm-3\"\n" +
-    "             ng-init=\"color = point['diff'] > 0 ? '#669366' : '#dba4a3'; chevron = point['diff'] > 0 ? 'fa-chevron-up' : 'fa-chevron-down'\">\n" +
-    "            <span style=\"font-size: 200%\">{{point['x']}}</span>\n" +
-    "            <span style=\"font-size: 150%; color: #777;\">({{point['y']}}<span ng-if=\"point['diff'] != 0\">\n" +
+    "    <div ng-style=\"{'font-size': view.params.widget.zoom + '%'}\">\n" +
+    "        <div ng-repeat=\"serie in series\" class=\"row\" style=\"margin-top: 1em;\">\n" +
+    "            <div class=\"col-sm-12\"><h3 class=\"\" style=\"color: #337ab7;\">{{serie['key']}}</h3></div>\n" +
+    "            <div ng-repeat=\"point in serie['values']\" class=\"col-sm-3\"\n" +
+    "                 ng-init=\"color = point['diff'] > 0 ? '#669366' : '#dba4a3'; chevron = point['diff'] > 0 ? 'fa-chevron-up' : 'fa-chevron-down'\">\n" +
+    "                <span style=\"font-size: 200%\">{{point['x']}}</span>\n" +
+    "                <span style=\"font-size: 150%; color: #777;\">({{point['y']}}<span ng-if=\"point['diff'] != 0\">\n" +
     "                <i ng-class=\"chevron\" class=\"fa fa-fw\" ng-style=\"{color: color}\"></i>{{diff_abs(point['diff'])}}%</span>)</span>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "    <div class=\"row\">\n" +
+    "        <div class=\"pull-right\">Zoom: <a ng-click=\"view.params.widget.zoom=view.params.widget.zoom-5;\"><i\n" +
+    "                class=\"fa fa-minus-circle\"></i></a>\n" +
+    "            <a ng-click=\"view.params.widget.zoom=view.params.widget.zoom+5;\"><i class=\"fa fa-plus-circle\"></i></a>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "</div>"
@@ -1655,13 +1671,21 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
 
   $templateCache.put('views/cube/widget/threshold.html',
     "<div class=\"container-fluid\">\n" +
-    "    <div ng-repeat=\"serie in series\" class=\"row\" style=\"margin-top: 1em;\">\n" +
-    "        <div class=\"col-sm-12\"><h3 class=\"\" style=\"color: #337ab7;\">{{serie['key']}}</h3></div>\n" +
-    "        <div ng-repeat=\"point in serie['values']\" class=\"col-sm-3\"\n" +
-    "             ng-init=\"color = point['diff'] > 0 ? '#669366' : '#dba4a3'; chevron = point['diff'] > 0 ? 'fa-chevron-up' : 'fa-chevron-down'\">\n" +
-    "            <span style=\"font-size: 200%\">{{point['x']}}</span>\n" +
-    "            <span style=\"font-size: 150%; color: #777;\">({{point['y']}}<span ng-if=\"point['diff'] != 0\">\n" +
+    "    <div ng-style=\"{'font-size': view.params.widget.zoom + '%'}\">\n" +
+    "        <div ng-repeat=\"serie in series\" class=\"row\" style=\"margin-top: 1em;\">\n" +
+    "            <div class=\"col-sm-12\"><h3 class=\"\" style=\"color: #337ab7;\">{{serie['key']}}</h3></div>\n" +
+    "            <div ng-repeat=\"point in serie['values']\" class=\"col-sm-3\"\n" +
+    "                 ng-init=\"color = point['diff'] > 0 ? '#669366' : '#dba4a3'; chevron = point['diff'] > 0 ? 'fa-chevron-up' : 'fa-chevron-down'\">\n" +
+    "                <span style=\"font-size: 200%\">{{point['x']}}</span>\n" +
+    "                <span style=\"font-size: 150%; color: #777;\">({{point['y']}}<span ng-if=\"point['diff'] != 0\">\n" +
     "                <i ng-class=\"chevron\" class=\"fa fa-fw\" ng-style=\"{color: color}\"></i>{{diff_abs(point['diff'])}}%</span>)</span>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "    <div class=\"row\">\n" +
+    "        <div class=\"pull-right\">Zoom: <a ng-click=\"view.params.widget.zoom=view.params.widget.zoom-5;\"><i\n" +
+    "                class=\"fa fa-minus-circle\"></i></a>\n" +
+    "            <a ng-click=\"view.params.widget.zoom=view.params.widget.zoom+5;\"><i class=\"fa fa-plus-circle\"></i></a>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "</div>"
