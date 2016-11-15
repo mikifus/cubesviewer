@@ -36,12 +36,10 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetController", ['$roo
 
         $scope.initialize = function () {
             // Add widget view parameters to view definition
-            console.log(JSON.stringify($scope.view.params.widget));
             $scope.view.params = $.extend(
                 {},
                 {
                     "widgettype": "max-value",
-                    "zaxis": null,
                     "widget": {
                         "type": "max-value",
                         "zaxis": null,
@@ -50,7 +48,6 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetController", ['$roo
                 },
                 $scope.view.params
             );
-            console.log(JSON.stringify($scope.view.params.widget));
             //$scope.refreshView();
         };
         $scope.$watch("view.params.widgettype", function () {

@@ -47,7 +47,7 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMaxValueController"
                 var view = $scope.view;
                 var dataRows = $scope.view.grid.data;
                 var columnDefs = view.grid.columnDefs;
-                var zaxis = view.params.zaxis;
+                var zaxis = view.params.widget.zaxis;
                 $scope.view.zaxis_compare = null;
                 $scope.series = null;
 
