@@ -2606,6 +2606,13 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
 	};
 
 	/*
+	 * Set limit for Max Value Widget.
+	 */
+	$scope.MaxValueSetLimit = function(limit){
+		$scope.view.params.widget.limit = limit;
+	};
+
+	/*
 	 * Selects chart type
 	 */
 	$scope.selectChartType = function(charttype) {
@@ -6477,6 +6484,7 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMaxValueController"
         function ($rootScope, $scope, $element, $timeout, cvOptions, cubesService, viewsService) {
 
 
+            $scope.curr_series = [];
             $scope.series = [];
 
             $scope.initialize = function () {
@@ -6486,14 +6494,37 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMaxValueController"
                 $scope.drawWidgetMaxDifficulty();
             });
 
+            $scope.$watch('view.params.widget.limit', function(newValue, oldValue){
+                if (newValue != undefined && (newValue != oldValue)) {
+                    setLimit(newValue);
+                }
+            });
+
+            var setLimit = function (limit) {
+                $scope.view.params.widget.limit = limit;
+                var curr_series = $.extend(true, [], $scope.curr_series);
+                $(curr_series).each(function (i, serie) {
+                    var sort_values = serie['values'].slice();
+                    sort_values.sort(function (a, b) {
+                        return a.y > b.y ? -1 : (a.y < b.y ? +1 : 0);
+                    });
+                    sort_values = sort_values.slice(0, limit);
+
+                    serie['values'] = serie['values'].filter(function (v) {
+                        return sort_values.indexOf(v) != -1;
+                    });
+                });
+                $scope.series = curr_series;
+            };
+
             $scope.drawWidgetMaxDifficulty = function () {
 
                 var view = $scope.view;
                 var dataRows = $scope.view.grid.data;
                 var columnDefs = view.grid.columnDefs;
                 var zaxis = view.params.widget.zaxis;
+                view.params.widget.limit = view.params.widget.limit ? view.params.widget.limit : 16;
                 $scope.view.zaxis_compare = null;
-                $scope.series = null;
 
                 if (!zaxis) {
                     return;
@@ -6545,6 +6576,7 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMaxValueController"
                 var curr_series = $.grep(d, function (serie) {
                     return serie.zkey == current_key;
                 });
+
                 $(curr_series).each(function (i, serie) {
                     var prev_values = $.grep(prev_series, function (ps) {
                         return ps.key == serie.key;
@@ -6568,18 +6600,10 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMaxValueController"
                             v['diff'] = diff;
                         });
                     }
-
-                    var sort_values = serie['values'].slice(0);
-                    sort_values.sort(function (a, b) {
-                        return a.y > b.y ? -1 : (a.y < b.y ? +1 : 0);
-                    });
-                    sort_values = sort_values.slice(0, 10);
-
-                    serie['values'] = serie['values'].filter(function (v) {
-                        return sort_values.indexOf(v) != -1;
-                    });
                 });
+                $scope.curr_series = curr_series;
                 $scope.series = curr_series;
+                setLimit(view.params.widget.limit);
             };
             $scope.initialize();
         }]);
@@ -9293,9 +9317,12 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "    <li ng-show=\"view.params.mode == 'widget'\" class=\"dropdown-submenu\">\n" +
     "        <a tabindex=\"0\"><i class=\"fa fa-fw fa-cubes\"></i> Widget type</a>\n" +
     "        <ul class=\"dropdown-menu\">\n" +
-    "            <li ng-click=\"selectWidgetType('max-value')\"><a href=\"\"><i class=\"fa fa-fw fa-sort-amount-asc\"></i> Max value</a></li>\n" +
-    "            <li ng-click=\"selectWidgetType('threshold')\"><a href=\"\"><i class=\"fa fa-fw fa-text-width\"></i> Threshold</a></li>\n" +
-    "            <li ng-click=\"selectWidgetType('movement')\"><a href=\"\"><i class=\"fa fa-fw fa-map-signs\"></i> Movement</a></li>\n" +
+    "            <li ng-click=\"selectWidgetType('max-value')\"><a href=\"\"><i class=\"fa fa-fw fa-sort-amount-asc\"></i> Max\n" +
+    "                value</a></li>\n" +
+    "            <li ng-click=\"selectWidgetType('threshold')\"><a href=\"\"><i class=\"fa fa-fw fa-text-width\"></i> Threshold</a>\n" +
+    "            </li>\n" +
+    "            <li ng-click=\"selectWidgetType('movement')\"><a href=\"\"><i class=\"fa fa-fw fa-map-signs\"></i> Movement</a>\n" +
+    "            </li>\n" +
     "        </ul>\n" +
     "    </li>\n" +
     "\n" +
@@ -9430,6 +9457,16 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "\n" +
     "            <li ng-click=\"selectZAxis(null);\"><a href=\"\"><i class=\"fa fa-fw fa-close\"></i> None</a></li>\n" +
     "\n" +
+    "        </ul>\n" +
+    "    </li>\n" +
+    "\n" +
+    "    <li ng-show=\"view.params.mode == 'widget' && view.params.widgettype == 'max-value'\"\n" +
+    "        class=\"dropdown-submenu\">\n" +
+    "        <a tabindex=\"0\"><i class=\"fa fa-fw fa-filter\"></i> Limit</a>\n" +
+    "        <ul class=\"dropdown-menu\">\n" +
+    "            <li ng-repeat=\"l in [2,4,8,16,32,64,128]\" ng-click=\"MaxValueSetLimit(l)\">\n" +
+    "                <a href=\"\">{{ l }}</a>\n" +
+    "            </li>\n" +
     "        </ul>\n" +
     "    </li>\n" +
     "\n" +

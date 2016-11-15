@@ -853,9 +853,12 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "    <li ng-show=\"view.params.mode == 'widget'\" class=\"dropdown-submenu\">\n" +
     "        <a tabindex=\"0\"><i class=\"fa fa-fw fa-cubes\"></i> Widget type</a>\n" +
     "        <ul class=\"dropdown-menu\">\n" +
-    "            <li ng-click=\"selectWidgetType('max-value')\"><a href=\"\"><i class=\"fa fa-fw fa-sort-amount-asc\"></i> Max value</a></li>\n" +
-    "            <li ng-click=\"selectWidgetType('threshold')\"><a href=\"\"><i class=\"fa fa-fw fa-text-width\"></i> Threshold</a></li>\n" +
-    "            <li ng-click=\"selectWidgetType('movement')\"><a href=\"\"><i class=\"fa fa-fw fa-map-signs\"></i> Movement</a></li>\n" +
+    "            <li ng-click=\"selectWidgetType('max-value')\"><a href=\"\"><i class=\"fa fa-fw fa-sort-amount-asc\"></i> Max\n" +
+    "                value</a></li>\n" +
+    "            <li ng-click=\"selectWidgetType('threshold')\"><a href=\"\"><i class=\"fa fa-fw fa-text-width\"></i> Threshold</a>\n" +
+    "            </li>\n" +
+    "            <li ng-click=\"selectWidgetType('movement')\"><a href=\"\"><i class=\"fa fa-fw fa-map-signs\"></i> Movement</a>\n" +
+    "            </li>\n" +
     "        </ul>\n" +
     "    </li>\n" +
     "\n" +
@@ -990,6 +993,16 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "\n" +
     "            <li ng-click=\"selectZAxis(null);\"><a href=\"\"><i class=\"fa fa-fw fa-close\"></i> None</a></li>\n" +
     "\n" +
+    "        </ul>\n" +
+    "    </li>\n" +
+    "\n" +
+    "    <li ng-show=\"view.params.mode == 'widget' && view.params.widgettype == 'max-value'\"\n" +
+    "        class=\"dropdown-submenu\">\n" +
+    "        <a tabindex=\"0\"><i class=\"fa fa-fw fa-filter\"></i> Limit</a>\n" +
+    "        <ul class=\"dropdown-menu\">\n" +
+    "            <li ng-repeat=\"l in [2,4,8,16,32,64,128]\" ng-click=\"MaxValueSetLimit(l)\">\n" +
+    "                <a href=\"\">{{ l }}</a>\n" +
+    "            </li>\n" +
     "        </ul>\n" +
     "    </li>\n" +
     "\n" +

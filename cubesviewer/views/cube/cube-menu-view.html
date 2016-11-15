@@ -28,9 +28,12 @@
     <li ng-show="view.params.mode == 'widget'" class="dropdown-submenu">
         <a tabindex="0"><i class="fa fa-fw fa-cubes"></i> Widget type</a>
         <ul class="dropdown-menu">
-            <li ng-click="selectWidgetType('max-value')"><a href=""><i class="fa fa-fw fa-sort-amount-asc"></i> Max value</a></li>
-            <li ng-click="selectWidgetType('threshold')"><a href=""><i class="fa fa-fw fa-text-width"></i> Threshold</a></li>
-            <li ng-click="selectWidgetType('movement')"><a href=""><i class="fa fa-fw fa-map-signs"></i> Movement</a></li>
+            <li ng-click="selectWidgetType('max-value')"><a href=""><i class="fa fa-fw fa-sort-amount-asc"></i> Max
+                value</a></li>
+            <li ng-click="selectWidgetType('threshold')"><a href=""><i class="fa fa-fw fa-text-width"></i> Threshold</a>
+            </li>
+            <li ng-click="selectWidgetType('movement')"><a href=""><i class="fa fa-fw fa-map-signs"></i> Movement</a>
+            </li>
         </ul>
     </li>
 
@@ -165,6 +168,16 @@
 
             <li ng-click="selectZAxis(null);"><a href=""><i class="fa fa-fw fa-close"></i> None</a></li>
 
+        </ul>
+    </li>
+
+    <li ng-show="view.params.mode == 'widget' && view.params.widgettype == 'max-value'"
+        class="dropdown-submenu">
+        <a tabindex="0"><i class="fa fa-fw fa-filter"></i> Limit</a>
+        <ul class="dropdown-menu">
+            <li ng-repeat="l in [2,4,8,16,32,64,128]" ng-click="MaxValueSetLimit(l)">
+                <a href="">{{ l }}</a>
+            </li>
         </ul>
     </li>
 

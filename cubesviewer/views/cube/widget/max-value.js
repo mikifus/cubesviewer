@@ -33,6 +33,7 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMaxValueController"
         function ($rootScope, $scope, $element, $timeout, cvOptions, cubesService, viewsService) {
 
 
+            $scope.curr_series = [];
             $scope.series = [];
 
             $scope.initialize = function () {
@@ -42,14 +43,37 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMaxValueController"
                 $scope.drawWidgetMaxDifficulty();
             });
 
+            $scope.$watch('view.params.widget.limit', function(newValue, oldValue){
+                if (newValue != undefined && (newValue != oldValue)) {
+                    setLimit(newValue);
+                }
+            });
+
+            var setLimit = function (limit) {
+                $scope.view.params.widget.limit = limit;
+                var curr_series = $.extend(true, [], $scope.curr_series);
+                $(curr_series).each(function (i, serie) {
+                    var sort_values = serie['values'].slice();
+                    sort_values.sort(function (a, b) {
+                        return a.y > b.y ? -1 : (a.y < b.y ? +1 : 0);
+                    });
+                    sort_values = sort_values.slice(0, limit);
+
+                    serie['values'] = serie['values'].filter(function (v) {
+                        return sort_values.indexOf(v) != -1;
+                    });
+                });
+                $scope.series = curr_series;
+            };
+
             $scope.drawWidgetMaxDifficulty = function () {
 
                 var view = $scope.view;
                 var dataRows = $scope.view.grid.data;
                 var columnDefs = view.grid.columnDefs;
                 var zaxis = view.params.widget.zaxis;
+                view.params.widget.limit = view.params.widget.limit ? view.params.widget.limit : 16;
                 $scope.view.zaxis_compare = null;
-                $scope.series = null;
 
                 if (!zaxis) {
                     return;
@@ -101,6 +125,7 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMaxValueController"
                 var curr_series = $.grep(d, function (serie) {
                     return serie.zkey == current_key;
                 });
+
                 $(curr_series).each(function (i, serie) {
                     var prev_values = $.grep(prev_series, function (ps) {
                         return ps.key == serie.key;
@@ -124,18 +149,10 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMaxValueController"
                             v['diff'] = diff;
                         });
                     }
-
-                    var sort_values = serie['values'].slice(0);
-                    sort_values.sort(function (a, b) {
-                        return a.y > b.y ? -1 : (a.y < b.y ? +1 : 0);
-                    });
-                    sort_values = sort_values.slice(0, 10);
-
-                    serie['values'] = serie['values'].filter(function (v) {
-                        return sort_values.indexOf(v) != -1;
-                    });
                 });
+                $scope.curr_series = curr_series;
                 $scope.series = curr_series;
+                setLimit(view.params.widget.limit);
             };
             $scope.initialize();
         }]);

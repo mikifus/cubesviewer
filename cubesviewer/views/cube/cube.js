@@ -444,6 +444,13 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
 	};
 
 	/*
+	 * Set limit for Max Value Widget.
+	 */
+	$scope.MaxValueSetLimit = function(limit){
+		$scope.view.params.widget.limit = limit;
+	};
+
+	/*
 	 * Selects chart type
 	 */
 	$scope.selectChartType = function(charttype) {
