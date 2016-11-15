@@ -1,8 +1,8 @@
 <div class="container-fluid">
     <div ng-style="{'font-size': view.params.widget.zoom + '%'}">
         <div ng-repeat="serie in series" class="row" style="margin-top: 1em;">
-            <div class="col-sm-12"><h3 class="" style="color: #337ab7;">{{serie['key']}}</h3></div>
-            <div ng-repeat="point in serie['values']" class="col-sm-3"
+            <div class="col-sm-12"><h3 style="color: #337ab7;">{{serie['key']}}</h3></div>
+            <div ng-repeat="point in serie['values']" class="col-xs-6" ng-class="(cvOptions.studioTwoColumn ? 'col-md-6 col-sm-6' : 'col-md-3 col-sm-3')"
                  ng-init="chevron = point['diff'] > 0 ? 'fa-chevron-up text-success' : 'fa-chevron-down text-danger'">
                 <span style="font-size: 200%">{{toFixed(point['y'], 2)}}</span>
                 <span ng-if="point['diff'] > 0"><i ng-class="chevron" class="fa fa-fw" style="font-size: 150%"></i>
@@ -14,7 +14,7 @@
             </div>
         </div>
     </div>
-    <div class="row">
+    <div class="row" ng-hide="view.getControlsHidden()">
         <div class="pull-right">Zoom: <a ng-click="view.params.widget.zoom=view.params.widget.zoom-5;"><i
                 class="fa fa-minus-circle"></i></a>
             <a ng-click="view.params.widget.zoom=view.params.widget.zoom+5;"><i class="fa fa-plus-circle"></i></a>

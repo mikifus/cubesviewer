@@ -1122,7 +1122,7 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "\n" +
     "        </div>\n" +
     "\n" +
-    "        <div class=\"cv-view-viewinfo\">\n" +
+    "        <div class=\"cv-view-viewinfo\" ng-hide=\"view.getControlsHidden()\">\n" +
     "            <div>\n" +
     "                <div class=\"label label-secondary cv-infopiece cv-view-viewinfo-cubename\"\n" +
     "                     style=\"color: white; background-color: black;\">\n" +
@@ -1582,8 +1582,8 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "<div class=\"container-fluid\">\n" +
     "    <div ng-style=\"{'font-size': view.params.widget.zoom + '%'}\">\n" +
     "        <div ng-repeat=\"serie in series\" class=\"row\" style=\"margin-top: 1em;\">\n" +
-    "            <div class=\"col-sm-12\"><h3 class=\"\" style=\"color: #337ab7;\">{{serie['key']}}</h3></div>\n" +
-    "            <div ng-repeat=\"point in serie['values']\" class=\"col-sm-3\"\n" +
+    "            <div class=\"col-sm-12\"><h3 style=\"color: #337ab7;\">{{serie['key']}}</h3></div>\n" +
+    "            <div ng-repeat=\"point in serie['values']\" class=\"col-xs-6\" ng-class=\"(cvOptions.studioTwoColumn ? 'col-md-6 col-sm-6' : 'col-md-3 col-sm-3')\"\n" +
     "                 ng-init=\"chevron = point['diff'] > 0 ? 'fa-chevron-up text-success' : 'fa-chevron-down text-danger'\">\n" +
     "                <span style=\"font-size: 200%\">{{toFixed(point['y'], 2)}}</span>\n" +
     "                <span ng-if=\"point['diff'] > 0\"><i ng-class=\"chevron\" class=\"fa fa-fw\" style=\"font-size: 150%\"></i>\n" +
@@ -1595,7 +1595,7 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
-    "    <div class=\"row\">\n" +
+    "    <div class=\"row\" ng-hide=\"view.getControlsHidden()\">\n" +
     "        <div class=\"pull-right\">Zoom: <a ng-click=\"view.params.widget.zoom=view.params.widget.zoom-5;\"><i\n" +
     "                class=\"fa fa-minus-circle\"></i></a>\n" +
     "            <a ng-click=\"view.params.widget.zoom=view.params.widget.zoom+5;\"><i class=\"fa fa-plus-circle\"></i></a>\n" +
@@ -1609,8 +1609,9 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "<div class=\"container-fluid\">\n" +
     "    <div ng-style=\"{'font-size': view.params.widget.zoom + '%'}\">\n" +
     "        <div ng-repeat=\"serie in series\" class=\"row\" style=\"margin-top: 1em;\">\n" +
-    "            <div class=\"col-sm-12\"><h3 class=\"\" style=\"color: #337ab7;\">{{serie['key']}}</h3></div>\n" +
-    "            <div ng-repeat=\"point in serie['values']\" class=\"col-sm-3\"\n" +
+    "            <div class=\"col-sm-12\"><h3 style=\"color: #337ab7;\">{{serie['key']}}</h3></div>\n" +
+    "            <div ng-repeat=\"point in serie['values']\" class=\"col-xs-6\"\n" +
+    "                 ng-class=\"(cvOptions.studioTwoColumn ? 'col-md-6 col-sm-6' : 'col-md-3 col-sm-3')\"\n" +
     "                 ng-init=\"color = point['diff'] > 0 ? '#669366' : '#dba4a3'; chevron = point['diff'] > 0 ? 'fa-chevron-up' : 'fa-chevron-down'\">\n" +
     "                <span style=\"font-size: 200%\">{{point['x']}}</span>\n" +
     "                <span style=\"font-size: 150%; color: #777;\">({{point['y']}}<span ng-if=\"point['diff'] != 0\">\n" +
@@ -1618,7 +1619,7 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
-    "    <div class=\"row\">\n" +
+    "    <div class=\"row\" ng-hide=\"view.getControlsHidden()\">\n" +
     "        <div class=\"pull-right\">Zoom: <a ng-click=\"view.params.widget.zoom=view.params.widget.zoom-5;\"><i\n" +
     "                class=\"fa fa-minus-circle\"></i></a>\n" +
     "            <a ng-click=\"view.params.widget.zoom=view.params.widget.zoom+5;\"><i class=\"fa fa-plus-circle\"></i></a>\n" +
@@ -1686,8 +1687,9 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "<div class=\"container-fluid\">\n" +
     "    <div ng-style=\"{'font-size': view.params.widget.zoom + '%'}\">\n" +
     "        <div ng-repeat=\"serie in series\" class=\"row\" style=\"margin-top: 1em;\">\n" +
-    "            <div class=\"col-sm-12\"><h3 class=\"\" style=\"color: #337ab7;\">{{serie['key']}}</h3></div>\n" +
-    "            <div ng-repeat=\"point in serie['values']\" class=\"col-sm-3\"\n" +
+    "            <div class=\"col-sm-12\"><h3 style=\"color: #337ab7;\">{{serie['key']}}</h3></div>\n" +
+    "            <div ng-repeat=\"point in serie['values']\" class=\"col-xs-6\"\n" +
+    "                 ng-class=\"(cvOptions.studioTwoColumn ? 'col-md-6 col-sm-6' : 'col-md-3 col-sm-3')\"\n" +
     "                 ng-init=\"color = point['diff'] > 0 ? '#669366' : '#dba4a3'; chevron = point['diff'] > 0 ? 'fa-chevron-up' : 'fa-chevron-down'\">\n" +
     "                <span style=\"font-size: 200%\">{{point['x']}}</span>\n" +
     "                <span style=\"font-size: 150%; color: #777;\">({{point['y']}}<span ng-if=\"point['diff'] != 0\">\n" +
@@ -1695,7 +1697,7 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
-    "    <div class=\"row\">\n" +
+    "    <div class=\"row\" ng-hide=\"view.getControlsHidden()\">\n" +
     "        <div class=\"pull-right\">Zoom: <a ng-click=\"view.params.widget.zoom=view.params.widget.zoom-5;\"><i\n" +
     "                class=\"fa fa-minus-circle\"></i></a>\n" +
     "            <a ng-click=\"view.params.widget.zoom=view.params.widget.zoom+5;\"><i class=\"fa fa-plus-circle\"></i></a>\n" +
