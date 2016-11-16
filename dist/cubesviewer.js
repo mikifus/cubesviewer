@@ -9548,19 +9548,24 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "\n" +
     "                <div class=\"btn-group\" role=\"group\" aria-label=\"...\" style=\"margin-left: 5px;\">\n" +
     "                    <button type=\"button\" ng-click=\"setViewMode('explore')\"\n" +
+    "                            ng-if=\"cvOptions.enabledModes.indexOf('explore') != -1\"\n" +
     "                            ng-class=\"{'active': view.params.mode == 'explore'}\"\n" +
     "                            class=\"btn btn-primary btn-sm explorebutton\" title=\"Explore\"><i\n" +
     "                            class=\"fa fa-fw fa-arrow-circle-down\"></i></button>\n" +
     "                    <button type=\"button\" ng-click=\"setViewMode('facts')\"\n" +
+    "                            ng-if=\"cvOptions.enabledModes.indexOf('facts') != -1\"\n" +
     "                            ng-class=\"{'active': view.params.mode == 'facts'}\" class=\"btn btn-primary btn-sm \"\n" +
     "                            title=\"Facts\"><i class=\"fa fa-fw fa-th\"></i></button>\n" +
     "                    <button type=\"button\" ng-click=\"setViewMode('series')\"\n" +
+    "                            ng-if=\"cvOptions.enabledModes.indexOf('series') != -1\"\n" +
     "                            ng-class=\"{'active': view.params.mode == 'series'}\" class=\"btn btn-primary btn-sm \"\n" +
     "                            title=\"Series\"><i class=\"fa fa-fw fa-clock-o\"></i></button>\n" +
     "                    <button type=\"button\" ng-click=\"setViewMode('chart')\"\n" +
+    "                            ng-if=\"cvOptions.enabledModes.indexOf('chart') != -1\"\n" +
     "                            ng-class=\"{'active': view.params.mode == 'chart'}\" class=\"btn btn-primary btn-sm \"\n" +
     "                            title=\"Charts\"><i class=\"fa fa-fw fa-area-chart\"></i></button>\n" +
     "                    <button type=\"button\" ng-click=\"setViewMode('widget')\"\n" +
+    "                            ng-if=\"cvOptions.enabledModes.indexOf('widget') != -1\"\n" +
     "                            ng-class=\"{'active': view.params.mode == 'widget'}\" class=\"btn btn-primary btn-sm \"\n" +
     "                            title=\"Widgets\"><i class=\"fa fa-fw fa-cubes\"></i></button>\n" +
     "                </div>\n" +

@@ -44,19 +44,24 @@
 
                 <div class="btn-group" role="group" aria-label="..." style="margin-left: 5px;">
                     <button type="button" ng-click="setViewMode('explore')"
+                            ng-if="cvOptions.enabledModes.indexOf('explore') != -1"
                             ng-class="{'active': view.params.mode == 'explore'}"
                             class="btn btn-primary btn-sm explorebutton" title="Explore"><i
                             class="fa fa-fw fa-arrow-circle-down"></i></button>
                     <button type="button" ng-click="setViewMode('facts')"
+                            ng-if="cvOptions.enabledModes.indexOf('facts') != -1"
                             ng-class="{'active': view.params.mode == 'facts'}" class="btn btn-primary btn-sm "
                             title="Facts"><i class="fa fa-fw fa-th"></i></button>
                     <button type="button" ng-click="setViewMode('series')"
+                            ng-if="cvOptions.enabledModes.indexOf('series') != -1"
                             ng-class="{'active': view.params.mode == 'series'}" class="btn btn-primary btn-sm "
                             title="Series"><i class="fa fa-fw fa-clock-o"></i></button>
                     <button type="button" ng-click="setViewMode('chart')"
+                            ng-if="cvOptions.enabledModes.indexOf('chart') != -1"
                             ng-class="{'active': view.params.mode == 'chart'}" class="btn btn-primary btn-sm "
                             title="Charts"><i class="fa fa-fw fa-area-chart"></i></button>
                     <button type="button" ng-click="setViewMode('widget')"
+                            ng-if="cvOptions.enabledModes.indexOf('widget') != -1"
                             ng-class="{'active': view.params.mode == 'widget'}" class="btn btn-primary btn-sm "
                             title="Widgets"><i class="fa fa-fw fa-cubes"></i></button>
                 </div>

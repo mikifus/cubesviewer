@@ -56,10 +56,11 @@ module.exports = function(grunt) {
 
     less: {
     	options: {
+            compress: true
     	},
     	dist: {
 	    	files: {
-	    		'dist/cubesviewer.css': 'cubesviewer/cubesviewer.less'
+	    		'dist/cubesviewer.min.css': 'cubesviewer/cubesviewer.less'
 	    	}
     	}
     },
@@ -77,7 +78,9 @@ module.exports = function(grunt) {
       	dist: {
     		files: [
     		    { expand: true, cwd: 'dist', src: '*', dest: '../cubesviewer-page/lib/cubesviewer/' },
-    		    { expand: true, cwd: 'dist', src: '*', dest: '../cubesviewer-server/cvapp/cubesviewer/static/lib/cubesviewer/' }
+    		    { expand: true, cwd: 'dist', src: '*', dest: '../cubesviewer-server/cvapp/cubesviewer/static/lib/cubesviewer/' },
+    		    { expand: true, cwd: 'bower_components', src: '**/*.min.js', dest: 'html/lib' },
+    		    { expand: true, cwd: 'bower_components', src: '**/*.min.css', dest: 'html/lib' }
 	        ]
     	}
     },
@@ -157,7 +160,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-less');
-  grunt.loadNpmTasks('grunt-bower-task')
+  grunt.loadNpmTasks('grunt-bower-task');
   //grunt.loadNpmTasks('grunt-wiredep');
   grunt.loadNpmTasks('grunt-angular-templates');
   grunt.loadNpmTasks('grunt-jsdoc');
