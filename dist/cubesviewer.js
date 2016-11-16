@@ -2789,6 +2789,24 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
 		$scope.refreshView();
 	};
 
+	$scope.getTooltipTemplateAggregates = function(view) {
+		 var ret = [];
+		 if (view.params.tooltip_template) {
+            var re = new RegExp('%([\\.\\w]+)%', 'g');
+
+            var match;
+            do {
+                match = re.exec(view.params.tooltip_template);
+                if (match) {
+                    ret.push(match[1]);
+                }
+
+            } while (match);
+        }
+
+        return ret;
+	 };
+
 	angular.element($window).on('resize', $scope.onResize);
 
 	$scope.$on("$destroy", function() {
@@ -4024,6 +4042,46 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeSeriesController
 		// Process data
 		//$scope._sortData (data.cells, view.params.xaxis != null ? true : false);
 	    $scope._addRows($scope, data);
+
+        var aggregates = $scope.getTooltipTemplateAggregates(view);
+
+        var aggregateNames = {};
+		view.cube.aggregates.forEach(function(agg){
+			if (aggregates.indexOf(agg.name) != -1) {
+				aggregateNames[agg.name] = agg.label;
+			}
+		});
+
+		var newDataRows = [];
+		view.grid.data.forEach(function (row) {
+			var newRow = {};
+			var series = {};
+			aggregates.forEach(function (agg) {
+				series[agg] = {};
+			});
+			view.grid.columnDefs.forEach(function (col) {
+                var id = col['field'];
+                newRow[id] = row[id];
+                aggregates.forEach(function (agg) {
+                    if (row['_cells'][id]) {
+                        series[agg][id] = row['_cells'][id][agg];
+                    } else {
+                        series[agg][id] = row[id];
+                    }
+                    if (id == 'key0') {
+                        series[agg][id] = '\\-' + aggregateNames[agg];
+                    } else {
+
+                    }
+                });
+			});
+			newDataRows.push(newRow);
+			aggregates.forEach(function (agg) {
+				newDataRows.push(series[agg]);
+			});
+		});
+        view.grid.data = newDataRows;
+
 	    seriesOperationsService.applyCalculations($scope.view, $scope.view.grid.data, view.grid.columnDefs);
 
 	    /*
@@ -4540,18 +4598,8 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartController"
 		  $(img).remove();
 		  $(canvas).remove();
 
-		  // this is now the base64 encoded version of our PNG! you could optionally
-		  // redirect the user to download the PNG by sending them to the url with
-		  // `window.location.href= canvasUrl`.
-		  /*
-		  var img2 = d3.select('body').append('img')
-		    .attr('width', svgSel.width())
-		    .attr('height', svgSel.height())
-		    .node();
-		   */
-		  //img2.src = canvasUrl;
 		  exportService.saveAs(canvasUrl, 'image/png', $scope.view.cube.name + "-" + $scope.view.params.charttype + ".png");
-		}
+		};
 		// start loading the image.
 		img.src = url;
 	};
@@ -4575,25 +4623,6 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartController"
 				 return tooltipContentGenerator(i);
 			 });
 		 }
-	 };
-
-	 $scope.getTooltipTemplateAggregates = function() {
-		 var ret = [];
-		 var view = $scope.view;
-		 if (view.params.tooltip_template) {
-            var re = new RegExp('%([\\.\\w]+)%', 'g');
-
-            var match;
-            do {
-                match = re.exec(view.params.tooltip_template);
-                if (match) {
-                    ret.push(match[1]);
-                }
-
-            } while (match);
-        }
-
-        return ret;
 	 };
 
 	$scope.$on("$destroy", function() {
@@ -4986,10 +5015,9 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesContro
 
 		var container = $($element).find("svg").get(0);
 
-		var xAxisLabel = ( (view.params.xaxis != null) ? view.cube.dimensionParts(view.params.xaxis).label : "None")
+		var xAxisLabel = ( (view.params.xaxis != null) ? view.cube.dimensionParts(view.params.xaxis).label : "None");
 
-		var tooltip_values = $scope.getTooltipTemplateAggregates();
-
+		var tooltip_aggregates = $scope.getTooltipTemplateAggregates(view);
 
 	    // TODO: Check there's only one value column
 
@@ -5002,7 +5030,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesContro
 	    		if (columnDefs[i].field in e) {
 	    			var value = e[columnDefs[i].field];
 	    			var data = {"x": i, "y":  (value != undefined) ? value : 0};
-                    tooltip_values.forEach(function(v){
+                    tooltip_aggregates.forEach(function(v){
                         data[v] = e['_cells'][columnDefs[i].field][v];
                     });
 	    			serie.push(data);
@@ -6001,9 +6029,9 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesAVGCon
 
 		var container = $($element).find("svg").get(0);
 
-		var xAxisLabel = ( (view.params.xaxis != null) ? view.cube.dimensionParts(view.params.xaxis).label : "None")
+		var xAxisLabel = ( (view.params.xaxis != null) ? view.cube.dimensionParts(view.params.xaxis).label : "None");
 
-		var tooltip_values = $scope.getTooltipTemplateAggregates();
+		var tooltip_aggregates = $scope.getTooltipTemplateAggregates(view);
 
 		var d = [];
 	    var serieCount = 0;
@@ -6013,7 +6041,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesAVGCon
 	    		if (columnDefs[i].field in e) {
 	    			var value = e[columnDefs[i].field];
 					var data = { "x": i, "y":  (value != undefined) ? value : 0 };
-                    tooltip_values.forEach(function(v){
+                    tooltip_aggregates.forEach(function(v){
                         data[v] = e['_cells'][columnDefs[i].field][v];
                     });
 	    			serie.push(data);
@@ -6152,7 +6180,8 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesVarian
 		var y_max_value = 0;
 		var y_min_value = 0;
 		var variance_name = view.params.yaxis + '.variance';
-        var tooltip_values = $scope.getTooltipTemplateAggregates();
+
+		var tooltip_aggregates = $scope.getTooltipTemplateAggregates(view);
 
         $(dataRows).each(function(idx, e) {
 	    	var serie = [];
@@ -6161,7 +6190,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesVarian
 	    			var value = e[columnDefs[i].field];
 				    var variance = Math.sqrt(e['_cells'][columnDefs[i].field][variance_name]);
                     var data = { "x": i, "y":  (value != undefined) ? value : 0, "variance": variance };
-                    tooltip_values.forEach(function(v){
+                    tooltip_aggregates.forEach(function(v){
                         data[v] = e['_cells'][columnDefs[i].field][v];
                     });
 	    			serie.push(data);
@@ -7038,7 +7067,7 @@ angular.module('cv.views.cube').service("exportService", ['$rootScope', '$timeou
 
 
 		//window.open (url, "_blank");
-		this.saveAs(content, "text/csv", view.cube.name + "-summary.csv")
+		this.saveAs(' ,' + btoa(content), "text/csv", view.cube.name + "-summary.csv")
 	};
 
 	/**

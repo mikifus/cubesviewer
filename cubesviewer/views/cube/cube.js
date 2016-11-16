@@ -627,6 +627,24 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
 		$scope.refreshView();
 	};
 
+	$scope.getTooltipTemplateAggregates = function(view) {
+		 var ret = [];
+		 if (view.params.tooltip_template) {
+            var re = new RegExp('%([\\.\\w]+)%', 'g');
+
+            var match;
+            do {
+                match = re.exec(view.params.tooltip_template);
+                if (match) {
+                    ret.push(match[1]);
+                }
+
+            } while (match);
+        }
+
+        return ret;
+	 };
+
 	angular.element($window).on('resize', $scope.onResize);
 
 	$scope.$on("$destroy", function() {

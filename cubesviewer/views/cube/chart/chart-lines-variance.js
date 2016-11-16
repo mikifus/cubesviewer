@@ -66,7 +66,8 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesVarian
 		var y_max_value = 0;
 		var y_min_value = 0;
 		var variance_name = view.params.yaxis + '.variance';
-        var tooltip_values = $scope.getTooltipTemplateAggregates();
+
+		var tooltip_aggregates = $scope.getTooltipTemplateAggregates(view);
 
         $(dataRows).each(function(idx, e) {
 	    	var serie = [];
@@ -75,7 +76,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesVarian
 	    			var value = e[columnDefs[i].field];
 				    var variance = Math.sqrt(e['_cells'][columnDefs[i].field][variance_name]);
                     var data = { "x": i, "y":  (value != undefined) ? value : 0, "variance": variance };
-                    tooltip_values.forEach(function(v){
+                    tooltip_aggregates.forEach(function(v){
                         data[v] = e['_cells'][columnDefs[i].field][v];
                     });
 	    			serie.push(data);

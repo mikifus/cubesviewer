@@ -226,18 +226,8 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartController"
 		  $(img).remove();
 		  $(canvas).remove();
 
-		  // this is now the base64 encoded version of our PNG! you could optionally
-		  // redirect the user to download the PNG by sending them to the url with
-		  // `window.location.href= canvasUrl`.
-		  /*
-		  var img2 = d3.select('body').append('img')
-		    .attr('width', svgSel.width())
-		    .attr('height', svgSel.height())
-		    .node();
-		   */
-		  //img2.src = canvasUrl;
 		  exportService.saveAs(canvasUrl, 'image/png', $scope.view.cube.name + "-" + $scope.view.params.charttype + ".png");
-		}
+		};
 		// start loading the image.
 		img.src = url;
 	};
@@ -261,25 +251,6 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartController"
 				 return tooltipContentGenerator(i);
 			 });
 		 }
-	 };
-
-	 $scope.getTooltipTemplateAggregates = function() {
-		 var ret = [];
-		 var view = $scope.view;
-		 if (view.params.tooltip_template) {
-            var re = new RegExp('%([\\.\\w]+)%', 'g');
-
-            var match;
-            do {
-                match = re.exec(view.params.tooltip_template);
-                if (match) {
-                    ret.push(match[1]);
-                }
-
-            } while (match);
-        }
-
-        return ret;
 	 };
 
 	$scope.$on("$destroy", function() {

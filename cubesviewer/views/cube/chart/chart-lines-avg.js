@@ -58,9 +58,9 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesAVGCon
 
 		var container = $($element).find("svg").get(0);
 
-		var xAxisLabel = ( (view.params.xaxis != null) ? view.cube.dimensionParts(view.params.xaxis).label : "None")
+		var xAxisLabel = ( (view.params.xaxis != null) ? view.cube.dimensionParts(view.params.xaxis).label : "None");
 
-		var tooltip_values = $scope.getTooltipTemplateAggregates();
+		var tooltip_aggregates = $scope.getTooltipTemplateAggregates(view);
 
 		var d = [];
 	    var serieCount = 0;
@@ -70,7 +70,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesAVGCon
 	    		if (columnDefs[i].field in e) {
 	    			var value = e[columnDefs[i].field];
 					var data = { "x": i, "y":  (value != undefined) ? value : 0 };
-                    tooltip_values.forEach(function(v){
+                    tooltip_aggregates.forEach(function(v){
                         data[v] = e['_cells'][columnDefs[i].field][v];
                     });
 	    			serie.push(data);

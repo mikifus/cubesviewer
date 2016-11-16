@@ -99,7 +99,7 @@ angular.module('cv.views.cube').service("exportService", ['$rootScope', '$timeou
 
 
 		//window.open (url, "_blank");
-		this.saveAs(content, "text/csv", view.cube.name + "-summary.csv")
+		this.saveAs(' ,' + btoa(content), "text/csv", view.cube.name + "-summary.csv")
 	};
 
 	/**

@@ -124,6 +124,46 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeSeriesController
 		// Process data
 		//$scope._sortData (data.cells, view.params.xaxis != null ? true : false);
 	    $scope._addRows($scope, data);
+
+        var aggregates = $scope.getTooltipTemplateAggregates(view);
+
+        var aggregateNames = {};
+		view.cube.aggregates.forEach(function(agg){
+			if (aggregates.indexOf(agg.name) != -1) {
+				aggregateNames[agg.name] = agg.label;
+			}
+		});
+
+		var newDataRows = [];
+		view.grid.data.forEach(function (row) {
+			var newRow = {};
+			var series = {};
+			aggregates.forEach(function (agg) {
+				series[agg] = {};
+			});
+			view.grid.columnDefs.forEach(function (col) {
+                var id = col['field'];
+                newRow[id] = row[id];
+                aggregates.forEach(function (agg) {
+                    if (row['_cells'][id]) {
+                        series[agg][id] = row['_cells'][id][agg];
+                    } else {
+                        series[agg][id] = row[id];
+                    }
+                    if (id == 'key0') {
+                        series[agg][id] = '\\-' + aggregateNames[agg];
+                    } else {
+
+                    }
+                });
+			});
+			newDataRows.push(newRow);
+			aggregates.forEach(function (agg) {
+				newDataRows.push(series[agg]);
+			});
+		});
+        view.grid.data = newDataRows;
+
 	    seriesOperationsService.applyCalculations($scope.view, $scope.view.grid.data, view.grid.columnDefs);
 
 	    /*
