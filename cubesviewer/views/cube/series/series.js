@@ -167,7 +167,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeSeriesController
 
 }]);
 
-cubesviewer._seriesAddRows = function($scope, data) {
+cubesviewer._seriesAddRows = function($scope, data, zaxis) {
 
 	var view = $scope.view;
 	var rows = view.grid.data;
@@ -186,8 +186,8 @@ cubesviewer._seriesAddRows = function($scope, data) {
 	}
 
     // Include Z Axis if necessary
-    if (view.params.zaxis != null) {
-        drilldown.splice(1, 0, view.params.zaxis);
+    if (zaxis != null) {
+        drilldown.splice(1, 0, zaxis);
     }
 
 	var baseidx = ((view.params.xaxis == null) ? 0 : 1);

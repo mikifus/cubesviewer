@@ -102,7 +102,7 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetController", ['$roo
             var columnDefs = view.grid.columnDefs;
 
             // Process data
-            $scope._addRows($scope, data);
+            $scope._addRows($scope, data, view.params.zaxis);
             seriesOperationsService.applyCalculations($scope.view, $scope.view.grid.data, view.grid.columnDefs);
 
             var drilldown = view.params.drilldown.slice(0);
