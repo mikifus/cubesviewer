@@ -102,6 +102,61 @@ angular.module('cv.views.cube').service("exportService", ['$rootScope', '$timeou
 		this.saveAs(' ,' + btoa(content), "text/csv", view.cube.name + "-summary.csv")
 	};
 
+	/*
+	 * Export a transposed view (either in "explore" or "series" mode) in CSV format.
+	 */
+     this.exportGridAsTransposedCsv = function (view) {
+
+         if (!view.grid) {
+             console.debug("View has no grid that can be exported.");
+             return;
+         }
+
+         var dataRows = view.grid.data;
+
+         var content = [];
+         var values = [];
+
+         $(view.grid.columnDefs).each(function (idx, e) {
+             values.push('"' + e.name + '"');
+         });
+		 var xaxis_dim = view.cube.cvdim_dim(view.gparams.xaxis);
+		 values[0] = '"' + xaxis_dim['label'] + '"';
+         content.push(values);
+
+         $(dataRows).each(function (idxr, r) {
+             values = [];
+             $(view.grid.columnDefs).each(function (idx, e) {
+                 if (r[e.field] && r[e.field].title) {
+                     // Explore view uses objects as values, where "title" is the label
+                     values.push('"' + r[e.field].title + '"');
+                 } else {
+                     //
+                     values.push('"' + r[e.field] + '"');
+                 }
+             });
+             content.push(values);
+         });
+
+
+         var content_txt = '';
+         var content_arr_transposed = [];
+         if (content.length) {
+             for (var i = 0; i < content[0].length; i++) {
+                 var row = [];
+                 for (var j = 0; j < content.length; j++) {
+                     row.push(content[j][i]);
+                 }
+                 content_arr_transposed.push(row);
+             }
+         }
+         for (var i = 0; i < content_arr_transposed.length; i++) {
+             content_txt += content_arr_transposed[i].join(",") + "\n";
+         }
+         //window.open (url, "_blank");
+         this.saveAs(' ,' + btoa(content_txt), "text/csv", view.cube.name + "-summary_transposed.csv")
+     };
+
 	/**
 	 * Delivers a data URI to the client with a given filename.
 	 *

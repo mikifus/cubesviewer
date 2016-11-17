@@ -1028,6 +1028,9 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "    <li ng-show=\"view.params.mode != 'chart' || view.params.mode == 'widget'\"\n" +
     "        ng-click=\"exportService.exportGridAsCsv(view)\"><a><i\n" +
     "            class=\"fa fa-fw fa-table\"></i> Export table</a></li>\n" +
+    "    <li ng-show=\"view.params.mode != 'chart' || view.params.mode == 'widget'\"\n" +
+    "        ng-click=\"exportService.exportGridAsTransposedCsv(view)\"><a><i\n" +
+    "            class=\"fa fa-fw fa-table\"></i> Export transposed table</a></li>\n" +
     "    <li ng-show=\"view.params.mode == 'chart' && view.params.charttype != 'radar' \" ng-click=\"view.exportChartAsPNG()\">\n" +
     "        <a><i class=\"fa fa-fw fa-picture-o\"></i> Export figure</a></li>\n" +
     "    <li ng-click=\"exportService.exportFacts(view)\"><a><i class=\"fa fa-fw fa-th\"></i> Export facts</a></li>\n" +
