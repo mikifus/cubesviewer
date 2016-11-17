@@ -2,7 +2,7 @@
 
     <div class="cv-gui-panel hidden-print">
 
-        <div class="dropdown m-b" style="display: inline-block;">
+        <div class="dropdown m-b" style="display: inline-block;" ng-if="cvOptions.is_admin">
           <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" data-submenu>
             <i class="fa fa-fw fa-cube"></i> Cubes <span class="caret"></span>
           </button>
@@ -18,7 +18,7 @@
           </ul>
         </div>
 
-        <div class="dropdown m-b" style="display: inline-block; margin-left: 5px;">
+        <div class="dropdown m-b" style="display: inline-block; margin-left: 5px;" ng-if="cvOptions.is_admin">
           <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" data-submenu>
             <i class="fa fa-fw fa-wrench"></i> Tools <span class="caret"></span>
           </button>
@@ -72,10 +72,10 @@
                     <i class="fa fa-fw fa-bars"></i> Saved views <span class="caret"></span>
                 </button>
                 <ul class="dropdown-menu cv-gui-catalog-menu">
-                    <li class="dropdown-header">Personal views</li>
+                    <li class="dropdown-header">Personal</li>
                     <li ng-repeat="view in savedViews | orderBy:'view.name'" ng-include="'categoryTree'"
                         ng-class="{'dropdown-submenu': view.submenu}"></li>
-                    <li class="dropdown-header">Shared by others</li>
+                    <li class="dropdown-header">Shared</li>
                     <li ng-repeat="view in sharedViews | orderBy:'view.name'" ng-include="'categoryTree'"
                         ng-class="{'dropdown-submenu': view.submenu}"></li>
                 </ul>

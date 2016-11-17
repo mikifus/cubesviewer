@@ -317,7 +317,7 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "\n" +
     "    <div class=\"cv-gui-panel hidden-print\">\n" +
     "\n" +
-    "        <div class=\"dropdown m-b\" style=\"display: inline-block;\">\n" +
+    "        <div class=\"dropdown m-b\" style=\"display: inline-block;\" ng-if=\"cvOptions.is_admin\">\n" +
     "          <button class=\"btn btn-primary dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\" data-submenu>\n" +
     "            <i class=\"fa fa-fw fa-cube\"></i> Cubes <span class=\"caret\"></span>\n" +
     "          </button>\n" +
@@ -333,7 +333,7 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "          </ul>\n" +
     "        </div>\n" +
     "\n" +
-    "        <div class=\"dropdown m-b\" style=\"display: inline-block; margin-left: 5px;\">\n" +
+    "        <div class=\"dropdown m-b\" style=\"display: inline-block; margin-left: 5px;\" ng-if=\"cvOptions.is_admin\">\n" +
     "          <button class=\"btn btn-primary dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\" data-submenu>\n" +
     "            <i class=\"fa fa-fw fa-wrench\"></i> Tools <span class=\"caret\"></span>\n" +
     "          </button>\n" +
@@ -387,10 +387,10 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "                    <i class=\"fa fa-fw fa-bars\"></i> Saved views <span class=\"caret\"></span>\n" +
     "                </button>\n" +
     "                <ul class=\"dropdown-menu cv-gui-catalog-menu\">\n" +
-    "                    <li class=\"dropdown-header\">Personal views</li>\n" +
+    "                    <li class=\"dropdown-header\">Personal</li>\n" +
     "                    <li ng-repeat=\"view in savedViews | orderBy:'view.name'\" ng-include=\"'categoryTree'\"\n" +
     "                        ng-class=\"{'dropdown-submenu': view.submenu}\"></li>\n" +
-    "                    <li class=\"dropdown-header\">Shared by others</li>\n" +
+    "                    <li class=\"dropdown-header\">Shared</li>\n" +
     "                    <li ng-repeat=\"view in sharedViews | orderBy:'view.name'\" ng-include=\"'categoryTree'\"\n" +
     "                        ng-class=\"{'dropdown-submenu': view.submenu}\"></li>\n" +
     "                </ul>\n" +
@@ -1480,8 +1480,8 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "                    <div class=\"panel panel-default panel-outline\" style=\"margin-bottom: 0px; \"><div class=\"panel-body\" style=\"max-height: 180px; overflow-y: auto; overflow-x: hidden;\">\n" +
     "                        <div ng-show=\"loadingDimensionValues\" ><i class=\"fa fa-circle-o-notch fa-spin fa-fw\"></i> Loading...</div>\n" +
     "\n" +
-    "                        <div ng-if=\"!loadingDimensionValues\">\n" +
-    "                            <div ng-repeat=\"val in dimensionValues | filter:filterDimensionValue(searchString)\" style=\"overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\">\n" +
+    "                        <div ng-if=\"!loadingDimensionValues\" class=\"row\">\n" +
+    "                            <div ng-repeat=\"val in dimensionValues | filter:filterDimensionValue(searchString)\" style=\"overflow-x: hidden; text-overflow: ellipsis;\" class=\"col-md-3\">\n" +
     "                                <label style=\"font-weight: normal; margin-bottom: 2px;\">\n" +
     "                                    <input type=\"checkbox\" name=\"selectedValues[]\" ng-model=\"val.selected\" value=\"{{ ::val.value }}\" style=\"vertical-align: bottom;\" />\n" +
     "                                    <span title=\"{{ val.label }}\">{{ ::val.label }}</span>\n" +
