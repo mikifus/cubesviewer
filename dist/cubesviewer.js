@@ -7088,7 +7088,7 @@ angular.module('cv.views.cube').service("exportService", ['$rootScope', '$timeou
          $(view.grid.columnDefs).each(function (idx, e) {
              values.push('"' + e.name + '"');
          });
-		 var xaxis_dim = view.cube.cvdim_dim(view.gparams.xaxis);
+		 var xaxis_dim = view.cube.cvdim_dim(view.params.xaxis);
 		 values[0] = '"' + xaxis_dim['label'] + '"';
          content.push(values);
 
