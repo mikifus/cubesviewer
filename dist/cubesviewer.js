@@ -7535,7 +7535,6 @@ function get_hierarchy_menu(views_list, check_func) {
 	});
 
 	ret = construct_menu(menu);
-	console.log(menu);
 
 	$(d).each(function (i, v) {
 		ret.push(v)
