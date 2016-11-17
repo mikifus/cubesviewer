@@ -216,8 +216,9 @@ function get_hierarchy_menu(views_list, check_func) {
 
 function construct_menu(menu) {
 	var r = [];
-	for (var key in menu) {
-		if (key != 'views' && menu.hasOwnProperty(key)) {
+	var menu_keys = Object.keys(menu).sort();
+	menu_keys.forEach(function(key){
+		if (key != 'views') {
 			var item = {'name': key};
 			item['submenu'] = construct_menu(menu[key]);
 			item['display'] = 'none';
@@ -226,7 +227,7 @@ function construct_menu(menu) {
 			}
 			r.push(item);
 		}
-	}
+	});
 	return r;
 }
 
