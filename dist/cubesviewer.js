@@ -8323,7 +8323,7 @@ angular.module('cv.studio').service("reststoreService", ['$rootScope', '$http', 
         	view.savedId = 0;
         	view.owner = cvOptions.user;
         	view.shared = false;
-            view.help = "";
+            view.help = savedview.help;
         }
 
     };
