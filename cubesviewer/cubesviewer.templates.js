@@ -795,30 +795,40 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
 
 
   $templateCache.put('views/cube/cube-menu-panel.html',
-    "  <button class=\"btn btn-primary btn-sm dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\" data-submenu>\n" +
-    "    <i class=\"fa fa-fw fa-file\"></i> <span class=\"hidden-xs\" ng-class=\"{ 'hidden-sm hidden-md': cvOptions.studioTwoColumn }\">Panel</span> <span class=\"caret\"></span>\n" +
-    "  </button>\n" +
+    "<button class=\"btn btn-primary btn-sm dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\" data-submenu>\n" +
+    "    <i class=\"fa fa-fw fa-file\"></i> <span class=\"hidden-xs\"\n" +
+    "                                           ng-class=\"{ 'hidden-sm hidden-md': cvOptions.studioTwoColumn }\">Panel</span>\n" +
+    "    <span class=\"caret\"></span>\n" +
+    "</button>\n" +
     "\n" +
-    "  <ul class=\"dropdown-menu dropdown-menu-right cv-view-menu cv-view-menu-view\">\n" +
+    "<ul class=\"dropdown-menu dropdown-menu-right cv-view-menu cv-view-menu-view\">\n" +
     "\n" +
-    "    <li ng-click=\"viewsService.studioViewsService.studioScope.showRenameView(view)\"><a><i class=\"fa fa-fw fa-pencil\"></i> Rename...</a></li>\n" +
-    "    <li ng-click=\"viewsService.studioViewsService.studioScope.cloneView(view)\"><a><i class=\"fa fa-fw fa-clone\"></i> Clone</a></li>\n" +
+    "    <li ng-click=\"viewsService.studioViewsService.studioScope.showRenameView(view)\"><a><i\n" +
+    "            class=\"fa fa-fw fa-pencil\"></i> Rename...</a></li>\n" +
+    "    <li ng-click=\"viewsService.studioViewsService.studioScope.cloneView(view)\"><a><i class=\"fa fa-fw fa-clone\"></i>\n" +
+    "        Clone</a></li>\n" +
     "\n" +
     "    <div class=\"divider\"></div>\n" +
-    "    <li ng-click=\"viewsService.studioViewsService.studioScope.showSetupControlsView(view)\"><a><i class=\"fa fa-fw fa-pencil\"></i> Setup controls</a></li>\n" +
+    "    <li ng-click=\"viewsService.studioViewsService.studioScope.showSetupControlsView(view)\" ng-if=\"cvOptions.is_admin\">\n" +
+    "        <a><i class=\"fa fa-fw fa-pencil\"></i> Setup controls</a></li>\n" +
     "\n" +
     "    <div ng-if=\"cvOptions.backendUrl\" class=\"divider\"></div>\n" +
-    "    <li ng-if=\"cvOptions.backendUrl\" ng-click=\"reststoreService.saveView(view)\"><a><i class=\"fa fa-fw fa-save\"></i> Save</a></li>\n" +
-    "    <li ng-if=\"cvOptions.backendUrl\" ng-click=\"reststoreService.shareView(view, ! view.shared)\"><a><i class=\"fa fa-fw fa-share\"></i> {{ view.shared ? \"Unshare\" : \"Share\" }}</a></li>\n" +
-    "    <li ng-if=\"cvOptions.backendUrl\" ng-click=\"reststoreService.deleteView(view)\"><a><i class=\"fa fa-fw fa-trash-o\"></i> Delete...</a></li>\n" +
+    "    <li ng-if=\"cvOptions.backendUrl\" ng-click=\"reststoreService.saveView(view)\"><a><i class=\"fa fa-fw fa-save\"></i> Save</a>\n" +
+    "    </li>\n" +
+    "    <li ng-if=\"cvOptions.backendUrl\" ng-click=\"reststoreService.shareView(view, ! view.shared)\"><a><i\n" +
+    "            class=\"fa fa-fw fa-share\"></i> {{ view.shared ? \"Unshare\" : \"Share\" }}</a></li>\n" +
+    "    <li ng-if=\"cvOptions.backendUrl\" ng-click=\"reststoreService.deleteView(view)\"><a><i class=\"fa fa-fw fa-trash-o\"></i>\n" +
+    "        Delete...</a></li>\n" +
     "\n" +
     "    <div class=\"divider\"></div>\n" +
-    "    <li ng-click=\"viewsService.studioViewsService.studioScope.showSerializeView(view)\"><a><i class=\"fa fa-fw fa-code\"></i> Serialize...</a></li>\n" +
+    "    <li ng-click=\"viewsService.studioViewsService.studioScope.showSerializeView(view)\"><a><i\n" +
+    "            class=\"fa fa-fw fa-code\"></i> Serialize...</a></li>\n" +
     "    <div class=\"divider\"></div>\n" +
-    "    <li ng-click=\"viewsService.studioViewsService.studioScope.showHelpView(view)\"><a><i class=\"fa fa-fw fa-question\"></i> Help</a></li>\n" +
+    "    <li ng-click=\"viewsService.studioViewsService.studioScope.showHelpView(view)\"><a><i\n" +
+    "            class=\"fa fa-fw fa-question\"></i> Help</a></li>\n" +
     "    <div class=\"divider\"></div>\n" +
     "    <li ng-click=\"viewsService.studioViewsService.closeView(view)\"><a><i class=\"fa fa-fw fa-close\"></i> Close</a></li>\n" +
-    "  </ul>\n"
+    "</ul>\n"
   );
 
 
