@@ -7589,8 +7589,8 @@ function construct_menu(menu) {
 	return r;
 }
 
-angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootScope', '$scope', '$uibModal', '$element', '$timeout', 'cvOptions', 'cubesService', 'studioViewsService', 'viewsService', 'reststoreService',
-                                                                       function ($rootScope, $scope, $uibModal, $element, $timeout, cvOptions, cubesService, studioViewsService, viewsService, reststoreService) {
+angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootScope', '$scope', '$uibModal', '$element', '$timeout', 'cvOptions', 'cubesService', 'studioViewsService', 'viewsService', 'reststoreService', 'dialogService',
+                                                                       function ($rootScope, $scope, $uibModal, $element, $timeout, cvOptions, cubesService, studioViewsService, viewsService, reststoreService, dialogService) {
 
 	$scope.cvVersion = cubesviewer.version;
 	$scope.cvOptions = cvOptions;
@@ -7772,7 +7772,13 @@ angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootSco
 	 */
 	$scope.saveDashboard = function () {
 		reststoreService.dashboard.views = [];
-		studioViewsService.views.forEach(function (v) {reststoreService.dashboard.views.unshift(v.savedId)});
+		studioViewsService.views.forEach(function (v) {
+			if (!v.saveId) {
+				dialogService.show("Save all opened views first.");
+				return;
+			}
+			reststoreService.dashboard.views.unshift(v.savedId)
+		});
 		reststoreService.saveDashboard();
 	};
 
@@ -8311,7 +8317,7 @@ angular.module('cv.studio').service("reststoreService", ['$rootScope', '$http', 
 
         // Find differences
         if (sview != null) {
-            if (view.params.name != sview.name) return true;
+            if (view.name != sview.name) return true;
             if (view.shared != sview.shared) return true;
             if (viewsService.serializeView(view) != sview.data) return true;
         }
@@ -8355,6 +8361,7 @@ angular.module('cv.studio').service("reststoreService", ['$rootScope', '$http', 
         	view.owner = savedview.owner;
         	view.shared = savedview.shared;
             view.help = savedview.help;
+            view.name = savedview.name;
         } else {
         	view.savedId = 0;
         	view.owner = cvOptions.user;
@@ -8683,7 +8690,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "            <button type=\"button\" ng-click=\"studioViewsService.toggleCollapseView(view)\" class=\"btn btn-primary btn-xs pull-right hidden-print\" style=\"margin-left: 5px;\"><i class=\"fa fa-fw\" ng-class=\"{'fa-caret-up': !view.collapsed, 'fa-caret-down': view.collapsed }\"></i></button>\n" +
     "\n" +
     "            <i class=\"fa fa-fw fa-file\"></i> <span class=\"cv-gui-title\" style=\"cursor: pointer;\" ng-dblclick=\"studioViewsService.studioScope.showRenameView(view)\"><a name=\"cvView{{ view.id }}\"></a><span ng-if=\"view.params.menu_path\">{{view.params.menu_path}}&colon;&nbsp;</span>{{ view.params.name }}</span>\n" +
-    "\n" +
+    "{{view.savedId}}\n" +
     "            <span ng-if=\"view.savedId > 0 && reststoreService.isViewChanged(view)\" class=\"badge cv-gui-container-state\" style=\"margin-left: 15px; font-size: 80%;\">Modified</span>\n" +
     "            <span ng-if=\"view.savedId > 0 && !reststoreService.isViewChanged(view)\" class=\"badge cv-gui-container-state\" style=\"margin-left: 15px; font-size: 80%;\">Saved</span>\n" +
     "            <span ng-if=\"view.shared\" class=\"badge cv-gui-container-state\" style=\"margin-left: 5px; font-size: 80%;\">Shared</span>\n" +

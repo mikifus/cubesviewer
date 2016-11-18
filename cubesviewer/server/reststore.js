@@ -169,7 +169,7 @@ angular.module('cv.studio').service("reststoreService", ['$rootScope', '$http', 
 
         // Find differences
         if (sview != null) {
-            if (view.params.name != sview.name) return true;
+            if (view.name != sview.name) return true;
             if (view.shared != sview.shared) return true;
             if (viewsService.serializeView(view) != sview.data) return true;
         }
@@ -213,6 +213,7 @@ angular.module('cv.studio').service("reststoreService", ['$rootScope', '$http', 
         	view.owner = savedview.owner;
         	view.shared = savedview.shared;
             view.help = savedview.help;
+            view.name = savedview.name;
         } else {
         	view.savedId = 0;
         	view.owner = cvOptions.user;

@@ -231,8 +231,8 @@ function construct_menu(menu) {
 	return r;
 }
 
-angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootScope', '$scope', '$uibModal', '$element', '$timeout', 'cvOptions', 'cubesService', 'studioViewsService', 'viewsService', 'reststoreService',
-                                                                       function ($rootScope, $scope, $uibModal, $element, $timeout, cvOptions, cubesService, studioViewsService, viewsService, reststoreService) {
+angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootScope', '$scope', '$uibModal', '$element', '$timeout', 'cvOptions', 'cubesService', 'studioViewsService', 'viewsService', 'reststoreService', 'dialogService',
+                                                                       function ($rootScope, $scope, $uibModal, $element, $timeout, cvOptions, cubesService, studioViewsService, viewsService, reststoreService, dialogService) {
 
 	$scope.cvVersion = cubesviewer.version;
 	$scope.cvOptions = cvOptions;
@@ -414,7 +414,13 @@ angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootSco
 	 */
 	$scope.saveDashboard = function () {
 		reststoreService.dashboard.views = [];
-		studioViewsService.views.forEach(function (v) {reststoreService.dashboard.views.unshift(v.savedId)});
+		studioViewsService.views.forEach(function (v) {
+			if (!v.saveId) {
+				dialogService.show("Save all opened views first.");
+				return;
+			}
+			reststoreService.dashboard.views.unshift(v.savedId)
+		});
 		reststoreService.saveDashboard();
 	};
 
