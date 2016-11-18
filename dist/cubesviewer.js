@@ -1947,6 +1947,16 @@ cubesviewer.View = function(cvOptions, id, type) {
         view.setEnabledDimensions(dimensions, 'cv-view-series-setxaxis');
     };
 
+    view.getEnabledCompareDimensions = function () {
+        return $.grep(view.getEnabledDimensions('zaxis'), function (d) {
+            return d.name != view.params.xaxis
+        });
+    };
+
+    view.setEnabledCompareDimensions = function (dimensions) {
+        view.setEnabledDimensions(dimensions, 'zaxis');
+    };
+
     view.getEnabledMeasures = function () {
         var enabled_measures = [];
         if (view.params.enabled_controls) {
@@ -6953,7 +6963,7 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMovementController"
                             if (prev_y == 0 && y == 0) {
                                 diff = 0;
                             }
-                            else if (v['y'] == 0) {
+                            else if (y == 0) {
                                 diff = -100;
                             } else {
                                 diff = $scope.toFixed((y - prev_y) / y * 100, 1);
@@ -7867,12 +7877,14 @@ angular.module('cv.studio').controller("CubesViewerSetupControlsController", ['$
         $scope.drilldowns = [];
         $scope.filters = [];
         $scope.horizontalDimensions = [];
+        $scope.zAxis = [];
         $scope.measures = [];
         $scope.aggregates = [];
 
         var enabled_drilldowns = view.getEnabledDrilldowns();
         var enabled_filters = view.getEnabledFilters();
         var enabled_h_dim = view.getEnabledHorizontalDimensions();
+        var enabled_z_dim = view.getEnabledCompareDimensions();
         var enabled_measures = view.getEnabledMeasures();
         var enabled_aggregates = view.getEnabledAggregates();
 
@@ -7880,6 +7892,9 @@ angular.module('cv.studio').controller("CubesViewerSetupControlsController", ['$
             $scope.drilldowns.push({'selected': enabled_drilldowns.indexOf(d) != -1, 'label': d.label, 'name': d.name});
             $scope.filters.push({'selected': enabled_filters.indexOf(d) != -1, 'label': d.label, 'name': d.name});
             $scope.horizontalDimensions.push({'selected': enabled_h_dim.indexOf(d) != -1, 'label': d.label, 'name': d.name});
+            if (d.name != view.params.xaxis) {
+				$scope.zAxis.push({'selected': enabled_z_dim.indexOf(d) != -1, 'label': d.label, 'name': d.name});
+			}
         });
 
         view.cube.measures.forEach(function (d) {
@@ -7900,6 +7915,7 @@ angular.module('cv.studio').controller("CubesViewerSetupControlsController", ['$
             view.setEnabledDrilldowns($scope.drilldowns);
             view.setEnabledFilters($scope.filters);
 			view.setEnabledHorizontalDimensions($scope.horizontalDimensions);
+			view.setEnabledCompareDimensions($scope.zAxis);
             view.setEnabledMeasures($scope.measures);
             view.setEnabledAggregates($scope.aggregates);
 			view.help = $scope.help;
@@ -8870,6 +8886,17 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "                    </label>\n" +
     "                </div>\n" +
     "            </div>\n" +
+    "            <div class=\"panel-heading clearfix\" ng-if=\"zAxis.length > 0\">\n" +
+    "                <h5>Compare dimension</h5>\n" +
+    "            </div>\n" +
+    "            <div class=\"panel-body\">\n" +
+    "                <div ng-repeat=\"d in zAxis\" style=\"display: inline-block; margin-right: 1em;\">\n" +
+    "                    <label>\n" +
+    "                        <input type=\"checkbox\" ng-model=\"d.selected\" />\n" +
+    "                        <span title=\"{{ d.label }}\">{{ ::d.label }}</span>\n" +
+    "                    </label>\n" +
+    "                </div>\n" +
+    "            </div>\n" +
     "        </div>\n" +
     "    </form>\n" +
     "</div>\n" +
@@ -9543,7 +9570,8 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "        <a tabindex=\"0\"><i class=\"fa fa-fw fa-balance-scale\"></i> Compare dimension</a>\n" +
     "        <ul class=\"dropdown-menu\">\n" +
     "\n" +
-    "            <li on-repeat-done ng-repeat-start=\"dimension in view.getEnabledHorizontalDimensions()\"\n" +
+    "            <li on-repeat-done\n" +
+    "                ng-repeat-start=\"dimension in view.getEnabledCompareDimensions()\"\n" +
     "                ng-if=\"dimension.levels.length == 1\" ng-click=\"selectZAxis(dimension.name)\">\n" +
     "                <a href=\"\">{{ dimension.label }}</a>\n" +
     "            </li>\n" +

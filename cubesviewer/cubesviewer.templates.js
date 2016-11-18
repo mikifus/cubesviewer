@@ -301,6 +301,17 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "                    </label>\n" +
     "                </div>\n" +
     "            </div>\n" +
+    "            <div class=\"panel-heading clearfix\" ng-if=\"zAxis.length > 0\">\n" +
+    "                <h5>Compare dimension</h5>\n" +
+    "            </div>\n" +
+    "            <div class=\"panel-body\">\n" +
+    "                <div ng-repeat=\"d in zAxis\" style=\"display: inline-block; margin-right: 1em;\">\n" +
+    "                    <label>\n" +
+    "                        <input type=\"checkbox\" ng-model=\"d.selected\" />\n" +
+    "                        <span title=\"{{ d.label }}\">{{ ::d.label }}</span>\n" +
+    "                    </label>\n" +
+    "                </div>\n" +
+    "            </div>\n" +
     "        </div>\n" +
     "    </form>\n" +
     "</div>\n" +
@@ -974,7 +985,8 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "        <a tabindex=\"0\"><i class=\"fa fa-fw fa-balance-scale\"></i> Compare dimension</a>\n" +
     "        <ul class=\"dropdown-menu\">\n" +
     "\n" +
-    "            <li on-repeat-done ng-repeat-start=\"dimension in view.getEnabledHorizontalDimensions()\"\n" +
+    "            <li on-repeat-done\n" +
+    "                ng-repeat-start=\"dimension in view.getEnabledCompareDimensions()\"\n" +
     "                ng-if=\"dimension.levels.length == 1\" ng-click=\"selectZAxis(dimension.name)\">\n" +
     "                <a href=\"\">{{ dimension.label }}</a>\n" +
     "            </li>\n" +

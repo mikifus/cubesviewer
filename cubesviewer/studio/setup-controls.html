@@ -77,6 +77,17 @@
                     </label>
                 </div>
             </div>
+            <div class="panel-heading clearfix" ng-if="zAxis.length > 0">
+                <h5>Compare dimension</h5>
+            </div>
+            <div class="panel-body">
+                <div ng-repeat="d in zAxis" style="display: inline-block; margin-right: 1em;">
+                    <label>
+                        <input type="checkbox" ng-model="d.selected" />
+                        <span title="{{ d.label }}">{{ ::d.label }}</span>
+                    </label>
+                </div>
+            </div>
         </div>
     </form>
 </div>

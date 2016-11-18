@@ -96,6 +96,16 @@ cubesviewer.View = function(cvOptions, id, type) {
         view.setEnabledDimensions(dimensions, 'cv-view-series-setxaxis');
     };
 
+    view.getEnabledCompareDimensions = function () {
+        return $.grep(view.getEnabledDimensions('zaxis'), function (d) {
+            return d.name != view.params.xaxis
+        });
+    };
+
+    view.setEnabledCompareDimensions = function (dimensions) {
+        view.setEnabledDimensions(dimensions, 'zaxis');
+    };
+
     view.getEnabledMeasures = function () {
         var enabled_measures = [];
         if (view.params.enabled_controls) {

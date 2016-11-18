@@ -518,12 +518,14 @@ angular.module('cv.studio').controller("CubesViewerSetupControlsController", ['$
         $scope.drilldowns = [];
         $scope.filters = [];
         $scope.horizontalDimensions = [];
+        $scope.zAxis = [];
         $scope.measures = [];
         $scope.aggregates = [];
 
         var enabled_drilldowns = view.getEnabledDrilldowns();
         var enabled_filters = view.getEnabledFilters();
         var enabled_h_dim = view.getEnabledHorizontalDimensions();
+        var enabled_z_dim = view.getEnabledCompareDimensions();
         var enabled_measures = view.getEnabledMeasures();
         var enabled_aggregates = view.getEnabledAggregates();
 
@@ -531,6 +533,9 @@ angular.module('cv.studio').controller("CubesViewerSetupControlsController", ['$
             $scope.drilldowns.push({'selected': enabled_drilldowns.indexOf(d) != -1, 'label': d.label, 'name': d.name});
             $scope.filters.push({'selected': enabled_filters.indexOf(d) != -1, 'label': d.label, 'name': d.name});
             $scope.horizontalDimensions.push({'selected': enabled_h_dim.indexOf(d) != -1, 'label': d.label, 'name': d.name});
+            if (d.name != view.params.xaxis) {
+				$scope.zAxis.push({'selected': enabled_z_dim.indexOf(d) != -1, 'label': d.label, 'name': d.name});
+			}
         });
 
         view.cube.measures.forEach(function (d) {
@@ -551,6 +556,7 @@ angular.module('cv.studio').controller("CubesViewerSetupControlsController", ['$
             view.setEnabledDrilldowns($scope.drilldowns);
             view.setEnabledFilters($scope.filters);
 			view.setEnabledHorizontalDimensions($scope.horizontalDimensions);
+			view.setEnabledCompareDimensions($scope.zAxis);
             view.setEnabledMeasures($scope.measures);
             view.setEnabledAggregates($scope.aggregates);
 			view.help = $scope.help;

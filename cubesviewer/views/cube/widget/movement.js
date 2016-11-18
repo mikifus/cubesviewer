@@ -129,7 +129,7 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMovementController"
                             if (prev_y == 0 && y == 0) {
                                 diff = 0;
                             }
-                            else if (v['y'] == 0) {
+                            else if (y == 0) {
                                 diff = -100;
                             } else {
                                 diff = $scope.toFixed((y - prev_y) / y * 100, 1);

@@ -139,7 +139,8 @@
         <a tabindex="0"><i class="fa fa-fw fa-balance-scale"></i> Compare dimension</a>
         <ul class="dropdown-menu">
 
-            <li on-repeat-done ng-repeat-start="dimension in view.getEnabledHorizontalDimensions()"
+            <li on-repeat-done
+                ng-repeat-start="dimension in view.getEnabledCompareDimensions()"
                 ng-if="dimension.levels.length == 1" ng-click="selectZAxis(dimension.name)">
                 <a href="">{{ dimension.label }}</a>
             </li>
