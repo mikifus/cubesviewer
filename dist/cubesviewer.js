@@ -3400,6 +3400,15 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeFilterDimensionC
 			});
 
 		});
+		dimensionValues = dimensionValues.sort(function (a, b) {
+			a = a.value;
+			b = b.value;
+			if (Number(a) || Number(b)) {
+				a = Number(a);
+				b = Number(b);
+			}
+			return a > b ? 1 : a < b ? -1 : 0;
+		});
 
 		$scope.dimensionValues = dimensionValues;
 		$scope.$apply();
