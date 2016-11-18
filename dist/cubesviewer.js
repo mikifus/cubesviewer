@@ -10049,11 +10049,11 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "                    <div class=\"panel panel-default panel-outline\" style=\"margin-bottom: 0px; \"><div class=\"panel-body\" style=\"max-height: 180px; overflow-y: auto; overflow-x: hidden;\">\n" +
     "                        <div ng-show=\"loadingDimensionValues\" ><i class=\"fa fa-circle-o-notch fa-spin fa-fw\"></i> Loading...</div>\n" +
     "\n" +
-    "                        <div ng-if=\"!loadingDimensionValues\" class=\"row\">\n" +
+    "                        <div ng-if=\"!loadingDimensionValues\" class=\"row\" style=\"white-space: nowrap;\">\n" +
     "                            <div ng-repeat=\"val in dimensionValues | filter:filterDimensionValue(searchString)\" style=\"overflow-x: hidden; text-overflow: ellipsis;\" class=\"col-md-3\">\n" +
-    "                                <label style=\"font-weight: normal; margin-bottom: 2px;\">\n" +
+    "                                <label style=\"font-weight: normal; margin-bottom: 2px;\" title=\"{{ ::val.label }}\">\n" +
     "                                    <input type=\"checkbox\" name=\"selectedValues[]\" ng-model=\"val.selected\" value=\"{{ ::val.value }}\" style=\"vertical-align: bottom;\" />\n" +
-    "                                    <span title=\"{{ val.label }}\">{{ ::val.label }}</span>\n" +
+    "                                    <span title=\"{{ ::val.label }}\">{{ ::val.label }}</span>\n" +
     "                                </label>\n" +
     "                            </div>\n" +
     "                        </div>\n" +

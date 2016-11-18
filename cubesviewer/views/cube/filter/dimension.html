@@ -57,11 +57,11 @@
                     <div class="panel panel-default panel-outline" style="margin-bottom: 0px; "><div class="panel-body" style="max-height: 180px; overflow-y: auto; overflow-x: hidden;">
                         <div ng-show="loadingDimensionValues" ><i class="fa fa-circle-o-notch fa-spin fa-fw"></i> Loading...</div>
 
-                        <div ng-if="!loadingDimensionValues" class="row">
+                        <div ng-if="!loadingDimensionValues" class="row" style="white-space: nowrap;">
                             <div ng-repeat="val in dimensionValues | filter:filterDimensionValue(searchString)" style="overflow-x: hidden; text-overflow: ellipsis;" class="col-md-3">
-                                <label style="font-weight: normal; margin-bottom: 2px;">
+                                <label style="font-weight: normal; margin-bottom: 2px;" title="{{ ::val.label }}">
                                     <input type="checkbox" name="selectedValues[]" ng-model="val.selected" value="{{ ::val.value }}" style="vertical-align: bottom;" />
-                                    <span title="{{ val.label }}">{{ ::val.label }}</span>
+                                    <span title="{{ ::val.label }}">{{ ::val.label }}</span>
                                 </label>
                             </div>
                         </div>
