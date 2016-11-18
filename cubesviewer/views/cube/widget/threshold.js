@@ -32,6 +32,8 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetThresholdController
     ['$rootScope', '$scope', '$element', '$timeout', 'cvOptions', 'cubesService', 'viewsService',
         function ($rootScope, $scope, $element, $timeout, cvOptions, cubesService, viewsService) {
 
+            $scope.series = [];
+
             $scope.initialize = function () {
                 $scope.view.params.widget = $.extend(
                     {},
@@ -47,9 +49,13 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetThresholdController
                 $scope.drawWidgetThreshold();
             });
 
-            $scope.$watch('view.params.widget.threshold', function () {
-                $scope.drawWidgetThreshold();
-            });
+            // $scope.$watch('view.params.widget.threshold', function () {
+            //     $scope.drawWidgetThreshold();
+            //     // $timeout(function () {
+            //     //     $('.cv-views-container').masonry('layout');
+            //     //     console.log('layout');
+            //     // }, 100);
+            // });
 
             $scope.drawWidgetThreshold = function () {
 
@@ -59,7 +65,6 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetThresholdController
                 var zaxis = view.params.widget.zaxis;
 
                 $scope.view.zaxis_compare = null;
-                $scope.series = null;
 
                 if (!zaxis) {
                     return;
@@ -123,25 +128,24 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetThresholdController
                         var filtered_values = [];
                         $(serie['values']).each(function (i, v) {
                             var y = $scope.toFixed(v['y'], 2);
-                            if (y >= view.params.widget.threshold) {
-                                var x = $scope.toFixed(v['x'], 2);
-                                var prev_y = $scope.toFixed(prev_values[i]['y'], 2);
-                                var diff;
-                                if (prev_y == 0 && y == 0) {
-                                    diff = 0;
-                                }
-                                else if (y == 0) {
-                                    diff = -100;
-                                } else {
-                                    diff = $scope.toFixed((y - prev_y) / y * 100, 1);
-                                }
-                                filtered_values.push({
-                                    'x': $scope.toFixed(v['x'], 2),
-                                    'y': $scope.toFixed(v['y'], 2),
-                                    'prev': prev_y,
-                                    'diff': diff
-                                });
+                            var x = $scope.toFixed(v['x'], 2);
+                            var prev_y = $scope.toFixed(prev_values[i]['y'], 2);
+                            var diff;
+                            if (prev_y == 0 && y == 0) {
+                                diff = 0;
                             }
+                            else if (y == 0) {
+                                diff = -100;
+                            } else {
+                                diff = $scope.toFixed((y - prev_y) / y * 100, 1);
+                            }
+                            filtered_values.push({
+                                'x': $scope.toFixed(v['x'], 2),
+                                'y': $scope.toFixed(v['y'], 2),
+                                'prev': prev_y,
+                                'diff': diff
+                            });
+
                         });
                         serie['values'] = filtered_values;
                     }

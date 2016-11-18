@@ -6553,29 +6553,6 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMaxValueController"
                 $scope.drawWidgetMaxDifficulty();
             });
 
-            $scope.$watch('view.params.widget.limit', function(newValue, oldValue){
-                if (newValue != undefined && (newValue != oldValue)) {
-                    setLimit(newValue);
-                }
-            });
-
-            var setLimit = function (limit) {
-                $scope.view.params.widget.limit = limit;
-                var curr_series = $.extend(true, [], $scope.curr_series);
-                $(curr_series).each(function (i, serie) {
-                    var sort_values = serie['values'].slice();
-                    sort_values.sort(function (a, b) {
-                        return a.y > b.y ? -1 : (a.y < b.y ? +1 : 0);
-                    });
-                    sort_values = sort_values.slice(0, limit);
-
-                    serie['values'] = serie['values'].filter(function (v) {
-                        return sort_values.indexOf(v) != -1;
-                    });
-                });
-                $scope.series = curr_series;
-            };
-
             $scope.drawWidgetMaxDifficulty = function () {
 
                 var view = $scope.view;
@@ -6662,7 +6639,6 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMaxValueController"
                 });
                 $scope.curr_series = curr_series;
                 $scope.series = curr_series;
-                setLimit(view.params.widget.limit);
             };
             $scope.initialize();
         }]);
@@ -6702,6 +6678,8 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetThresholdController
     ['$rootScope', '$scope', '$element', '$timeout', 'cvOptions', 'cubesService', 'viewsService',
         function ($rootScope, $scope, $element, $timeout, cvOptions, cubesService, viewsService) {
 
+            $scope.series = [];
+
             $scope.initialize = function () {
                 $scope.view.params.widget = $.extend(
                     {},
@@ -6717,9 +6695,13 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetThresholdController
                 $scope.drawWidgetThreshold();
             });
 
-            $scope.$watch('view.params.widget.threshold', function () {
-                $scope.drawWidgetThreshold();
-            });
+            // $scope.$watch('view.params.widget.threshold', function () {
+            //     $scope.drawWidgetThreshold();
+            //     // $timeout(function () {
+            //     //     $('.cv-views-container').masonry('layout');
+            //     //     console.log('layout');
+            //     // }, 100);
+            // });
 
             $scope.drawWidgetThreshold = function () {
 
@@ -6729,7 +6711,6 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetThresholdController
                 var zaxis = view.params.widget.zaxis;
 
                 $scope.view.zaxis_compare = null;
-                $scope.series = null;
 
                 if (!zaxis) {
                     return;
@@ -6793,25 +6774,24 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetThresholdController
                         var filtered_values = [];
                         $(serie['values']).each(function (i, v) {
                             var y = $scope.toFixed(v['y'], 2);
-                            if (y >= view.params.widget.threshold) {
-                                var x = $scope.toFixed(v['x'], 2);
-                                var prev_y = $scope.toFixed(prev_values[i]['y'], 2);
-                                var diff;
-                                if (prev_y == 0 && y == 0) {
-                                    diff = 0;
-                                }
-                                else if (y == 0) {
-                                    diff = -100;
-                                } else {
-                                    diff = $scope.toFixed((y - prev_y) / y * 100, 1);
-                                }
-                                filtered_values.push({
-                                    'x': $scope.toFixed(v['x'], 2),
-                                    'y': $scope.toFixed(v['y'], 2),
-                                    'prev': prev_y,
-                                    'diff': diff
-                                });
+                            var x = $scope.toFixed(v['x'], 2);
+                            var prev_y = $scope.toFixed(prev_values[i]['y'], 2);
+                            var diff;
+                            if (prev_y == 0 && y == 0) {
+                                diff = 0;
                             }
+                            else if (y == 0) {
+                                diff = -100;
+                            } else {
+                                diff = $scope.toFixed((y - prev_y) / y * 100, 1);
+                            }
+                            filtered_values.push({
+                                'x': $scope.toFixed(v['x'], 2),
+                                'y': $scope.toFixed(v['y'], 2),
+                                'prev': prev_y,
+                                'diff': diff
+                            });
+
                         });
                         serie['values'] = filtered_values;
                     }
@@ -6866,6 +6846,8 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMovementController"
     ['$rootScope', '$scope', '$element', '$timeout', 'cvOptions', 'cubesService', 'viewsService',
         function ($rootScope, $scope, $element, $timeout, cvOptions, cubesService, viewsService) {
 
+            $scope.series = [];
+
             $scope.initialize = function () {
                 $scope.view.params.widget = $.extend(
                     {},
@@ -6881,10 +6863,6 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMovementController"
                 $scope.drawWidgetMovement();
             });
 
-            $scope.$watch('view.params.widget.movement', function () {
-                $scope.drawWidgetMovement();
-            });
-
             $scope.drawWidgetMovement = function () {
 
                 var view = $scope.view;
@@ -6893,7 +6871,6 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMovementController"
                 var zaxis = view.params.widget.zaxis;
 
                 $scope.view.zaxis_compare = null;
-                $scope.series = null;
 
                 if (!zaxis) {
                     return;
@@ -6968,14 +6945,12 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMovementController"
                             } else {
                                 diff = $scope.toFixed((y - prev_y) / y * 100, 1);
                             }
-                            if ($scope.diff_abs(diff) >= view.params.widget.movement) {
-                                filtered_values.push({
-                                    'x': x,
-                                    'y': y,
-                                    'prev': prev_y,
-                                    'diff': diff
-                                });
-                            }
+                            filtered_values.push({
+                                'x': x,
+                                'y': y,
+                                'prev': prev_y,
+                                'diff': diff
+                            });
                         });
                         serie['values'] = filtered_values;
                     }
@@ -10197,15 +10172,17 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "<div class=\"container-fluid\">\n" +
     "    <div ng-style=\"{'font-size': view.params.widget.zoom + '%'}\">\n" +
     "        <div ng-repeat=\"serie in series\" class=\"row\" style=\"margin-top: 1em;\">\n" +
-    "            <div class=\"col-sm-12\"><h3 style=\"color: #337ab7;\">{{serie['key']}}</h3></div>\n" +
-    "            <div ng-repeat=\"point in serie['values']\" class=\"col-xs-6\" ng-class=\"(cvOptions.studioTwoColumn ? 'col-md-6 col-sm-6' : 'col-md-3 col-sm-3')\"\n" +
+    "            <div class=\"col-sm-12\"><h3 style=\"color: #337ab7;\">{{ ::serie['key'] }}</h3></div>\n" +
+    "            <div ng-repeat=\"point in serie['values']\" class=\"col-xs-6\"\n" +
+    "                 ng-class=\"(cvOptions.studioTwoColumn ? 'col-md-6 col-sm-6' : 'col-md-3 col-sm-3')\"\n" +
+    "                 ng-if=\"$index < view.params.widget.limit\"\n" +
     "                 ng-init=\"chevron = point['diff'] > 0 ? 'fa-chevron-up text-success' : 'fa-chevron-down text-danger'\">\n" +
-    "                <span style=\"font-size: 200%\">{{toFixed(point['y'], 2)}}</span>\n" +
+    "                <span style=\"font-size: 200%\">{{ ::toFixed(point['y'], 2) }}</span>\n" +
     "                <span ng-if=\"point['diff'] > 0\"><i ng-class=\"chevron\" class=\"fa fa-fw\" style=\"font-size: 150%\"></i>\n" +
-    "            <span style=\"font-size: 150%;\">{{diff_abs(point['diff'])}}%</span></span>\n" +
+    "            <span style=\"font-size: 150%;\">{{ ::diff_abs(point['diff']) }}%</span></span>\n" +
     "                <span style=\"font-size: 150%; color: #777;\">\n" +
-    "                (<span\n" +
-    "                        style=\"font-size: 75%;\">{{view.cube.dimensionParts(view.params.xaxis).labelShort}} </span>&nbsp;<span>{{point['x']}})</span>\n" +
+    "                (<span style=\"font-size: 75%;\">{{ ::view.cube.dimensionParts(view.params.xaxis).labelShort }}\n" +
+    "                </span>&nbsp;<span>{{ ::point['x'] }})</span>\n" +
     "            </span>\n" +
     "            </div>\n" +
     "        </div>\n" +
@@ -10224,13 +10201,14 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "<div class=\"container-fluid\">\n" +
     "    <div ng-style=\"{'font-size': view.params.widget.zoom + '%'}\">\n" +
     "        <div ng-repeat=\"serie in series\" class=\"row\" style=\"margin-top: 1em;\">\n" +
-    "            <div class=\"col-sm-12\"><h3 style=\"color: #337ab7;\">{{serie['key']}}</h3></div>\n" +
+    "            <div class=\"col-sm-12\"><h3 style=\"color: #337ab7;\">{{ ::serie['key'] }}</h3></div>\n" +
     "            <div ng-repeat=\"point in serie['values']\" class=\"col-xs-6\"\n" +
+    "                 ng-if=\"diff_abs(point['diff']) >= view.params.widget.movement\"\n" +
     "                 ng-class=\"(cvOptions.studioTwoColumn ? 'col-md-6 col-sm-6' : 'col-md-3 col-sm-3')\"\n" +
     "                 ng-init=\"color = point['diff'] > 0 ? '#669366' : '#dba4a3'; chevron = point['diff'] > 0 ? 'fa-chevron-up' : 'fa-chevron-down'\">\n" +
-    "                <span style=\"font-size: 200%\">{{point['x']}}</span>\n" +
-    "                <span style=\"font-size: 150%; color: #777;\">({{point['y']}}<span ng-if=\"point['diff'] != 0\">\n" +
-    "                <i ng-class=\"chevron\" class=\"fa fa-fw\" ng-style=\"{color: color}\"></i>{{diff_abs(point['diff'])}}%</span>)</span>\n" +
+    "                <span style=\"font-size: 200%\">{{ ::point['x'] }}</span>\n" +
+    "                <span style=\"font-size: 150%; color: #777;\">({{ ::point['y'] }}<span ng-if=\"point['diff'] != 0\">\n" +
+    "                <i ng-class=\"chevron\" class=\"fa fa-fw\" ng-style=\"{color: color}\"></i>{{ ::diff_abs(point['diff']) }}%</span>)</span>\n" +
     "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
@@ -10302,13 +10280,14 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "<div class=\"container-fluid\">\n" +
     "    <div ng-style=\"{'font-size': view.params.widget.zoom + '%'}\">\n" +
     "        <div ng-repeat=\"serie in series\" class=\"row\" style=\"margin-top: 1em;\">\n" +
-    "            <div class=\"col-sm-12\"><h3 style=\"color: #337ab7;\">{{serie['key']}}</h3></div>\n" +
+    "            <div class=\"col-sm-12\"><h3 style=\"color: #337ab7;\">{{ ::serie['key'] }}</h3></div>\n" +
     "            <div ng-repeat=\"point in serie['values']\" class=\"col-xs-6\"\n" +
+    "                 ng-if=\"point['y'] >= view.params.widget.threshold\"\n" +
     "                 ng-class=\"(cvOptions.studioTwoColumn ? 'col-md-6 col-sm-6' : 'col-md-3 col-sm-3')\"\n" +
     "                 ng-init=\"color = point['diff'] > 0 ? '#669366' : '#dba4a3'; chevron = point['diff'] > 0 ? 'fa-chevron-up' : 'fa-chevron-down'\">\n" +
-    "                <span style=\"font-size: 200%\">{{point['x']}}</span>\n" +
-    "                <span style=\"font-size: 150%; color: #777;\">({{point['y']}}<span ng-if=\"point['diff'] != 0\">\n" +
-    "                <i ng-class=\"chevron\" class=\"fa fa-fw\" ng-style=\"{color: color}\"></i>{{diff_abs(point['diff'])}}%</span>)</span>\n" +
+    "                <span style=\"font-size: 200%\">{{ :: point['x'] }}</span>\n" +
+    "                <span style=\"font-size: 150%; color: #777;\">({{ ::point['y'] }}<span ng-if=\"point['diff'] != 0\">\n" +
+    "                <i ng-class=\"chevron\" class=\"fa fa-fw\" ng-style=\"{color: color}\"></i>{{ ::diff_abs(point['diff']) }}%</span>)</span>\n" +
     "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +

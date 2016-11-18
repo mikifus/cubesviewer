@@ -1612,15 +1612,17 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "<div class=\"container-fluid\">\n" +
     "    <div ng-style=\"{'font-size': view.params.widget.zoom + '%'}\">\n" +
     "        <div ng-repeat=\"serie in series\" class=\"row\" style=\"margin-top: 1em;\">\n" +
-    "            <div class=\"col-sm-12\"><h3 style=\"color: #337ab7;\">{{serie['key']}}</h3></div>\n" +
-    "            <div ng-repeat=\"point in serie['values']\" class=\"col-xs-6\" ng-class=\"(cvOptions.studioTwoColumn ? 'col-md-6 col-sm-6' : 'col-md-3 col-sm-3')\"\n" +
+    "            <div class=\"col-sm-12\"><h3 style=\"color: #337ab7;\">{{ ::serie['key'] }}</h3></div>\n" +
+    "            <div ng-repeat=\"point in serie['values']\" class=\"col-xs-6\"\n" +
+    "                 ng-class=\"(cvOptions.studioTwoColumn ? 'col-md-6 col-sm-6' : 'col-md-3 col-sm-3')\"\n" +
+    "                 ng-if=\"$index < view.params.widget.limit\"\n" +
     "                 ng-init=\"chevron = point['diff'] > 0 ? 'fa-chevron-up text-success' : 'fa-chevron-down text-danger'\">\n" +
-    "                <span style=\"font-size: 200%\">{{toFixed(point['y'], 2)}}</span>\n" +
+    "                <span style=\"font-size: 200%\">{{ ::toFixed(point['y'], 2) }}</span>\n" +
     "                <span ng-if=\"point['diff'] > 0\"><i ng-class=\"chevron\" class=\"fa fa-fw\" style=\"font-size: 150%\"></i>\n" +
-    "            <span style=\"font-size: 150%;\">{{diff_abs(point['diff'])}}%</span></span>\n" +
+    "            <span style=\"font-size: 150%;\">{{ ::diff_abs(point['diff']) }}%</span></span>\n" +
     "                <span style=\"font-size: 150%; color: #777;\">\n" +
-    "                (<span\n" +
-    "                        style=\"font-size: 75%;\">{{view.cube.dimensionParts(view.params.xaxis).labelShort}} </span>&nbsp;<span>{{point['x']}})</span>\n" +
+    "                (<span style=\"font-size: 75%;\">{{ ::view.cube.dimensionParts(view.params.xaxis).labelShort }}\n" +
+    "                </span>&nbsp;<span>{{ ::point['x'] }})</span>\n" +
     "            </span>\n" +
     "            </div>\n" +
     "        </div>\n" +
@@ -1639,13 +1641,14 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "<div class=\"container-fluid\">\n" +
     "    <div ng-style=\"{'font-size': view.params.widget.zoom + '%'}\">\n" +
     "        <div ng-repeat=\"serie in series\" class=\"row\" style=\"margin-top: 1em;\">\n" +
-    "            <div class=\"col-sm-12\"><h3 style=\"color: #337ab7;\">{{serie['key']}}</h3></div>\n" +
+    "            <div class=\"col-sm-12\"><h3 style=\"color: #337ab7;\">{{ ::serie['key'] }}</h3></div>\n" +
     "            <div ng-repeat=\"point in serie['values']\" class=\"col-xs-6\"\n" +
+    "                 ng-if=\"diff_abs(point['diff']) >= view.params.widget.movement\"\n" +
     "                 ng-class=\"(cvOptions.studioTwoColumn ? 'col-md-6 col-sm-6' : 'col-md-3 col-sm-3')\"\n" +
     "                 ng-init=\"color = point['diff'] > 0 ? '#669366' : '#dba4a3'; chevron = point['diff'] > 0 ? 'fa-chevron-up' : 'fa-chevron-down'\">\n" +
-    "                <span style=\"font-size: 200%\">{{point['x']}}</span>\n" +
-    "                <span style=\"font-size: 150%; color: #777;\">({{point['y']}}<span ng-if=\"point['diff'] != 0\">\n" +
-    "                <i ng-class=\"chevron\" class=\"fa fa-fw\" ng-style=\"{color: color}\"></i>{{diff_abs(point['diff'])}}%</span>)</span>\n" +
+    "                <span style=\"font-size: 200%\">{{ ::point['x'] }}</span>\n" +
+    "                <span style=\"font-size: 150%; color: #777;\">({{ ::point['y'] }}<span ng-if=\"point['diff'] != 0\">\n" +
+    "                <i ng-class=\"chevron\" class=\"fa fa-fw\" ng-style=\"{color: color}\"></i>{{ ::diff_abs(point['diff']) }}%</span>)</span>\n" +
     "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
@@ -1717,13 +1720,14 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "<div class=\"container-fluid\">\n" +
     "    <div ng-style=\"{'font-size': view.params.widget.zoom + '%'}\">\n" +
     "        <div ng-repeat=\"serie in series\" class=\"row\" style=\"margin-top: 1em;\">\n" +
-    "            <div class=\"col-sm-12\"><h3 style=\"color: #337ab7;\">{{serie['key']}}</h3></div>\n" +
+    "            <div class=\"col-sm-12\"><h3 style=\"color: #337ab7;\">{{ ::serie['key'] }}</h3></div>\n" +
     "            <div ng-repeat=\"point in serie['values']\" class=\"col-xs-6\"\n" +
+    "                 ng-if=\"point['y'] >= view.params.widget.threshold\"\n" +
     "                 ng-class=\"(cvOptions.studioTwoColumn ? 'col-md-6 col-sm-6' : 'col-md-3 col-sm-3')\"\n" +
     "                 ng-init=\"color = point['diff'] > 0 ? '#669366' : '#dba4a3'; chevron = point['diff'] > 0 ? 'fa-chevron-up' : 'fa-chevron-down'\">\n" +
-    "                <span style=\"font-size: 200%\">{{point['x']}}</span>\n" +
-    "                <span style=\"font-size: 150%; color: #777;\">({{point['y']}}<span ng-if=\"point['diff'] != 0\">\n" +
-    "                <i ng-class=\"chevron\" class=\"fa fa-fw\" ng-style=\"{color: color}\"></i>{{diff_abs(point['diff'])}}%</span>)</span>\n" +
+    "                <span style=\"font-size: 200%\">{{ :: point['x'] }}</span>\n" +
+    "                <span style=\"font-size: 150%; color: #777;\">({{ ::point['y'] }}<span ng-if=\"point['diff'] != 0\">\n" +
+    "                <i ng-class=\"chevron\" class=\"fa fa-fw\" ng-style=\"{color: color}\"></i>{{ ::diff_abs(point['diff']) }}%</span>)</span>\n" +
     "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +

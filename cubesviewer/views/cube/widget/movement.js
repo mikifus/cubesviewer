@@ -32,6 +32,8 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMovementController"
     ['$rootScope', '$scope', '$element', '$timeout', 'cvOptions', 'cubesService', 'viewsService',
         function ($rootScope, $scope, $element, $timeout, cvOptions, cubesService, viewsService) {
 
+            $scope.series = [];
+
             $scope.initialize = function () {
                 $scope.view.params.widget = $.extend(
                     {},
@@ -47,10 +49,6 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMovementController"
                 $scope.drawWidgetMovement();
             });
 
-            $scope.$watch('view.params.widget.movement', function () {
-                $scope.drawWidgetMovement();
-            });
-
             $scope.drawWidgetMovement = function () {
 
                 var view = $scope.view;
@@ -59,7 +57,6 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMovementController"
                 var zaxis = view.params.widget.zaxis;
 
                 $scope.view.zaxis_compare = null;
-                $scope.series = null;
 
                 if (!zaxis) {
                     return;
@@ -134,14 +131,12 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMovementController"
                             } else {
                                 diff = $scope.toFixed((y - prev_y) / y * 100, 1);
                             }
-                            if ($scope.diff_abs(diff) >= view.params.widget.movement) {
-                                filtered_values.push({
-                                    'x': x,
-                                    'y': y,
-                                    'prev': prev_y,
-                                    'diff': diff
-                                });
-                            }
+                            filtered_values.push({
+                                'x': x,
+                                'y': y,
+                                'prev': prev_y,
+                                'diff': diff
+                            });
                         });
                         serie['values'] = filtered_values;
                     }
