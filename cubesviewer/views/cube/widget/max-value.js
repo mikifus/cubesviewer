@@ -43,6 +43,29 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMaxValueController"
                 $scope.drawWidgetMaxDifficulty();
             });
 
+            $scope.$watch('view.params.widget.limit', function (newValue, oldValue) {
+                if (newValue != undefined && (newValue != oldValue)) {
+                    setLimit(newValue);
+                }
+            });
+
+            var setLimit = function (limit) {
+                $scope.view.params.widget.limit = limit;
+                var curr_series = $.extend(true, [], $scope.curr_series);
+                $(curr_series).each(function (i, serie) {
+                    var sort_values = serie['values'].slice();
+                    sort_values.sort(function (a, b) {
+                        return a.y > b.y ? -1 : (a.y < b.y ? +1 : 0);
+                    });
+                    sort_values = sort_values.slice(0, limit);
+
+                    serie['values'] = serie['values'].filter(function (v) {
+                        return sort_values.indexOf(v) != -1;
+                    });
+                });
+                $scope.series = curr_series;
+            };
+
             $scope.drawWidgetMaxDifficulty = function () {
 
                 var view = $scope.view;
@@ -129,6 +152,7 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMaxValueController"
                 });
                 $scope.curr_series = curr_series;
                 $scope.series = curr_series;
+                setLimit(view.params.widget.limit);
             };
             $scope.initialize();
         }]);

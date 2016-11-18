@@ -1615,7 +1615,6 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "            <div class=\"col-sm-12\"><h3 style=\"color: #337ab7;\">{{ ::serie['key'] }}</h3></div>\n" +
     "            <div ng-repeat=\"point in serie['values']\" class=\"col-xs-6\"\n" +
     "                 ng-class=\"(cvOptions.studioTwoColumn ? 'col-md-6 col-sm-6' : 'col-md-3 col-sm-3')\"\n" +
-    "                 ng-if=\"$index < view.params.widget.limit\"\n" +
     "                 ng-init=\"chevron = point['diff'] > 0 ? 'fa-chevron-up text-success' : 'fa-chevron-down text-danger'\">\n" +
     "                <span style=\"font-size: 200%\">{{ ::toFixed(point['y'], 2) }}</span>\n" +
     "                <span ng-if=\"point['diff'] > 0\"><i ng-class=\"chevron\" class=\"fa fa-fw\" style=\"font-size: 150%\"></i>\n" +
@@ -1701,7 +1700,7 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "        <span style=\"white-space: nowrap;\"><i class=\"fa fa-fw fa-text-width\"></i> <b\n" +
     "                class=\"hidden-xs hidden-sm\">Threshold:</b> <input type=\"number\"\n" +
     "                                                                  ng-model=\"view.params.widget.threshold\"\n" +
-    "                                                                  style=\"width: 4em;\"></span>\n" +
+    "                                                                  style=\"width: 7em;\"></span>\n" +
     "    </div>\n" +
     "\n" +
     "    <div ng-if=\"view.params.widgettype == 'movement'\"\n" +
@@ -1710,7 +1709,7 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "        <span style=\"white-space: nowrap;\"><i class=\"fa fa-fw fa-map-signs\"></i> <b\n" +
     "                class=\"hidden-xs hidden-sm\">Min. change:</b> <input type=\"number\"\n" +
     "                                                                  ng-model=\"view.params.widget.movement\"\n" +
-    "                                                                  style=\"width: 4em;\" step=\"0.1\" min=\"0\"></span>\n" +
+    "                                                                  style=\"width: 7em;\" step=\"0.1\" min=\"0\"></span>\n" +
     "    </div>\n" +
     "</div>"
   );

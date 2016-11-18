@@ -6553,6 +6553,29 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMaxValueController"
                 $scope.drawWidgetMaxDifficulty();
             });
 
+            $scope.$watch('view.params.widget.limit', function (newValue, oldValue) {
+                if (newValue != undefined && (newValue != oldValue)) {
+                    setLimit(newValue);
+                }
+            });
+
+            var setLimit = function (limit) {
+                $scope.view.params.widget.limit = limit;
+                var curr_series = $.extend(true, [], $scope.curr_series);
+                $(curr_series).each(function (i, serie) {
+                    var sort_values = serie['values'].slice();
+                    sort_values.sort(function (a, b) {
+                        return a.y > b.y ? -1 : (a.y < b.y ? +1 : 0);
+                    });
+                    sort_values = sort_values.slice(0, limit);
+
+                    serie['values'] = serie['values'].filter(function (v) {
+                        return sort_values.indexOf(v) != -1;
+                    });
+                });
+                $scope.series = curr_series;
+            };
+
             $scope.drawWidgetMaxDifficulty = function () {
 
                 var view = $scope.view;
@@ -6639,6 +6662,7 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMaxValueController"
                 });
                 $scope.curr_series = curr_series;
                 $scope.series = curr_series;
+                setLimit(view.params.widget.limit);
             };
             $scope.initialize();
         }]);
@@ -10175,7 +10199,6 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "            <div class=\"col-sm-12\"><h3 style=\"color: #337ab7;\">{{ ::serie['key'] }}</h3></div>\n" +
     "            <div ng-repeat=\"point in serie['values']\" class=\"col-xs-6\"\n" +
     "                 ng-class=\"(cvOptions.studioTwoColumn ? 'col-md-6 col-sm-6' : 'col-md-3 col-sm-3')\"\n" +
-    "                 ng-if=\"$index < view.params.widget.limit\"\n" +
     "                 ng-init=\"chevron = point['diff'] > 0 ? 'fa-chevron-up text-success' : 'fa-chevron-down text-danger'\">\n" +
     "                <span style=\"font-size: 200%\">{{ ::toFixed(point['y'], 2) }}</span>\n" +
     "                <span ng-if=\"point['diff'] > 0\"><i ng-class=\"chevron\" class=\"fa fa-fw\" style=\"font-size: 150%\"></i>\n" +
@@ -10261,7 +10284,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "        <span style=\"white-space: nowrap;\"><i class=\"fa fa-fw fa-text-width\"></i> <b\n" +
     "                class=\"hidden-xs hidden-sm\">Threshold:</b> <input type=\"number\"\n" +
     "                                                                  ng-model=\"view.params.widget.threshold\"\n" +
-    "                                                                  style=\"width: 4em;\"></span>\n" +
+    "                                                                  style=\"width: 7em;\"></span>\n" +
     "    </div>\n" +
     "\n" +
     "    <div ng-if=\"view.params.widgettype == 'movement'\"\n" +
@@ -10270,7 +10293,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "        <span style=\"white-space: nowrap;\"><i class=\"fa fa-fw fa-map-signs\"></i> <b\n" +
     "                class=\"hidden-xs hidden-sm\">Min. change:</b> <input type=\"number\"\n" +
     "                                                                  ng-model=\"view.params.widget.movement\"\n" +
-    "                                                                  style=\"width: 4em;\" step=\"0.1\" min=\"0\"></span>\n" +
+    "                                                                  style=\"width: 7em;\" step=\"0.1\" min=\"0\"></span>\n" +
     "    </div>\n" +
     "</div>"
   );
