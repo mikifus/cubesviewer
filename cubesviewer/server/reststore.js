@@ -152,7 +152,7 @@ angular.module('cv.studio').service("reststoreService", ['$rootScope', '$http', 
      * Get view list.
      */
     reststoreService.viewList = function () {
-        $http.get(cvOptions.backendUrl + "/view/list/").then(
+        $http.get(cvOptions.backendUrl + "/view/list/?timestamp=" + new Date().getTime()).then(
         		reststoreService._viewListCallback, cubesService.defaultRequestErrorHandler);
     };
 
@@ -265,7 +265,7 @@ angular.module('cv.studio').service("reststoreService", ['$rootScope', '$http', 
     };
 
     reststoreService.dashboardList = function(){
-        $http.get(cvOptions.backendUrl + "/dashboard/list/").then(
+        $http.get(cvOptions.backendUrl + "/dashboard/list/?timestamp=" + new Date().getTime()).then(
         		reststoreService._dashboardListCallback, cubesService.defaultRequestErrorHandler);
     };
 
