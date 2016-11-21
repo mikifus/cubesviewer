@@ -3601,56 +3601,67 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeFilterDateContro
  */
 
 
-
 /**
  */
 
 "use strict";
 
-angular.module('cv.views.cube').controller("CubesViewerViewsCubeRangeFilterDimensionController", ['$rootScope', '$scope', '$filter', 'cvOptions', 'cubesService', 'viewsService',
-                                                     function ($rootScope, $scope, $filter, cvOptions, cubesService, viewsService) {
+angular.module('cv.views.cube').controller("CubesViewerViewsCubeRangeFilterDimensionController",
+    ['$rootScope', '$scope', '$filter', 'cvOptions', 'cubesService', 'viewsService',
+        function ($rootScope, $scope, $filter, cvOptions, cubesService, viewsService) {
 
-	$scope.parts = null;
-	$scope.rangeFrom = '';
-	$scope.rangeTo = '';
+            $scope.parts = null;
+            $scope.rangeFrom = '';
+            $scope.rangeTo = '';
 
-	$scope.currentDataId = null;
+            $scope.currentDataId = null;
 
-	$scope.initialize = function() {};
+            $scope.initialize = function () {
+            };
 
-	$scope.$watch("view.dimensionRangeFilter", function() {
-		$scope.parts = $scope.view.cube.dimensionParts($scope.view.dimensionRangeFilter);
-		$scope.view.params.rangefilters.forEach(function(rangefilter){
-			if (rangefilter.dimension == $scope.parts.dimension.name) {
-				$scope.rangeFrom = rangefilter.range_from;
-				$scope.rangeTo = rangefilter.range_to;
-			}
-		});
-	});
+            $scope.$watch("view.dimensionRangeFilter", function () {
+                $scope.parts = $scope.view.cube.dimensionParts($scope.view.dimensionRangeFilter);
+                if ($scope.view.params.rangefilters) {
+                    $scope.view.params.rangefilters.forEach(function (rangefilter) {
+                        if (rangefilter.dimension == $scope.parts.dimension.name) {
+                            $scope.rangeFrom = rangefilter.range_from;
+                            $scope.rangeTo = rangefilter.range_to;
+                        }
+                    });
+                } else {
+                    $scope.view.params.rangefilters = [{
+                        'dimension': $scope.parts.dimension.name,
+                        'rangeFrom': null,
+                        'rangeTo': null
+                    }];
+                }
+            });
 
-	$scope.$on("ViewRefresh", function(view) {
-		//$scope.loadDimensionValues();
-	});
+            $scope.$on("ViewRefresh", function (view) {
+                //$scope.loadDimensionValues();
+            });
 
-	$scope.closeDimensionFilter = function() {
-		$scope.view.dimensionRangeFilter = null;
-	};
+            $scope.closeDimensionFilter = function () {
+                $scope.view.dimensionRangeFilter = null;
+            };
 
-	/*
-	 * Updates info after loading data.
-	 */
-	$scope.applyFilter = function() {
-		if ($scope.rangeFrom || $scope.rangeTo) {
-			// Cut dimension
-			var cutDimension = $scope.parts.dimension.name + ( $scope.parts.hierarchy.name != "default" ? "@" + $scope.parts.hierarchy.name : "" ) + ':' + $scope.parts.level.name;
-			$scope.selectRange(cutDimension, $scope.rangeFrom, $scope.rangeTo);
-		}
-	};
+            /*
+             * Updates info after loading data.
+             */
+            $scope.applyFilter = function () {
+                if ($scope.rangeFrom || $scope.rangeTo) {
+                    // Cut dimension
+                    var cutDimension = $scope.parts.dimension.name
+                        + ( $scope.parts.hierarchy.name != "default" ? "@" + $scope.parts.hierarchy.name : "" )
+                        + ':' + $scope.parts.level.name;
+                    $scope.selectRange(cutDimension, $scope.rangeFrom, $scope.rangeTo);
+                }
+            };
 
 
-	$scope.initialize();
+            $scope.initialize();
 
-}]);
+        }]);
 
 ;/*
  * CubesViewer
