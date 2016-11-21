@@ -99,7 +99,7 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "            <button type=\"button\" ng-click=\"studioViewsService.toggleCollapseView(view)\" class=\"btn btn-primary btn-xs pull-right hidden-print\" style=\"margin-left: 5px;\"><i class=\"fa fa-fw\" ng-class=\"{'fa-caret-up': !view.collapsed, 'fa-caret-down': view.collapsed }\"></i></button>\n" +
     "\n" +
     "            <i class=\"fa fa-fw fa-file\"></i> <span class=\"cv-gui-title\" style=\"cursor: pointer;\" ng-dblclick=\"studioViewsService.studioScope.showRenameView(view)\"><a name=\"cvView{{ view.id }}\"></a><span ng-if=\"view.params.menu_path\">{{view.params.menu_path}}&colon;&nbsp;</span>{{ view.params.name }}</span>\n" +
-    "{{view.savedId}}\n" +
+    "\n" +
     "            <span ng-if=\"view.savedId > 0 && reststoreService.isViewChanged(view)\" class=\"badge cv-gui-container-state\" style=\"margin-left: 15px; font-size: 80%;\">Modified</span>\n" +
     "            <span ng-if=\"view.savedId > 0 && !reststoreService.isViewChanged(view)\" class=\"badge cv-gui-container-state\" style=\"margin-left: 15px; font-size: 80%;\">Saved</span>\n" +
     "            <span ng-if=\"view.shared\" class=\"badge cv-gui-container-state\" style=\"margin-left: 5px; font-size: 80%;\">Shared</span>\n" +
@@ -312,6 +312,15 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "                    </label>\n" +
     "                </div>\n" +
     "            </div>\n" +
+    "        </div>\n" +
+    "        <div class=\"form-group form-inline\">\n" +
+    "            <h4>Clone this view with cube</h4>\n" +
+    "            <select class=\"form-control\" ng-model=\"_cloneCube\">\n" +
+    "                <option ng-repeat=\"cube in cubesService.cubesserver._cube_list | orderBy:'label'\" value=\"{{cube.name}}\">\n" +
+    "                    {{ cube.label }}\n" +
+    "                </option>\n" +
+    "            </select>\n" +
+    "            <button class=\"btn btn-info\" ng-click=\"cloneWithCube(_cloneCube)\">Clone</button>\n" +
     "        </div>\n" +
     "    </form>\n" +
     "</div>\n" +

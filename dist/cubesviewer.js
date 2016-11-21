@@ -7866,8 +7866,8 @@ angular.module('cv.studio').controller("CubesViewerRenameController", ['$rootSco
 
 }]);
 
-angular.module('cv.studio').controller("CubesViewerSetupControlsController", ['$rootScope', '$scope', '$uibModalInstance', 'cvOptions', 'cubesService', 'studioViewsService', 'view',
-    function ($rootScope, $scope, $uibModalInstance, cvOptions, cubesService, studioViewsService, view) {
+angular.module('cv.studio').controller("CubesViewerSetupControlsController", ['$rootScope', '$scope', '$uibModalInstance', 'cvOptions', 'cubesService', 'studioViewsService', 'viewsService', 'view',
+    function ($rootScope, $scope, $uibModalInstance, cvOptions, cubesService, studioViewsService, viewsService, view) {
 
         $scope.cvVersion = cubesviewer.version;
         $scope.cvOptions = cvOptions;
@@ -7885,6 +7885,8 @@ angular.module('cv.studio').controller("CubesViewerSetupControlsController", ['$
         $scope.zAxis = [];
         $scope.measures = [];
         $scope.aggregates = [];
+
+		$scope._cloneCube = null;
 
         var enabled_drilldowns = view.getEnabledDrilldowns();
         var enabled_filters = view.getEnabledFilters();
@@ -7931,6 +7933,15 @@ angular.module('cv.studio').controller("CubesViewerSetupControlsController", ['$
         $scope.close = function () {
             $uibModalInstance.dismiss('cancel');
         };
+
+        $scope.cloneWithCube = function(cube) {
+			$scope.close();
+			var serializedView  = viewsService.serializeView($scope.view);
+			var view = $.parseJSON(serializedView);
+			view.cubename = cube;
+			view.name = 'Clone of ' + view.name;
+			studioViewsService.addViewObject(view);
+		};
 
     }]);
 
@@ -7985,7 +7996,7 @@ angular.module('cv.studio').run(['$rootScope', '$compile', '$controller', '$http
         backendUrl: null
     };
 	$.extend(defaultOptions, cvOptions);
-	$.extend(cvOptions, defaultOptions);;
+	$.extend(cvOptions, defaultOptions);
 
     // Get main template from template cache and compile it
 	$http.get("studio/studio.html", { cache: $templateCache } ).then(function(response) {
@@ -8690,7 +8701,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "            <button type=\"button\" ng-click=\"studioViewsService.toggleCollapseView(view)\" class=\"btn btn-primary btn-xs pull-right hidden-print\" style=\"margin-left: 5px;\"><i class=\"fa fa-fw\" ng-class=\"{'fa-caret-up': !view.collapsed, 'fa-caret-down': view.collapsed }\"></i></button>\n" +
     "\n" +
     "            <i class=\"fa fa-fw fa-file\"></i> <span class=\"cv-gui-title\" style=\"cursor: pointer;\" ng-dblclick=\"studioViewsService.studioScope.showRenameView(view)\"><a name=\"cvView{{ view.id }}\"></a><span ng-if=\"view.params.menu_path\">{{view.params.menu_path}}&colon;&nbsp;</span>{{ view.params.name }}</span>\n" +
-    "{{view.savedId}}\n" +
+    "\n" +
     "            <span ng-if=\"view.savedId > 0 && reststoreService.isViewChanged(view)\" class=\"badge cv-gui-container-state\" style=\"margin-left: 15px; font-size: 80%;\">Modified</span>\n" +
     "            <span ng-if=\"view.savedId > 0 && !reststoreService.isViewChanged(view)\" class=\"badge cv-gui-container-state\" style=\"margin-left: 15px; font-size: 80%;\">Saved</span>\n" +
     "            <span ng-if=\"view.shared\" class=\"badge cv-gui-container-state\" style=\"margin-left: 5px; font-size: 80%;\">Shared</span>\n" +
@@ -8903,6 +8914,15 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "                    </label>\n" +
     "                </div>\n" +
     "            </div>\n" +
+    "        </div>\n" +
+    "        <div class=\"form-group form-inline\">\n" +
+    "            <h4>Clone this view with cube</h4>\n" +
+    "            <select class=\"form-control\" ng-model=\"_cloneCube\">\n" +
+    "                <option ng-repeat=\"cube in cubesService.cubesserver._cube_list | orderBy:'label'\" value=\"{{cube.name}}\">\n" +
+    "                    {{ cube.label }}\n" +
+    "                </option>\n" +
+    "            </select>\n" +
+    "            <button class=\"btn btn-info\" ng-click=\"cloneWithCube(_cloneCube)\">Clone</button>\n" +
     "        </div>\n" +
     "    </form>\n" +
     "</div>\n" +

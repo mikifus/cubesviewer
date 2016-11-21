@@ -508,8 +508,8 @@ angular.module('cv.studio').controller("CubesViewerRenameController", ['$rootSco
 
 }]);
 
-angular.module('cv.studio').controller("CubesViewerSetupControlsController", ['$rootScope', '$scope', '$uibModalInstance', 'cvOptions', 'cubesService', 'studioViewsService', 'view',
-    function ($rootScope, $scope, $uibModalInstance, cvOptions, cubesService, studioViewsService, view) {
+angular.module('cv.studio').controller("CubesViewerSetupControlsController", ['$rootScope', '$scope', '$uibModalInstance', 'cvOptions', 'cubesService', 'studioViewsService', 'viewsService', 'view',
+    function ($rootScope, $scope, $uibModalInstance, cvOptions, cubesService, studioViewsService, viewsService, view) {
 
         $scope.cvVersion = cubesviewer.version;
         $scope.cvOptions = cvOptions;
@@ -527,6 +527,8 @@ angular.module('cv.studio').controller("CubesViewerSetupControlsController", ['$
         $scope.zAxis = [];
         $scope.measures = [];
         $scope.aggregates = [];
+
+		$scope._cloneCube = null;
 
         var enabled_drilldowns = view.getEnabledDrilldowns();
         var enabled_filters = view.getEnabledFilters();
@@ -573,6 +575,15 @@ angular.module('cv.studio').controller("CubesViewerSetupControlsController", ['$
         $scope.close = function () {
             $uibModalInstance.dismiss('cancel');
         };
+
+        $scope.cloneWithCube = function(cube) {
+			$scope.close();
+			var serializedView  = viewsService.serializeView($scope.view);
+			var view = $.parseJSON(serializedView);
+			view.cubename = cube;
+			view.name = 'Clone of ' + view.name;
+			studioViewsService.addViewObject(view);
+		};
 
     }]);
 
@@ -627,7 +638,7 @@ angular.module('cv.studio').run(['$rootScope', '$compile', '$controller', '$http
         backendUrl: null
     };
 	$.extend(defaultOptions, cvOptions);
-	$.extend(cvOptions, defaultOptions);;
+	$.extend(cvOptions, defaultOptions);
 
     // Get main template from template cache and compile it
 	$http.get("studio/studio.html", { cache: $templateCache } ).then(function(response) {
