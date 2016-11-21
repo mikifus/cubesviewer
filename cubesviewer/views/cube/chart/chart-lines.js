@@ -78,9 +78,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesContro
                     });
 	    			serie.push(data);
 	    		} else  {
-	    			if (view.params.charttype == "lines-stacked") {
-	    				serie.push( { "x": i, "y":  0 } );
-	    			}
+					serie.push( { "x": i, "y":  0 } );
 	    		}
 	    	}
 	    	var series = { "values": serie, "key": e["key"] != "" ? e["key"] : view.params.yaxis };
@@ -93,7 +91,6 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesContro
 	    	serieCount++;
 	    });
 	    d.sort(function(a,b) { return a.key < b.key ? -1 : (a.key > b.key ? +1 : 0) });
-
 	    /*
 	    xticks = [];
 	    for (var i = 1; i < colNames.length; i++) {

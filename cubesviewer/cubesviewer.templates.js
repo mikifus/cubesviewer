@@ -316,7 +316,8 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "        <div class=\"form-group form-inline\">\n" +
     "            <h4>Clone this view with cube</h4>\n" +
     "            <select class=\"form-control\" ng-model=\"_cloneCube\">\n" +
-    "                <option ng-repeat=\"cube in cubesService.cubesserver._cube_list | orderBy:'label'\" value=\"{{cube.name}}\">\n" +
+    "                <option ng-repeat=\"cube in cubesService.cubesserver._cube_list | orderBy:'label'\" value=\"{{cube.name}}\"\n" +
+    "                        ng-selected=\"cube.name == view.params.cubename\">\n" +
     "                    {{ cube.label }}\n" +
     "                </option>\n" +
     "            </select>\n" +

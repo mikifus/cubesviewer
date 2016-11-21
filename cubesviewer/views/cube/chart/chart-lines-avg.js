@@ -75,9 +75,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesAVGCon
                     });
 	    			serie.push(data);
 	    		} else  {
-	    			if (view.params.charttype == "lines-stacked") {
-	    				serie.push( { "x": i, "y":  0 } );
-	    			}
+					serie.push( { "x": i, "y":  0 } );
 	    		}
 	    	}
 	    	var series = { "values": serie, "key": e["key"] != "" ? e["key"] : view.params.yaxis };

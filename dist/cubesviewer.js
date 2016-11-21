@@ -5076,9 +5076,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesContro
                     });
 	    			serie.push(data);
 	    		} else  {
-	    			if (view.params.charttype == "lines-stacked") {
-	    				serie.push( { "x": i, "y":  0 } );
-	    			}
+					serie.push( { "x": i, "y":  0 } );
 	    		}
 	    	}
 	    	var series = { "values": serie, "key": e["key"] != "" ? e["key"] : view.params.yaxis };
@@ -5091,7 +5089,6 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesContro
 	    	serieCount++;
 	    });
 	    d.sort(function(a,b) { return a.key < b.key ? -1 : (a.key > b.key ? +1 : 0) });
-
 	    /*
 	    xticks = [];
 	    for (var i = 1; i < colNames.length; i++) {
@@ -6087,9 +6084,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesAVGCon
                     });
 	    			serie.push(data);
 	    		} else  {
-	    			if (view.params.charttype == "lines-stacked") {
-	    				serie.push( { "x": i, "y":  0 } );
-	    			}
+					serie.push( { "x": i, "y":  0 } );
 	    		}
 	    	}
 	    	var series = { "values": serie, "key": e["key"] != "" ? e["key"] : view.params.yaxis };
@@ -8929,7 +8924,8 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "        <div class=\"form-group form-inline\">\n" +
     "            <h4>Clone this view with cube</h4>\n" +
     "            <select class=\"form-control\" ng-model=\"_cloneCube\">\n" +
-    "                <option ng-repeat=\"cube in cubesService.cubesserver._cube_list | orderBy:'label'\" value=\"{{cube.name}}\">\n" +
+    "                <option ng-repeat=\"cube in cubesService.cubesserver._cube_list | orderBy:'label'\" value=\"{{cube.name}}\"\n" +
+    "                        ng-selected=\"cube.name == view.params.cubename\">\n" +
     "                    {{ cube.label }}\n" +
     "                </option>\n" +
     "            </select>\n" +

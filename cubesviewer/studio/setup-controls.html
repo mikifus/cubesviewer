@@ -92,7 +92,8 @@
         <div class="form-group form-inline">
             <h4>Clone this view with cube</h4>
             <select class="form-control" ng-model="_cloneCube">
-                <option ng-repeat="cube in cubesService.cubesserver._cube_list | orderBy:'label'" value="{{cube.name}}">
+                <option ng-repeat="cube in cubesService.cubesserver._cube_list | orderBy:'label'" value="{{cube.name}}"
+                        ng-selected="cube.name == view.params.cubename">
                     {{ cube.label }}
                 </option>
             </select>
