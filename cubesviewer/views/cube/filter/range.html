@@ -1,32 +1,42 @@
 <div ng-controller="CubesViewerViewsCubeRangeFilterDimensionController">
 
-    <div class="panel panel-default panel-outline hidden-print" ng-hide="view.getControlsHidden()" style="border-color: #ffcccc;">
+    <div class="panel panel-default panel-outline hidden-print" ng-hide="view.getControlsHidden()"
+         style="border-color: #ffcccc;">
         <div class="panel-heading clearfix" style="border-color: #ffcccc;">
-            <button class="btn btn-xs btn-danger pull-right" ng-click="closeDimensionFilter()"><i class="fa fa-fw fa-close"></i></button>
-            <h4 style="margin: 2px 0px 0px 0px;"><i class="fa fa-fw fa-filter"></i> Dimension range filter: <b>{{ parts.label }}</b></h4>
+            <button class="btn btn-xs btn-danger pull-right" ng-click="closeDimensionFilter()"><i
+                    class="fa fa-fw fa-close"></i></button>
+            <h4 style="margin: 2px 0px 0px 0px;"><i class="fa fa-fw fa-filter"></i> Dimension range filter: <b>{{
+                parts.label }}</b></h4>
         </div>
         <div class="panel-body">
 
-            <div >
-            <form >
+            <div>
+                <form>
 
-              <div class="form-group has-feedback" style="display: inline-block; margin-bottom: 0; vertical-align: middle; margin-bottom: 2px;">
-                <input type="text" class="form-control" ng-model="rangeFrom" ng-model-options="{ debounce: 300 }" placeholder="From" style="width: 8em;">
-                <i class="fa fa-fw fa-times-circle form-control-feedback" ng-click="rangeFrom = ''" style="cursor: pointer; pointer-events: inherit;"></i>
-              </div>
+                    <div class="form-group has-feedback"
+                         style="display: inline-block; margin-bottom: 0; vertical-align: middle; margin-bottom: 2px;">
+                        <input type="text" class="form-control" ng-model="rangeFrom"
+                               ng-model-options="{ debounce: 300 }"
+                               ng-change="applyFilter()" placeholder="From" style="width: 8em;">
+                        <i class="fa fa-fw fa-times-circle form-control-feedback" ng-click="setRangeFrom()"
+                           style="cursor: pointer; pointer-events: inherit;"></i>
+                    </div>
 
-              <div class="form-group has-feedback" style="display: inline-block; margin-bottom: 0; vertical-align: middle; margin-bottom: 2px;">
-                <input type="text" class="form-control" ng-model="rangeTo" ng-model-options="{ debounce: 300 }" placeholder="To" style="width: 8em;">
-                <i class="fa fa-fw fa-times-circle form-control-feedback" ng-click="rangeTo = ''" style="cursor: pointer; pointer-events: inherit;"></i>
-              </div>
+                    <div class="form-group has-feedback"
+                         style="display: inline-block; margin-bottom: 0; vertical-align: middle; margin-bottom: 2px;">
+                        <input type="text" class="form-control" ng-model="rangeTo" ng-model-options="{ debounce: 300 }"
+                               ng-change="applyFilter()" placeholder="To" style="width: 8em;">
+                        <i class="fa fa-fw fa-times-circle form-control-feedback" ng-click="setRangeTo()"
+                           style="cursor: pointer; pointer-events: inherit;"></i>
+                    </div>
 
-              <div class="form-group" style="display: inline-block; margin-bottom: 0; vertical-align: middle; margin-bottom: 2px;">
-                <button ng-click="applyFilter()" class="btn btn-success" type="button"><i class="fa fa-fw fa-filter"></i> Apply</button>
-              </div>
-            </form>
+                    <!--<div class="form-group" style="display: inline-block; margin-bottom: 0; vertical-align: middle; margin-bottom: 2px;">-->
+                    <!--<button ng-click="applyFilter()" class="btn btn-success" type="button"><i class="fa fa-fw fa-filter"></i> Apply</button>-->
+                    <!--</div>-->
+                </form>
             </div>
 
             <div class="clearfix"></div>
         </div>
-      </div>
+    </div>
 </div>

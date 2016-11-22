@@ -2544,8 +2544,9 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
 					"range_to": range_to
 				});
 			} else {
+				var cutDimension = view.cube.dimensionParts(dimension).cutDimension;
 				view.params.rangefilters = $.grep(view.params.rangefilters, function (e) {
-					return view.cube.dimensionParts(e.dimension).cutDimension == view.cube.dimensionParts(dimension).cutDimension;
+					return view.cube.dimensionParts(e.dimension).cutDimension == cutDimension;
 				}, true);
 			}
 		} else {
@@ -3649,13 +3650,22 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeRangeFilterDimen
              * Updates info after loading data.
              */
             $scope.applyFilter = function () {
-                if ($scope.rangeFrom || $scope.rangeTo) {
-                    // Cut dimension
-                    var cutDimension = $scope.parts.dimension.name
-                        + ( $scope.parts.hierarchy.name != "default" ? "@" + $scope.parts.hierarchy.name : "" )
-                        + ':' + $scope.parts.level.name;
-                    $scope.selectRange(cutDimension, $scope.rangeFrom, $scope.rangeTo);
-                }
+                // Cut dimension
+                var cutDimension = $scope.parts.dimension.name
+                    + ( $scope.parts.hierarchy.name != "default" ? "@" + $scope.parts.hierarchy.name : "" )
+                    + ':' + $scope.parts.level.name;
+                $scope.selectRange(cutDimension, $scope.rangeFrom, $scope.rangeTo);
+
+            };
+
+            $scope.setRangeFrom = function () {
+                $scope.rangeFrom = null;
+                $scope.applyFilter();
+            };
+
+            $scope.setRangeTo = function () {
+                $scope.rangeTo = null;
+                $scope.applyFilter();
             };
 
 
@@ -10096,9 +10106,9 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "\n" +
     "              </div>\n" +
     "\n" +
-    "                <div class=\"form-group\" style=\"display: inline-block; margin-bottom: 0; vertical-align: middle; margin-bottom: 2px;\">\n" +
-    "                 <button ng-click=\"applyFilter()\" class=\"btn btn-success\" type=\"button\"><i class=\"fa fa-fw fa-filter\"></i> Apply</button>\n" +
-    "              </div>\n" +
+    "              <!--<div class=\"form-group\" style=\"display: inline-block; margin-bottom: 0; vertical-align: middle; margin-bottom: 2px;\">-->\n" +
+    "                 <!--<button ng-click=\"applyFilter()\" class=\"btn btn-success\" type=\"button\"><i class=\"fa fa-fw fa-filter\"></i> Apply</button>-->\n" +
+    "              <!--</div>-->\n" +
     "            </form>\n" +
     "            </div>\n" +
     "\n" +
@@ -10113,7 +10123,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "                        <div ng-if=\"!loadingDimensionValues\" class=\"row\" style=\"white-space: nowrap;\">\n" +
     "                            <div ng-repeat=\"val in dimensionValues | filter:filterDimensionValue(searchString)\" style=\"overflow-x: hidden; text-overflow: ellipsis;\" class=\"col-md-3\">\n" +
     "                                <label style=\"font-weight: normal; margin-bottom: 2px;\" title=\"{{ ::val.label }}\">\n" +
-    "                                    <input type=\"checkbox\" name=\"selectedValues[]\" ng-model=\"val.selected\" value=\"{{ ::val.value }}\" style=\"vertical-align: bottom;\" />\n" +
+    "                                    <input type=\"checkbox\" name=\"selectedValues[]\" ng-model=\"val.selected\" value=\"{{ ::val.value }}\" ng-click=\"applyFilter()\" style=\"vertical-align: bottom;\" />\n" +
     "                                    <span title=\"{{ ::val.label }}\">{{ ::val.label }}</span>\n" +
     "                                </label>\n" +
     "                            </div>\n" +
@@ -10151,35 +10161,45 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
   $templateCache.put('views/cube/filter/range.html',
     "<div ng-controller=\"CubesViewerViewsCubeRangeFilterDimensionController\">\n" +
     "\n" +
-    "    <div class=\"panel panel-default panel-outline hidden-print\" ng-hide=\"view.getControlsHidden()\" style=\"border-color: #ffcccc;\">\n" +
+    "    <div class=\"panel panel-default panel-outline hidden-print\" ng-hide=\"view.getControlsHidden()\"\n" +
+    "         style=\"border-color: #ffcccc;\">\n" +
     "        <div class=\"panel-heading clearfix\" style=\"border-color: #ffcccc;\">\n" +
-    "            <button class=\"btn btn-xs btn-danger pull-right\" ng-click=\"closeDimensionFilter()\"><i class=\"fa fa-fw fa-close\"></i></button>\n" +
-    "            <h4 style=\"margin: 2px 0px 0px 0px;\"><i class=\"fa fa-fw fa-filter\"></i> Dimension range filter: <b>{{ parts.label }}</b></h4>\n" +
+    "            <button class=\"btn btn-xs btn-danger pull-right\" ng-click=\"closeDimensionFilter()\"><i\n" +
+    "                    class=\"fa fa-fw fa-close\"></i></button>\n" +
+    "            <h4 style=\"margin: 2px 0px 0px 0px;\"><i class=\"fa fa-fw fa-filter\"></i> Dimension range filter: <b>{{\n" +
+    "                parts.label }}</b></h4>\n" +
     "        </div>\n" +
     "        <div class=\"panel-body\">\n" +
     "\n" +
-    "            <div >\n" +
-    "            <form >\n" +
+    "            <div>\n" +
+    "                <form>\n" +
     "\n" +
-    "              <div class=\"form-group has-feedback\" style=\"display: inline-block; margin-bottom: 0; vertical-align: middle; margin-bottom: 2px;\">\n" +
-    "                <input type=\"text\" class=\"form-control\" ng-model=\"rangeFrom\" ng-model-options=\"{ debounce: 300 }\" placeholder=\"From\" style=\"width: 8em;\">\n" +
-    "                <i class=\"fa fa-fw fa-times-circle form-control-feedback\" ng-click=\"rangeFrom = ''\" style=\"cursor: pointer; pointer-events: inherit;\"></i>\n" +
-    "              </div>\n" +
+    "                    <div class=\"form-group has-feedback\"\n" +
+    "                         style=\"display: inline-block; margin-bottom: 0; vertical-align: middle; margin-bottom: 2px;\">\n" +
+    "                        <input type=\"text\" class=\"form-control\" ng-model=\"rangeFrom\"\n" +
+    "                               ng-model-options=\"{ debounce: 300 }\"\n" +
+    "                               ng-change=\"applyFilter()\" placeholder=\"From\" style=\"width: 8em;\">\n" +
+    "                        <i class=\"fa fa-fw fa-times-circle form-control-feedback\" ng-click=\"setRangeFrom()\"\n" +
+    "                           style=\"cursor: pointer; pointer-events: inherit;\"></i>\n" +
+    "                    </div>\n" +
     "\n" +
-    "              <div class=\"form-group has-feedback\" style=\"display: inline-block; margin-bottom: 0; vertical-align: middle; margin-bottom: 2px;\">\n" +
-    "                <input type=\"text\" class=\"form-control\" ng-model=\"rangeTo\" ng-model-options=\"{ debounce: 300 }\" placeholder=\"To\" style=\"width: 8em;\">\n" +
-    "                <i class=\"fa fa-fw fa-times-circle form-control-feedback\" ng-click=\"rangeTo = ''\" style=\"cursor: pointer; pointer-events: inherit;\"></i>\n" +
-    "              </div>\n" +
+    "                    <div class=\"form-group has-feedback\"\n" +
+    "                         style=\"display: inline-block; margin-bottom: 0; vertical-align: middle; margin-bottom: 2px;\">\n" +
+    "                        <input type=\"text\" class=\"form-control\" ng-model=\"rangeTo\" ng-model-options=\"{ debounce: 300 }\"\n" +
+    "                               ng-change=\"applyFilter()\" placeholder=\"To\" style=\"width: 8em;\">\n" +
+    "                        <i class=\"fa fa-fw fa-times-circle form-control-feedback\" ng-click=\"setRangeTo()\"\n" +
+    "                           style=\"cursor: pointer; pointer-events: inherit;\"></i>\n" +
+    "                    </div>\n" +
     "\n" +
-    "              <div class=\"form-group\" style=\"display: inline-block; margin-bottom: 0; vertical-align: middle; margin-bottom: 2px;\">\n" +
-    "                <button ng-click=\"applyFilter()\" class=\"btn btn-success\" type=\"button\"><i class=\"fa fa-fw fa-filter\"></i> Apply</button>\n" +
-    "              </div>\n" +
-    "            </form>\n" +
+    "                    <!--<div class=\"form-group\" style=\"display: inline-block; margin-bottom: 0; vertical-align: middle; margin-bottom: 2px;\">-->\n" +
+    "                    <!--<button ng-click=\"applyFilter()\" class=\"btn btn-success\" type=\"button\"><i class=\"fa fa-fw fa-filter\"></i> Apply</button>-->\n" +
+    "                    <!--</div>-->\n" +
+    "                </form>\n" +
     "            </div>\n" +
     "\n" +
     "            <div class=\"clearfix\"></div>\n" +
     "        </div>\n" +
-    "      </div>\n" +
+    "    </div>\n" +
     "</div>\n"
   );
 

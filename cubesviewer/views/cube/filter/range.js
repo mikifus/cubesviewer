@@ -70,13 +70,22 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeRangeFilterDimen
              * Updates info after loading data.
              */
             $scope.applyFilter = function () {
-                if ($scope.rangeFrom || $scope.rangeTo) {
-                    // Cut dimension
-                    var cutDimension = $scope.parts.dimension.name
-                        + ( $scope.parts.hierarchy.name != "default" ? "@" + $scope.parts.hierarchy.name : "" )
-                        + ':' + $scope.parts.level.name;
-                    $scope.selectRange(cutDimension, $scope.rangeFrom, $scope.rangeTo);
-                }
+                // Cut dimension
+                var cutDimension = $scope.parts.dimension.name
+                    + ( $scope.parts.hierarchy.name != "default" ? "@" + $scope.parts.hierarchy.name : "" )
+                    + ':' + $scope.parts.level.name;
+                $scope.selectRange(cutDimension, $scope.rangeFrom, $scope.rangeTo);
+
+            };
+
+            $scope.setRangeFrom = function () {
+                $scope.rangeFrom = null;
+                $scope.applyFilter();
+            };
+
+            $scope.setRangeTo = function () {
+                $scope.rangeTo = null;
+                $scope.applyFilter();
             };
 
 

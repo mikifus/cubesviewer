@@ -363,8 +363,9 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
 					"range_to": range_to
 				});
 			} else {
+				var cutDimension = view.cube.dimensionParts(dimension).cutDimension;
 				view.params.rangefilters = $.grep(view.params.rangefilters, function (e) {
-					return view.cube.dimensionParts(e.dimension).cutDimension == view.cube.dimensionParts(dimension).cutDimension;
+					return view.cube.dimensionParts(e.dimension).cutDimension == cutDimension;
 				}, true);
 			}
 		} else {

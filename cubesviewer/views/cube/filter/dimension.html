@@ -43,9 +43,9 @@
 
               </div>
 
-                <div class="form-group" style="display: inline-block; margin-bottom: 0; vertical-align: middle; margin-bottom: 2px;">
-                 <button ng-click="applyFilter()" class="btn btn-success" type="button"><i class="fa fa-fw fa-filter"></i> Apply</button>
-              </div>
+              <!--<div class="form-group" style="display: inline-block; margin-bottom: 0; vertical-align: middle; margin-bottom: 2px;">-->
+                 <!--<button ng-click="applyFilter()" class="btn btn-success" type="button"><i class="fa fa-fw fa-filter"></i> Apply</button>-->
+              <!--</div>-->
             </form>
             </div>
 
@@ -60,7 +60,7 @@
                         <div ng-if="!loadingDimensionValues" class="row" style="white-space: nowrap;">
                             <div ng-repeat="val in dimensionValues | filter:filterDimensionValue(searchString)" style="overflow-x: hidden; text-overflow: ellipsis;" class="col-md-3">
                                 <label style="font-weight: normal; margin-bottom: 2px;" title="{{ ::val.label }}">
-                                    <input type="checkbox" name="selectedValues[]" ng-model="val.selected" value="{{ ::val.value }}" style="vertical-align: bottom;" />
+                                    <input type="checkbox" name="selectedValues[]" ng-model="val.selected" value="{{ ::val.value }}" ng-click="applyFilter()" style="vertical-align: bottom;" />
                                     <span title="{{ ::val.label }}">{{ ::val.label }}</span>
                                 </label>
                             </div>
