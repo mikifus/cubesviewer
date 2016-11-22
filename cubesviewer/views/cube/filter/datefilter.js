@@ -40,6 +40,7 @@ angular.module('cv.views.cube').filter("datefilterMode", ['$rootScope', 'cvOptio
 		var text = "None";
 		switch (val) {
 			case "custom": text = "Custom"; break;
+			case "auto-yesterday": text = "Yesterday"; break;
 			case "auto-last7d": text = "Last 7 days"; break;
 			case "auto-last1m": text = "Last month"; break;
 			case "auto-last3m": text = "Last 3 months"; break;
@@ -47,7 +48,6 @@ angular.module('cv.views.cube').filter("datefilterMode", ['$rootScope', 'cvOptio
 			case "auto-last12m": text = "Last year"; break;
 			case "auto-last24m": text = "Last 2 years"; break;
 			case "auto-january1st": text = "From January 1st"; break;
-			case "auto-yesterday": text = "Yesterday"; break;
 		}
 		return text;
 	};

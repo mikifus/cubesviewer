@@ -313,9 +313,9 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
 				date_from.setDate(1);
 			} else if (datefilter.mode == "auto-yesterday") {
 				date_from = new Date();
-				date_from.setDate(date_from.getDate() - 1);
+				date_from.setDate(date_from.getDate() - 2);
 				date_to = new Date();
-                date_to.setDate(date_from.getDate() - 1);
+                date_to.setDate(date_to.getDate() - 1);
 			}
 
 		} else if (datefilter.mode == "custom") {

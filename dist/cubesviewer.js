@@ -1372,9 +1372,9 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
 				date_from.setDate(1);
 			} else if (datefilter.mode == "auto-yesterday") {
 				date_from = new Date();
-				date_from.setDate(date_from.getDate() - 1);
+				date_from.setDate(date_from.getDate() - 2);
 				date_to = new Date();
-                date_to.setDate(date_from.getDate() - 1);
+                date_to.setDate(date_to.getDate() - 1);
 			}
 
 		} else if (datefilter.mode == "custom") {
@@ -3503,6 +3503,7 @@ angular.module('cv.views.cube').filter("datefilterMode", ['$rootScope', 'cvOptio
 		var text = "None";
 		switch (val) {
 			case "custom": text = "Custom"; break;
+			case "auto-yesterday": text = "Yesterday"; break;
 			case "auto-last7d": text = "Last 7 days"; break;
 			case "auto-last1m": text = "Last month"; break;
 			case "auto-last3m": text = "Last 3 months"; break;
@@ -3510,7 +3511,6 @@ angular.module('cv.views.cube').filter("datefilterMode", ['$rootScope', 'cvOptio
 			case "auto-last12m": text = "Last year"; break;
 			case "auto-last24m": text = "Last 2 years"; break;
 			case "auto-january1st": text = "From January 1st"; break;
-			case "auto-yesterday": text = "Yesterday"; break;
 		}
 		return text;
 	};
@@ -9997,6 +9997,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "                      <ul class=\"dropdown-menu cv-view-menu cv-view-menu-view\">\n" +
     "                        <li ng-click=\"setMode('custom')\"><a><i class=\"fa fa-fw\"></i> Custom</a></li>\n" +
     "                        <div class=\"divider\"></div>\n" +
+    "                        <li ng-click=\"setMode('auto-yesterday')\"><a><i class=\"fa fa-fw\"></i> Yesterday</a></li>\n" +
     "                        <li ng-click=\"setMode('auto-last7d')\"><a><i class=\"fa fa-fw\"></i> Last 7 days</a></li>\n" +
     "                        <li ng-click=\"setMode('auto-last1m')\"><a><i class=\"fa fa-fw\"></i> Last month</a></li>\n" +
     "                        <li ng-click=\"setMode('auto-last3m')\"><a><i class=\"fa fa-fw\"></i> Last 3 months</a></li>\n" +
@@ -10004,7 +10005,6 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "                        <li ng-click=\"setMode('auto-last12m')\"><a><i class=\"fa fa-fw\"></i> Last year</a></li>\n" +
     "                        <li ng-click=\"setMode('auto-last24m')\"><a><i class=\"fa fa-fw\"></i> Last 2 years</a></li>\n" +
     "                        <li ng-click=\"setMode('auto-january1st')\"><a><i class=\"fa fa-fw\"></i> From January 1st</a></li>\n" +
-    "                        <li ng-click=\"setMode('auto-yesterday')\"><a><i class=\"fa fa-fw\"></i> Yesterday</a></li>\n" +
     "                      </ul>\n" +
     "                  </div>\n" +
     "                 </div>\n" +
