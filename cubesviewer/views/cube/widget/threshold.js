@@ -62,7 +62,7 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetThresholdController
                 var view = $scope.view;
                 var dataRows = $scope.view.grid.data;
                 var columnDefs = view.grid.columnDefs;
-                var zaxis = view.params.widget.zaxis;
+                var zaxis = view.params.zaxis;
 
                 $scope.view.zaxis_compare = null;
 

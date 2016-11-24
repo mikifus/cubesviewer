@@ -2621,7 +2621,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
 	 * Selects z axis
 	 */
 	$scope.selectZAxis = function(dimension) {
-		$scope.view.params.widget.zaxis = (dimension == "" ? null : dimension);
+		$scope.view.params.zaxis = (dimension == "" ? null : dimension);
 		$scope.refreshView();
 	};
 
@@ -6399,9 +6399,9 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetController", ['$roo
                 {},
                 {
                     "widgettype": "max-value",
+                    "zaxis": null,
                     "widget": {
                         "type": "max-value",
-                        "zaxis": null,
                         'zoom': null
                     }
                 },
@@ -6417,6 +6417,9 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetController", ['$roo
         });
 
         $scope.loadData = function () {
+            if ($scope.view.params.zaxis == null) {
+                return;
+            }
             var includeXAxis = $scope.view.params.xaxis != null;
             var includeZAxis = $scope.view.params.zaxis != null;
             var browser_args = cubesService.buildBrowserArgs($scope.view, includeXAxis, false, includeZAxis);
@@ -6597,7 +6600,7 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMaxValueController"
                 var view = $scope.view;
                 var dataRows = $scope.view.grid.data;
                 var columnDefs = view.grid.columnDefs;
-                var zaxis = view.params.widget.zaxis;
+                var zaxis = view.params.zaxis;
                 view.params.widget.limit = view.params.widget.limit ? view.params.widget.limit : 16;
                 $scope.view.zaxis_compare = null;
 
@@ -6748,7 +6751,7 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetThresholdController
                 var view = $scope.view;
                 var dataRows = $scope.view.grid.data;
                 var columnDefs = view.grid.columnDefs;
-                var zaxis = view.params.widget.zaxis;
+                var zaxis = view.params.zaxis;
 
                 $scope.view.zaxis_compare = null;
 
@@ -6908,7 +6911,7 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMovementController"
                 var view = $scope.view;
                 var dataRows = $scope.view.grid.data;
                 var columnDefs = view.grid.columnDefs;
-                var zaxis = view.params.widget.zaxis;
+                var zaxis = view.params.zaxis;
 
                 $scope.view.zaxis_compare = null;
 

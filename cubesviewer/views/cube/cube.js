@@ -440,7 +440,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
 	 * Selects z axis
 	 */
 	$scope.selectZAxis = function(dimension) {
-		$scope.view.params.widget.zaxis = (dimension == "" ? null : dimension);
+		$scope.view.params.zaxis = (dimension == "" ? null : dimension);
 		$scope.refreshView();
 	};
 

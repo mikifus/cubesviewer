@@ -40,9 +40,9 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetController", ['$roo
                 {},
                 {
                     "widgettype": "max-value",
+                    "zaxis": null,
                     "widget": {
                         "type": "max-value",
-                        "zaxis": null,
                         'zoom': null
                     }
                 },
@@ -58,6 +58,9 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetController", ['$roo
         });
 
         $scope.loadData = function () {
+            if ($scope.view.params.zaxis == null) {
+                return;
+            }
             var includeXAxis = $scope.view.params.xaxis != null;
             var includeZAxis = $scope.view.params.zaxis != null;
             var browser_args = cubesService.buildBrowserArgs($scope.view, includeXAxis, false, includeZAxis);
