@@ -476,6 +476,12 @@ angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootSco
 		    }
 	    });
 	};
+	/*
+	 * Merge a view for comparison.
+	 */
+	$scope.MergeWithView = function(baseview, mergeView) {
+		baseview.compare_view = mergeView;
+	};
 
     $scope.$watch('reststoreService.savedViews', function (newValue, oldValue) {
 	    if (newValue != oldValue) {

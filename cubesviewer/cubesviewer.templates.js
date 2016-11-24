@@ -880,6 +880,16 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "    <li ng-click=\"viewsService.studioViewsService.studioScope.showHelpView(view)\"><a><i\n" +
     "            class=\"fa fa-fw fa-question\"></i> Help</a></li>\n" +
     "    <div class=\"divider\"></div>\n" +
+    "    <li class=\"dropdown-submenu\"><a> Compare with</a>\n" +
+    "        <ul class=\"dropdown-menu\">\n" +
+    "            <li ng-repeat=\"mergeView in viewsService.studioViewsService.views\" ng-if=\"mergeView != view\">\n" +
+    "                <a ng-click=\"viewsService.studioViewsService.studioScope.MergeWithView(view, mergeView)\">{{\n" +
+    "                    ::mergeView.name }}</a>\n" +
+    "            </li>\n" +
+    "        </ul>\n" +
+    "    </li>\n" +
+    "\n" +
+    "    <div class=\"divider\"></div>\n" +
     "    <li ng-click=\"viewsService.studioViewsService.closeView(view)\"><a><i class=\"fa fa-fw fa-close\"></i> Close</a></li>\n" +
     "</ul>\n"
   );
