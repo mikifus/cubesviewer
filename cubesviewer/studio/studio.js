@@ -415,7 +415,7 @@ angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootSco
 	$scope.saveDashboard = function () {
 		reststoreService.dashboard.views = [];
 		studioViewsService.views.forEach(function (v) {
-			if (!v.saveId) {
+			if (!v.savedId) {
 				dialogService.show("Save all opened views first.");
 				return;
 			}
