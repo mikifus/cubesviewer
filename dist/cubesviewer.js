@@ -2696,7 +2696,8 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
 			view.params.datefilters = [];
 		}
 
-		$scope.refreshView();
+		$scope.view.pendingActions++;
+		// $scope.refreshView();
 
 	};
 
@@ -3553,10 +3554,10 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeFilterDateContro
 
 	$scope.dateStartOpen = function() {
 		$scope.dateStart.opened = true;
-	}
+	};
 	$scope.dateEndOpen = function() {
 		$scope.dateEnd.opened = true;
-	}
+	};
 
 	$scope.setMode = function(mode) {
 		$scope.datefilter.mode = mode;
@@ -3565,8 +3566,9 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeFilterDateContro
 	$scope.updateDateFilter = function() {
 		$scope.datefilter.date_from = $scope.dateStart.value ? $filter('date')($scope.dateStart.value, "yyyy-MM-dd") : null;
 		$scope.datefilter.date_to = $scope.dateEnd.value? $filter('date')($scope.dateEnd.value, "yyyy-MM-dd") : null;
-		$scope.refreshView();
-	}
+		$scope.view.pendingActions++;
+		// $scope.refreshView();
+	};
 
 	$scope.$watch("dateStart.value", function(newValue, oldValue) {
 		if (newValue != oldValue) $scope.updateDateFilter()});

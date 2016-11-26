@@ -513,7 +513,8 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
 			view.params.datefilters = [];
 		}
 
-		$scope.refreshView();
+		$scope.view.pendingActions++;
+		// $scope.refreshView();
 
 	};
 
