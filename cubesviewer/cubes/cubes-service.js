@@ -104,7 +104,7 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
 	 */
 	this.cubesRequest = function(path, params, successCallback, errCallback) {
 
-		params.timestamp = new Date().getTime();
+		params.timestamp = cubesviewer.timestamp;
 
 		// TODO: normalize how URLs are used (full URL shall come from client code)
 		if (path.charAt(0) == '/') path = cvOptions.cubesUrl + path;

@@ -159,6 +159,8 @@ function CubesViewer() {
 		angular.module('cv').constant('cvOptions', options);
 	};
 
+	this.timestamp = new Date().getTime();
+
 	/**
 	 * Initializes CubesViewer system.
 	 *
@@ -229,7 +231,7 @@ function CubesViewer() {
 		}
 	};
 
-};
+}
 
 /**
  * This is Cubesviewer main entry point. Please see {@link CubesViewer}

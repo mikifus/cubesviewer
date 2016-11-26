@@ -157,7 +157,7 @@ angular.module('bootstrapSubmenu', []).directive("submenu", ['$timeout', functio
         if(args && args.drilldown)
           params.data.drilldown = params.data.drilldown.toString();
 
-        params.data.timestamp = new Date().getTime();
+        params.data.timestamp = cubesviewer.timestamp;
 
         params.success = function(obj) {
             callback(obj);
@@ -191,7 +191,7 @@ angular.module('bootstrapSubmenu', []).directive("submenu", ['$timeout', functio
 
         options.url = self.url + 'info';
 
-        options.data = {'timestamp': new Date().getTime()};
+        options.data = {'timestamp': cubesviewer.timestamp};
 
         options.success = function(resp, status, xhr) {
             self.server_version = resp.cubes_version;
@@ -222,7 +222,7 @@ angular.module('bootstrapSubmenu', []).directive("submenu", ['$timeout', functio
 
         options.url = self.url + 'cubes';
 
-        options.data = {'timestamp': new Date().getTime()};
+        options.data = {'timestamp': cubesviewer.timestamp};
 
         options.success = function(resp, status, xhr) {
             self._cube_list = resp;
@@ -259,7 +259,7 @@ angular.module('bootstrapSubmenu', []).directive("submenu", ['$timeout', functio
 
         options.url = self.url + 'cube/' + encodeURI(name) + '/model';
 
-        options.data = {'timestamp': new Date().getTime()};
+        options.data = {'timestamp': cubesviewer.timestamp};
 
         options.success = function(resp, status, xhr) {
             // must parse dimensions first into a "fake" model
@@ -1163,7 +1163,7 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
 	 */
 	this.cubesRequest = function(path, params, successCallback, errCallback) {
 
-		params.timestamp = new Date().getTime();
+		params.timestamp = cubesviewer.timestamp;
 
 		// TODO: normalize how URLs are used (full URL shall come from client code)
 		if (path.charAt(0) == '/') path = cvOptions.cubesUrl + path;
@@ -1769,6 +1769,8 @@ function CubesViewer() {
 		angular.module('cv').constant('cvOptions', options);
 	};
 
+	this.timestamp = new Date().getTime();
+
 	/**
 	 * Initializes CubesViewer system.
 	 *
@@ -1839,7 +1841,7 @@ function CubesViewer() {
 		}
 	};
 
-};
+}
 
 /**
  * This is Cubesviewer main entry point. Please see {@link CubesViewer}
@@ -3328,7 +3330,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeFilterDimensionC
 
 		}
 
-		params.timestamp = new Date().getTime();
+		params.timestamp = cubesviewer.timestamp;
 
 		var path = "/cube/" + $scope.view.cube.name + "/members/" + $scope.parts.dimension.name;
 		var dataId = path + "?" + $.param(params);
@@ -8330,7 +8332,7 @@ angular.module('cv.studio').service("reststoreService", ['$rootScope', '$http', 
      * Get view list.
      */
     reststoreService.viewList = function () {
-        $http.get(cvOptions.backendUrl + "/view/list/?timestamp=" + new Date().getTime()).then(
+        $http.get(cvOptions.backendUrl + "/view/list/?timestamp=" + cubesviewer.timestamp).then(
         		reststoreService._viewListCallback, cubesService.defaultRequestErrorHandler);
     };
 
@@ -8444,7 +8446,7 @@ angular.module('cv.studio').service("reststoreService", ['$rootScope', '$http', 
     };
 
     reststoreService.dashboardList = function(){
-        $http.get(cvOptions.backendUrl + "/dashboard/list/?timestamp=" + new Date().getTime()).then(
+        $http.get(cvOptions.backendUrl + "/dashboard/list/?timestamp=" + cubesviewer.timestamp).then(
         		reststoreService._dashboardListCallback, cubesService.defaultRequestErrorHandler);
     };
 

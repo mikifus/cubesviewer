@@ -101,7 +101,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeFilterDimensionC
 
 		}
 
-		params.timestamp = new Date().getTime();
+		params.timestamp = cubesviewer.timestamp;
 
 		var path = "/cube/" + $scope.view.cube.name + "/members/" + $scope.parts.dimension.name;
 		var dataId = path + "?" + $.param(params);
