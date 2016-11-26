@@ -879,8 +879,10 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "    <div class=\"divider\"></div>\n" +
     "    <li ng-click=\"viewsService.studioViewsService.studioScope.showHelpView(view)\"><a><i\n" +
     "            class=\"fa fa-fw fa-question\"></i> Help</a></li>\n" +
-    "    <div class=\"divider\"></div>\n" +
-    "    <li class=\"dropdown-submenu\"><a> Compare with</a>\n" +
+    "\n" +
+    "    <div class=\"divider\" ng-if=\"view.params.mode == 'chart' && view.params.charttype == 'lines'\"></div>\n" +
+    "    <li class=\"dropdown-submenu\" ng-if=\"view.params.mode == 'chart' && view.params.charttype == 'lines'\"><a><i\n" +
+    "            class=\"fa fa-fw fa-exchange\"></i> Compare with</a>\n" +
     "        <ul class=\"dropdown-menu\">\n" +
     "            <li ng-repeat=\"mergeView in viewsService.studioViewsService.views\" ng-if=\"mergeView != view\">\n" +
     "                <a ng-click=\"viewsService.studioViewsService.studioScope.MergeWithView(view, mergeView)\">{{\n" +

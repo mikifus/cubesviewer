@@ -5069,7 +5069,6 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesContro
         };
 
         $scope.$on('gridDataUpdated', function () {
-            console.log('gridDataUpdated');
             $scope.chartCtrl.cleanupNvd3();
             $timeout(function () {
                 $scope.drawChartLines();
@@ -5077,22 +5076,19 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesContro
         });
 
         $scope.$watch('view.compare_view', function (newValue, oldValue) {
-            console.log('watch compare_view', newValue, oldValue);
             if (newValue && newValue != oldValue) {
                 $scope.drawChartLines();
             }
         });
 
         $scope.$watch('view.compare_view.grid.data', function (newValue, oldValue) {
-            console.log('watch grid data', newValue, oldValue);
             if (newValue && newValue.length && newValue != oldValue) {
                 $scope.drawChartLines();
             }
         });
 
         $scope.$watch('view.compare_view.pendingRequests', function (newValue, oldValue) {
-            console.log('watch compare_view.pendingRequests', newValue, oldValue);
-            if (!newValue && newValue == 0) {
+            if (newValue === 0) {
                 $scope.drawChartLines();
             }
         });
@@ -5104,10 +5100,12 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesContro
         $scope.drawChartLines = function () {
 
             var view = $scope.view;
-            console.log('drawChartLines', view.name);
 
             var dataRows = $scope.view.grid.data;
             var columnDefs = view.grid.columnDefs;
+
+            var dRws;
+            var cDfs;
 
             var container = $($element).find("svg").get(0);
 
@@ -5144,9 +5142,8 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesContro
                 serieCount++;
             });
             if (view.compare_view) {
-                console.log('found compare view');
-                var dRws = view.compare_view.grid.data;
-                var cDfs = view.compare_view.grid.columnDefs;
+                dRws = view.compare_view.grid.data;
+                cDfs = view.compare_view.grid.columnDefs;
                 $(dRws).each(function (idx, e) {
                     var serie = [];
                     for (var i = 1; i < cDfs.length; i++) {
@@ -5175,7 +5172,6 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesContro
             d.sort(function (a, b) {
                 return a.key < b.key ? -1 : (a.key > b.key ? +1 : 0)
             });
-            console.log(d);
             /*
              xticks = [];
              for (var i = 1; i < colNames.length; i++) {
@@ -5200,7 +5196,11 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesContro
                     chart.xAxis
                         .axisLabel(xAxisLabel)
                         .tickFormat(function (d, i) {
-                            return (columnDefs[d].name);
+                            if (columnDefs[d]) {
+                                return (columnDefs[d].name);
+                            } else if (cDfs && cDfs[d]) {
+                                return cDfs[d].name;
+                            }
                         });
 
                     chart.yAxis.tickFormat(function (d, i) {
@@ -9759,8 +9759,10 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "    <div class=\"divider\"></div>\n" +
     "    <li ng-click=\"viewsService.studioViewsService.studioScope.showHelpView(view)\"><a><i\n" +
     "            class=\"fa fa-fw fa-question\"></i> Help</a></li>\n" +
-    "    <div class=\"divider\"></div>\n" +
-    "    <li class=\"dropdown-submenu\"><a> Compare with</a>\n" +
+    "\n" +
+    "    <div class=\"divider\" ng-if=\"view.params.mode == 'chart' && view.params.charttype == 'lines'\"></div>\n" +
+    "    <li class=\"dropdown-submenu\" ng-if=\"view.params.mode == 'chart' && view.params.charttype == 'lines'\"><a><i\n" +
+    "            class=\"fa fa-fw fa-exchange\"></i> Compare with</a>\n" +
     "        <ul class=\"dropdown-menu\">\n" +
     "            <li ng-repeat=\"mergeView in viewsService.studioViewsService.views\" ng-if=\"mergeView != view\">\n" +
     "                <a ng-click=\"viewsService.studioViewsService.studioScope.MergeWithView(view, mergeView)\">{{\n" +
