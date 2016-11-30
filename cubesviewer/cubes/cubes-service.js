@@ -181,6 +181,13 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
 
 		var orders = [];
         //Order
+        if (includeZAxis && view.params.zaxis) {
+			var zaxis_order = dim_to_arr(view, view.params.zaxis);
+			if (zaxis_order.length) {
+				orders.push.apply(orders, zaxis_order);
+			}
+        }
+
         if (includeXAxis && view.params.xaxis) {
 			var xaxis_order = dim_to_arr(view, view.params.xaxis);
 			if (xaxis_order.length) {
@@ -189,12 +196,6 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
             args.aggregates = [view.params.yaxis];
         }
 
-        if (includeZAxis && view.params.zaxis) {
-			var zaxis_order = dim_to_arr(view, view.params.zaxis);
-			if (zaxis_order.length) {
-				orders.push.apply(orders, zaxis_order);
-			}
-        }
 
 		if (orders.length) {
 			args.order = orders.join(',');
