@@ -5,10 +5,10 @@
             <div ng-repeat="point in serie['values']" class="col-xs-6"
                  ng-if="compareThreshold(point['y'])"
                  ng-class="(cvOptions.studioTwoColumn ? 'col-md-6 col-sm-6' : 'col-md-3 col-sm-3')"
-                 ng-init="color = point['diff'] > 0 ? '#669366' : '#dba4a3'; chevron = point['diff'] > 0 ? 'fa-chevron-up' : 'fa-chevron-down'">
+                 ng-init="color = point['diff'] > 0 ? '#0d6d0d' : '#9e0300'; chevron = point['diff'] > 0 ? 'fa-chevron-up' : 'fa-chevron-down'">
                 <span style="font-size: 200%">{{ :: point['x'] }}</span>
-                <span style="font-size: 150%; color: #777;">({{ ::point['y'] }}<span ng-if="point['diff'] != 0">
-                <i ng-class="chevron" class="fa fa-fw" ng-style="{color: color}"></i>{{ ::diff_abs(point['diff']) }}%</span>)</span>
+                <span style="font-size: 150%; opacity: .7;">({{ ::point['y'] }}<span ng-if="point['diff'] != 0">
+                <span ng-style="{color: color}"><i ng-class="chevron" class="fa fa-fw"></i>{{ ::diff_abs(point['diff']) }}%</span></span>)</span>
             </div>
         </div>
     </div>

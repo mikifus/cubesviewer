@@ -10380,10 +10380,10 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "            <div ng-repeat=\"point in serie['values']\" class=\"col-xs-6\"\n" +
     "                 ng-if=\"compareThreshold(point['y'])\"\n" +
     "                 ng-class=\"(cvOptions.studioTwoColumn ? 'col-md-6 col-sm-6' : 'col-md-3 col-sm-3')\"\n" +
-    "                 ng-init=\"color = point['diff'] > 0 ? '#669366' : '#dba4a3'; chevron = point['diff'] > 0 ? 'fa-chevron-up' : 'fa-chevron-down'\">\n" +
+    "                 ng-init=\"color = point['diff'] > 0 ? '#0d6d0d' : '#9e0300'; chevron = point['diff'] > 0 ? 'fa-chevron-up' : 'fa-chevron-down'\">\n" +
     "                <span style=\"font-size: 200%\">{{ :: point['x'] }}</span>\n" +
-    "                <span style=\"font-size: 150%; color: #777;\">({{ ::point['y'] }}<span ng-if=\"point['diff'] != 0\">\n" +
-    "                <i ng-class=\"chevron\" class=\"fa fa-fw\" ng-style=\"{color: color}\"></i>{{ ::diff_abs(point['diff']) }}%</span>)</span>\n" +
+    "                <span style=\"font-size: 150%; opacity: .7;\">({{ ::point['y'] }}<span ng-if=\"point['diff'] != 0\">\n" +
+    "                <span ng-style=\"{color: color}\"><i ng-class=\"chevron\" class=\"fa fa-fw\"></i>{{ ::diff_abs(point['diff']) }}%</span></span>)</span>\n" +
     "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
