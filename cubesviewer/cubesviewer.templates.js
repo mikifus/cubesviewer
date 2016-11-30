@@ -1720,7 +1720,13 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "        <span style=\"white-space: nowrap;\"><i class=\"fa fa-fw fa-text-width\"></i> <b\n" +
     "                class=\"hidden-xs hidden-sm\">Threshold:</b> <input type=\"number\"\n" +
     "                                                                  ng-model=\"view.params.widget.threshold\"\n" +
-    "                                                                  style=\"width: 7em;\"></span>\n" +
+    "                                                                  style=\"width: 7em;\">\n" +
+    "\n" +
+    "            <label><i class=\"fa fa-fw fa-chevron-right\"></i> <input type=\"radio\" value=\"up\"\n" +
+    "                                                                    ng-model=\"view.params.widget.compareMode\"></label>\n" +
+    "            <label><i class=\"fa fa-fw fa-chevron-left\"></i> <input type=\"radio\" value=\"down\"\n" +
+    "                                                                   ng-model=\"view.params.widget.compareMode\"></label>\n" +
+    "        </span>\n" +
     "    </div>\n" +
     "\n" +
     "    <div ng-if=\"view.params.widgettype == 'movement'\"\n" +
@@ -1728,8 +1734,8 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "         style=\"color: black; background-color: #ffdddd; text-align: left;\">\n" +
     "        <span style=\"white-space: nowrap;\"><i class=\"fa fa-fw fa-map-signs\"></i> <b\n" +
     "                class=\"hidden-xs hidden-sm\">Min. change:</b> <input type=\"number\"\n" +
-    "                                                                  ng-model=\"view.params.widget.movement\"\n" +
-    "                                                                  style=\"width: 7em;\" step=\"0.1\" min=\"0\"></span>\n" +
+    "                                                                    ng-model=\"view.params.widget.movement\"\n" +
+    "                                                                    style=\"width: 7em;\" step=\"0.1\" min=\"0\"></span>\n" +
     "    </div>\n" +
     "</div>"
   );
@@ -1741,7 +1747,7 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "        <div ng-repeat=\"serie in series\" class=\"row\" style=\"margin-top: 1em;\">\n" +
     "            <div class=\"col-sm-12\"><h3 style=\"color: #337ab7;\">{{ ::serie['key'] }}</h3></div>\n" +
     "            <div ng-repeat=\"point in serie['values']\" class=\"col-xs-6\"\n" +
-    "                 ng-if=\"point['y'] >= view.params.widget.threshold\"\n" +
+    "                 ng-if=\"compareThreshold(point['y'])\"\n" +
     "                 ng-class=\"(cvOptions.studioTwoColumn ? 'col-md-6 col-sm-6' : 'col-md-3 col-sm-3')\"\n" +
     "                 ng-init=\"color = point['diff'] > 0 ? '#669366' : '#dba4a3'; chevron = point['diff'] > 0 ? 'fa-chevron-up' : 'fa-chevron-down'\">\n" +
     "                <span style=\"font-size: 200%\">{{ :: point['x'] }}</span>\n" +

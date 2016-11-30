@@ -38,7 +38,8 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetThresholdController
                 $scope.view.params.widget = $.extend(
                     {},
                     {
-                        "threshold": 90
+                        "threshold": 90,
+                        "compareMode": 'up'
                     },
                     $scope.view.params.widget
                 );
@@ -49,13 +50,9 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetThresholdController
                 $scope.drawWidgetThreshold();
             });
 
-            // $scope.$watch('view.params.widget.threshold', function () {
-            //     $scope.drawWidgetThreshold();
-            //     // $timeout(function () {
-            //     //     $('.cv-views-container').masonry('layout');
-            //     //     console.log('layout');
-            //     // }, 100);
-            // });
+            $scope.$watch('view.params.widget.compareMode', function () {
+                $scope.drawWidgetThreshold();
+            });
 
             $scope.drawWidgetThreshold = function () {
 
@@ -160,6 +157,14 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetThresholdController
                     });
                 });
                 $scope.series = curr_series;
+            };
+
+            $scope.compareThreshold = function (n) {
+                if ($scope.view.params.widget.compareMode == 'up') {
+                    return n >= $scope.view.params.widget.threshold;
+                } else {
+                    return n <= $scope.view.params.widget.threshold;
+                }
             };
 
             $scope.initialize();

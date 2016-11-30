@@ -36,7 +36,13 @@
         <span style="white-space: nowrap;"><i class="fa fa-fw fa-text-width"></i> <b
                 class="hidden-xs hidden-sm">Threshold:</b> <input type="number"
                                                                   ng-model="view.params.widget.threshold"
-                                                                  style="width: 7em;"></span>
+                                                                  style="width: 7em;">
+
+            <label><i class="fa fa-fw fa-chevron-right"></i> <input type="radio" value="up"
+                                                                    ng-model="view.params.widget.compareMode"></label>
+            <label><i class="fa fa-fw fa-chevron-left"></i> <input type="radio" value="down"
+                                                                   ng-model="view.params.widget.compareMode"></label>
+        </span>
     </div>
 
     <div ng-if="view.params.widgettype == 'movement'"
@@ -44,7 +50,7 @@
          style="color: black; background-color: #ffdddd; text-align: left;">
         <span style="white-space: nowrap;"><i class="fa fa-fw fa-map-signs"></i> <b
                 class="hidden-xs hidden-sm">Min. change:</b> <input type="number"
-                                                                  ng-model="view.params.widget.movement"
-                                                                  style="width: 7em;" step="0.1" min="0"></span>
+                                                                    ng-model="view.params.widget.movement"
+                                                                    style="width: 7em;" step="0.1" min="0"></span>
     </div>
 </div>

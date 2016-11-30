@@ -3,7 +3,7 @@
         <div ng-repeat="serie in series" class="row" style="margin-top: 1em;">
             <div class="col-sm-12"><h3 style="color: #337ab7;">{{ ::serie['key'] }}</h3></div>
             <div ng-repeat="point in serie['values']" class="col-xs-6"
-                 ng-if="point['y'] >= view.params.widget.threshold"
+                 ng-if="compareThreshold(point['y'])"
                  ng-class="(cvOptions.studioTwoColumn ? 'col-md-6 col-sm-6' : 'col-md-3 col-sm-3')"
                  ng-init="color = point['diff'] > 0 ? '#669366' : '#dba4a3'; chevron = point['diff'] > 0 ? 'fa-chevron-up' : 'fa-chevron-down'">
                 <span style="font-size: 200%">{{ :: point['x'] }}</span>

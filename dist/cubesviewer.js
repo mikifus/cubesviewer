@@ -6732,7 +6732,8 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetThresholdController
                 $scope.view.params.widget = $.extend(
                     {},
                     {
-                        "threshold": 90
+                        "threshold": 90,
+                        "compareMode": 'up'
                     },
                     $scope.view.params.widget
                 );
@@ -6743,13 +6744,9 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetThresholdController
                 $scope.drawWidgetThreshold();
             });
 
-            // $scope.$watch('view.params.widget.threshold', function () {
-            //     $scope.drawWidgetThreshold();
-            //     // $timeout(function () {
-            //     //     $('.cv-views-container').masonry('layout');
-            //     //     console.log('layout');
-            //     // }, 100);
-            // });
+            $scope.$watch('view.params.widget.compareMode', function () {
+                $scope.drawWidgetThreshold();
+            });
 
             $scope.drawWidgetThreshold = function () {
 
@@ -6854,6 +6851,14 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetThresholdController
                     });
                 });
                 $scope.series = curr_series;
+            };
+
+            $scope.compareThreshold = function (n) {
+                if ($scope.view.params.widget.compareMode == 'up') {
+                    return n >= $scope.view.params.widget.threshold;
+                } else {
+                    return n <= $scope.view.params.widget.threshold;
+                }
             };
 
             $scope.initialize();
@@ -10346,7 +10351,13 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "        <span style=\"white-space: nowrap;\"><i class=\"fa fa-fw fa-text-width\"></i> <b\n" +
     "                class=\"hidden-xs hidden-sm\">Threshold:</b> <input type=\"number\"\n" +
     "                                                                  ng-model=\"view.params.widget.threshold\"\n" +
-    "                                                                  style=\"width: 7em;\"></span>\n" +
+    "                                                                  style=\"width: 7em;\">\n" +
+    "\n" +
+    "            <label><i class=\"fa fa-fw fa-chevron-right\"></i> <input type=\"radio\" value=\"up\"\n" +
+    "                                                                    ng-model=\"view.params.widget.compareMode\"></label>\n" +
+    "            <label><i class=\"fa fa-fw fa-chevron-left\"></i> <input type=\"radio\" value=\"down\"\n" +
+    "                                                                   ng-model=\"view.params.widget.compareMode\"></label>\n" +
+    "        </span>\n" +
     "    </div>\n" +
     "\n" +
     "    <div ng-if=\"view.params.widgettype == 'movement'\"\n" +
@@ -10354,8 +10365,8 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "         style=\"color: black; background-color: #ffdddd; text-align: left;\">\n" +
     "        <span style=\"white-space: nowrap;\"><i class=\"fa fa-fw fa-map-signs\"></i> <b\n" +
     "                class=\"hidden-xs hidden-sm\">Min. change:</b> <input type=\"number\"\n" +
-    "                                                                  ng-model=\"view.params.widget.movement\"\n" +
-    "                                                                  style=\"width: 7em;\" step=\"0.1\" min=\"0\"></span>\n" +
+    "                                                                    ng-model=\"view.params.widget.movement\"\n" +
+    "                                                                    style=\"width: 7em;\" step=\"0.1\" min=\"0\"></span>\n" +
     "    </div>\n" +
     "</div>"
   );
@@ -10367,7 +10378,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "        <div ng-repeat=\"serie in series\" class=\"row\" style=\"margin-top: 1em;\">\n" +
     "            <div class=\"col-sm-12\"><h3 style=\"color: #337ab7;\">{{ ::serie['key'] }}</h3></div>\n" +
     "            <div ng-repeat=\"point in serie['values']\" class=\"col-xs-6\"\n" +
-    "                 ng-if=\"point['y'] >= view.params.widget.threshold\"\n" +
+    "                 ng-if=\"compareThreshold(point['y'])\"\n" +
     "                 ng-class=\"(cvOptions.studioTwoColumn ? 'col-md-6 col-sm-6' : 'col-md-3 col-sm-3')\"\n" +
     "                 ng-init=\"color = point['diff'] > 0 ? '#669366' : '#dba4a3'; chevron = point['diff'] > 0 ? 'fa-chevron-up' : 'fa-chevron-down'\">\n" +
     "                <span style=\"font-size: 200%\">{{ :: point['x'] }}</span>\n" +
