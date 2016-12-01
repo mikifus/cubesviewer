@@ -28,17 +28,19 @@
     <li ng-show="view.params.mode == 'widget'" class="dropdown-submenu">
         <a tabindex="0"><i class="fa fa-fw fa-cubes"></i> Widget type</a>
         <ul class="dropdown-menu">
-            <li ng-click="selectWidgetType('max-value')"><a href=""><i class="fa fa-fw fa-sort-amount-asc"></i> Max
+            <li ng-click="selectWidgetType('max-value')"><a href=""><i class="fa fa-fw fa-sort-amount-desc"></i> Max
                 value</a></li>
             <li ng-click="selectWidgetType('threshold')"><a href=""><i class="fa fa-fw fa-text-width"></i> Threshold</a>
             </li>
             <li ng-click="selectWidgetType('movement')"><a href=""><i class="fa fa-fw fa-map-signs"></i> Movement</a>
             </li>
+            <li ng-click="selectWidgetType('value')"><a href=""><i class="fa fa-fw fa-bolt"></i> Value</a>
+            </li>
         </ul>
     </li>
 
     <li class="dropdown-submenu"
-        ng-show="(view.params.mode == 'chart' || view.params.mode == 'widget') && (view.params.charttype == 'lines-stacked' || view.params.charttype == 'lines')">
+        ng-show="view.params.mode == 'chart' && (view.params.charttype == 'lines-stacked' || view.params.charttype == 'lines')">
         <a href=""><i class="fa fa-fw fa-angle-up"></i> Curve type</a>
         <ul class="dropdown-menu">
             <li ng-class="{'active': view.params.chartoptions.lineInterpolation == 'linear'}"
@@ -172,7 +174,7 @@
         </ul>
     </li>
 
-    <li ng-show="view.params.mode == 'widget' && view.params.widgettype == 'max-value'"
+    <li ng-show="view.params.mode == 'widget' && view.params.widget.type == 'max-value'"
         class="dropdown-submenu">
         <a tabindex="0"><i class="fa fa-fw fa-filter"></i> Limit</a>
         <ul class="dropdown-menu">

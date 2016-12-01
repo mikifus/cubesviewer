@@ -1,5 +1,5 @@
 <div ng-controller="CubesViewerWidgetController">
-    <div ng-if="view.params.widgettype == 'max-value'">
+    <div ng-if="view.params.widget.type == 'max-value'">
 
         <div ng-if="view.pendingRequests > 0" class="loadingbar-content">
             <span class="loadingbar-expand"></span>
@@ -9,7 +9,7 @@
         </div>
     </div>
 
-    <div ng-if="view.params.widgettype == 'threshold'">
+    <div ng-if="view.params.widget.type == 'threshold'">
 
         <div ng-if="view.pendingRequests > 0" class="loadingbar-content">
             <span class="loadingbar-expand"></span>
@@ -19,13 +19,23 @@
         </div>
     </div>
 
-    <div ng-if="view.params.widgettype == 'movement'">
+    <div ng-if="view.params.widget.type == 'movement'">
 
         <div ng-if="view.pendingRequests > 0" class="loadingbar-content">
             <span class="loadingbar-expand"></span>
         </div>
         <div ng-controller="CubesViewerWidgetMovementController">
             <div ng-include="'views/cube/widget/movement.html'"></div>
+        </div>
+    </div>
+
+    <div ng-if="view.params.widget.type == 'value'">
+
+        <div ng-if="view.pendingRequests > 0" class="loadingbar-content">
+            <span class="loadingbar-expand"></span>
+        </div>
+        <div ng-controller="CubesViewerWidgetValueController">
+            <div ng-include="'views/cube/widget/value.html'"></div>
         </div>
     </div>
 
@@ -37,5 +47,18 @@
             Tip: use the <kbd><i class="fa fa-fw fa-cogs"></i> View &gt; <i class="fa fa-fw fa-balance-scale"></i>
             Compare dimension</kbd> menu.
         </p>
+    </div>
+    <div ng-if="view.pendingRequests == 0 && view.params.zaxis != null && view.grid.data.length == 0"
+         class="alert alert-info" style="margin-bottom: 0px;">
+        <p>
+            Cannot present widget: <b>no rows returned</b> by the current filtering and drilldown combination.
+        </p>
+    </div>
+
+    <div ng-hide="view.getControlsHidden()">
+        <div class="pull-right">Zoom: <a ng-click="view.params.widget.zoom=view.params.widget.zoom-5;"><i
+                class="fa fa-minus-circle"></i></a>
+            <a ng-click="view.params.widget.zoom=view.params.widget.zoom+5;"><i class="fa fa-plus-circle"></i></a>
+        </div>
     </div>
 </div>

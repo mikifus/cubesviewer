@@ -2647,7 +2647,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
 	 * Selects widget type
 	 */
 	$scope.selectWidgetType = function(widgetType) {
-		$scope.view.params.widgettype = widgetType;
+		$scope.view.params.widget.type = widgetType;
 		$scope.refreshView();
 	};
 
@@ -6402,7 +6402,6 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetController", ['$roo
             $scope.view.params = $.extend(
                 {},
                 {
-                    "widgettype": "max-value",
                     "zaxis": null,
                     "widget": {
                         "type": "max-value",
@@ -6411,9 +6410,13 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetController", ['$roo
                 },
                 $scope.view.params
             );
+            $scope.zaxis = $scope.view.params.zaxis;
+            if ($scope.view.params.widget.type == 'value') {
+                $scope.zaxis = null;
+            }
             //$scope.refreshView();
         };
-        $scope.$watch("view.params.widgettype", function () {
+        $scope.$watch("view.params.widget.type", function () {
             $scope.loadData();
         });
         $scope.$on("ViewRefresh", function (view) {
@@ -6425,7 +6428,7 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetController", ['$roo
                 return;
             }
             var includeXAxis = $scope.view.params.xaxis != null;
-            var includeZAxis = $scope.view.params.zaxis != null;
+            var includeZAxis = $scope.zaxis != null;
             var browser_args = cubesService.buildBrowserArgs($scope.view, includeXAxis, false, includeZAxis);
             var browser = new cubes.Browser(cubesService.cubesserver, $scope.view.cube);
             var viewStateKey = $scope.newViewStateKey();
@@ -6468,13 +6471,13 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetController", ['$roo
             var columnDefs = view.grid.columnDefs;
 
             // Process data
-            $scope._addRows($scope, data, view.params.zaxis);
+            $scope._addRows($scope, data, $scope.zaxis);
             seriesOperationsService.applyCalculations($scope.view, $scope.view.grid.data, view.grid.columnDefs);
 
             var drilldown = view.params.drilldown.slice(0);
 
-            if (view.params.zaxis) {
-                drilldown.splice(0, 0, view.params.zaxis);
+            if ($scope.zaxis) {
+                drilldown.splice(0, 0, $scope.zaxis);
             }
             // Join keys
             if (drilldown.length > 0) {
@@ -6485,7 +6488,7 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetController", ['$roo
                 $(rows).each(function (idx, e) {
                     var jointkey = [];
                     for (var i = 0; i < drilldown.length; i++) {
-                        if (drilldown[i] != view.params.zaxis) {
+                        if (drilldown[i] != $scope.zaxis) {
                             jointkey.push(e["key" + i]);
                         }
                     }
@@ -6573,7 +6576,7 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMaxValueController"
             };
 
             $scope.$on('gridDataUpdated', function () {
-                $scope.drawWidgetMaxDifficulty();
+                $scope.drawWidgetMaxValue();
             });
 
             $scope.$watch('view.params.widget.limit', function (newValue, oldValue) {
@@ -6599,7 +6602,7 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMaxValueController"
                 $scope.series = curr_series;
             };
 
-            $scope.drawWidgetMaxDifficulty = function () {
+            $scope.drawWidgetMaxValue = function () {
 
                 var view = $scope.view;
                 var dataRows = $scope.view.grid.data;
@@ -7019,6 +7022,96 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMovementController"
                 $scope.series = curr_series;
             };
 
+            $scope.initialize();
+        }]);
+
+
+;/*
+ * CubesViewer
+ * Copyright (c) 2012-2016 Jose Juan Montes, see AUTHORS for more details
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+/*
+ * Series chart object. Contains view functions for the 'chart' mode.
+ * This is an optional component, part of the cube view.
+ */
+
+"use strict";
+
+angular.module('cv.views.cube').controller("CubesViewerWidgetValueController",
+    ['$rootScope', '$scope', '$element', '$timeout', 'cvOptions', 'cubesService', 'viewsService',
+        function ($rootScope, $scope, $element, $timeout, cvOptions, cubesService, viewsService) {
+
+
+            $scope.series = [];
+
+            $scope.initialize = function () {
+            };
+
+            $scope.$on('gridDataUpdated', function () {
+                $scope.drawWidgetValue();
+            });
+
+            $scope.drawWidgetValue = function () {
+
+                var view = $scope.view;
+                var dataRows = $scope.view.grid.data;
+                var columnDefs = view.grid.columnDefs;
+                var zaxis = view.params.xaxis;
+                $scope.view.zaxis_compare = null;
+
+                if (!zaxis) {
+                    return;
+                }
+
+                var d = [];
+
+                var serieCount = 0;
+                var prev_cell = columnDefs.slice(-2)[0];
+                var curr_cell = columnDefs.slice(-2)[1];
+                $(dataRows).each(function (idx, e) {
+                    var prev = $scope.toFixed(e[prev_cell.name], 2);
+                    var curr = $scope.toFixed(e[curr_cell.name], 2);
+                    var diff;
+                    if (prev == 0 && curr == 0) {
+                        diff = 0;
+                    }
+                    else if (curr == 0) {
+                        diff = -100;
+                    } else {
+                        diff = $scope.toFixed((curr - prev) / curr * 100, 1);
+                    }
+                    var serie = {"value": curr, "diff": diff, "key": e["key"] ? e["key"] : view.params.yaxis};
+                    d.push(serie);
+                    serieCount++;
+                });
+                d.sort(function (a, b) {
+                    return a.key < b.key ? -1 : (a.key > b.key ? +1 : 0)
+                });
+                if (prev_cell && curr_cell) {
+                    $scope.view.zaxis_compare = prev_cell.name + ' – ' + curr_cell.name;
+                }
+
+                $scope.series = d;
+            };
             $scope.initialize();
         }]);
 
@@ -9510,17 +9603,19 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "    <li ng-show=\"view.params.mode == 'widget'\" class=\"dropdown-submenu\">\n" +
     "        <a tabindex=\"0\"><i class=\"fa fa-fw fa-cubes\"></i> Widget type</a>\n" +
     "        <ul class=\"dropdown-menu\">\n" +
-    "            <li ng-click=\"selectWidgetType('max-value')\"><a href=\"\"><i class=\"fa fa-fw fa-sort-amount-asc\"></i> Max\n" +
+    "            <li ng-click=\"selectWidgetType('max-value')\"><a href=\"\"><i class=\"fa fa-fw fa-sort-amount-desc\"></i> Max\n" +
     "                value</a></li>\n" +
     "            <li ng-click=\"selectWidgetType('threshold')\"><a href=\"\"><i class=\"fa fa-fw fa-text-width\"></i> Threshold</a>\n" +
     "            </li>\n" +
     "            <li ng-click=\"selectWidgetType('movement')\"><a href=\"\"><i class=\"fa fa-fw fa-map-signs\"></i> Movement</a>\n" +
     "            </li>\n" +
+    "            <li ng-click=\"selectWidgetType('value')\"><a href=\"\"><i class=\"fa fa-fw fa-bolt\"></i> Value</a>\n" +
+    "            </li>\n" +
     "        </ul>\n" +
     "    </li>\n" +
     "\n" +
     "    <li class=\"dropdown-submenu\"\n" +
-    "        ng-show=\"(view.params.mode == 'chart' || view.params.mode == 'widget') && (view.params.charttype == 'lines-stacked' || view.params.charttype == 'lines')\">\n" +
+    "        ng-show=\"view.params.mode == 'chart' && (view.params.charttype == 'lines-stacked' || view.params.charttype == 'lines')\">\n" +
     "        <a href=\"\"><i class=\"fa fa-fw fa-angle-up\"></i> Curve type</a>\n" +
     "        <ul class=\"dropdown-menu\">\n" +
     "            <li ng-class=\"{'active': view.params.chartoptions.lineInterpolation == 'linear'}\"\n" +
@@ -9654,7 +9749,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "        </ul>\n" +
     "    </li>\n" +
     "\n" +
-    "    <li ng-show=\"view.params.mode == 'widget' && view.params.widgettype == 'max-value'\"\n" +
+    "    <li ng-show=\"view.params.mode == 'widget' && view.params.widget.type == 'max-value'\"\n" +
     "        class=\"dropdown-submenu\">\n" +
     "        <a tabindex=\"0\"><i class=\"fa fa-fw fa-filter\"></i> Limit</a>\n" +
     "        <ul class=\"dropdown-menu\">\n" +
@@ -10272,12 +10367,6 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
-    "    <div class=\"row\" ng-hide=\"view.getControlsHidden()\">\n" +
-    "        <div class=\"pull-right\">Zoom: <a ng-click=\"view.params.widget.zoom=view.params.widget.zoom-5;\"><i\n" +
-    "                class=\"fa fa-minus-circle\"></i></a>\n" +
-    "            <a ng-click=\"view.params.widget.zoom=view.params.widget.zoom+5;\"><i class=\"fa fa-plus-circle\"></i></a>\n" +
-    "        </div>\n" +
-    "    </div>\n" +
     "</div>"
   );
 
@@ -10295,12 +10384,6 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "                <span style=\"font-size: 150%; color: #777;\">({{ ::point['y'] }}<span ng-if=\"point['diff'] != 0\">\n" +
     "                <i ng-class=\"chevron\" class=\"fa fa-fw\" ng-style=\"{color: color}\"></i>{{ ::diff_abs(point['diff']) }}%</span>)</span>\n" +
     "            </div>\n" +
-    "        </div>\n" +
-    "    </div>\n" +
-    "    <div class=\"row\" ng-hide=\"view.getControlsHidden()\">\n" +
-    "        <div class=\"pull-right\">Zoom: <a ng-click=\"view.params.widget.zoom=view.params.widget.zoom-5;\"><i\n" +
-    "                class=\"fa fa-minus-circle\"></i></a>\n" +
-    "            <a ng-click=\"view.params.widget.zoom=view.params.widget.zoom+5;\"><i class=\"fa fa-plus-circle\"></i></a>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "</div>"
@@ -10340,7 +10423,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "</div>\n" +
     "\n" +
     "<div>\n" +
-    "    <div ng-if=\"view.params.widgettype == 'threshold'\"\n" +
+    "    <div ng-if=\"view.params.widget.type == 'threshold'\"\n" +
     "         class=\"label label-secondary cv-infopiece cv-view-viewinfo-cut text-left\"\n" +
     "         style=\"color: black; background-color: #ffdddd; text-align: left;\">\n" +
     "        <span style=\"white-space: nowrap;\"><i class=\"fa fa-fw fa-text-width\"></i> <b\n" +
@@ -10355,7 +10438,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "        </span>\n" +
     "    </div>\n" +
     "\n" +
-    "    <div ng-if=\"view.params.widgettype == 'movement'\"\n" +
+    "    <div ng-if=\"view.params.widget.type == 'movement'\"\n" +
     "         class=\"label label-secondary cv-infopiece cv-view-viewinfo-cut text-left\"\n" +
     "         style=\"color: black; background-color: #ffdddd; text-align: left;\">\n" +
     "        <span style=\"white-space: nowrap;\"><i class=\"fa fa-fw fa-map-signs\"></i> <b\n" +
@@ -10375,17 +10458,32 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "            <div ng-repeat=\"point in serie['values']\" class=\"col-xs-6\"\n" +
     "                 ng-if=\"compareThreshold(point['y'])\"\n" +
     "                 ng-class=\"(cvOptions.studioTwoColumn ? 'col-md-6 col-sm-6' : 'col-md-3 col-sm-3')\"\n" +
-    "                 ng-init=\"color = point['diff'] > 0 ? '#0d6d0d' : '#9e0300'; chevron = point['diff'] > 0 ? 'fa-chevron-up' : 'fa-chevron-down'\">\n" +
+    "                 ng-init=\"chevron = point['diff'] > 0 ? 'fa-chevron-up' : 'fa-chevron-down'\">\n" +
     "                <span style=\"font-size: 200%\">{{ :: point['x'] }}</span>\n" +
     "                <span style=\"font-size: 150%; opacity: .7;\">({{ ::point['y'] }}<span ng-if=\"point['diff'] != 0\">\n" +
-    "                <span ng-style=\"{color: color}\"><i ng-class=\"chevron\" class=\"fa fa-fw\"></i>{{ ::diff_abs(point['diff']) }}%</span></span>)</span>\n" +
+    "                <span ng-class=\"{'text-success': point['diff'] > 0, 'text-danger': point['diff'] < 0}\"><i\n" +
+    "                        ng-class=\"chevron\" class=\"fa fa-fw\"></i>{{ ::diff_abs(point['diff']) }}%</span></span>)</span>\n" +
     "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
-    "    <div class=\"row\" ng-hide=\"view.getControlsHidden()\">\n" +
-    "        <div class=\"pull-right\">Zoom: <a ng-click=\"view.params.widget.zoom=view.params.widget.zoom-5;\"><i\n" +
-    "                class=\"fa fa-minus-circle\"></i></a>\n" +
-    "            <a ng-click=\"view.params.widget.zoom=view.params.widget.zoom+5;\"><i class=\"fa fa-plus-circle\"></i></a>\n" +
+    "</div>"
+  );
+
+
+  $templateCache.put('views/cube/widget/value.html',
+    "<div class=\"container-fluid\">\n" +
+    "    <div ng-style=\"{'font-size': view.params.widget.zoom + '%'}\">\n" +
+    "        <div ng-repeat=\"serie in series\" class=\"row\" style=\"margin-top: 1em;\">\n" +
+    "            <div class=\"col-sm-12\"><h3 style=\"color: #337ab7;\">{{ ::serie['key'] }}</h3></div>\n" +
+    "            <div class=\"col-xs-6\"\n" +
+    "                 ng-class=\"(cvOptions.studioTwoColumn ? 'col-md-6 col-sm-6' : 'col-md-3 col-sm-3')\"\n" +
+    "                 ng-init=\"chevron = serie['diff'] > 0 ? 'fa-chevron-up' : 'fa-chevron-down'\">\n" +
+    "                <span style=\"font-size: 200%\">{{ ::toFixed(serie['value'], 2) }}</span>\n" +
+    "                <span ng-if=\"serie['diff'] > 0\"\n" +
+    "                      ng-class=\"{'text-success': serie['diff'] > 0, 'text-danger': serie['diff'] < 0}\"><i\n" +
+    "                        ng-class=\"chevron\" class=\"fa fa-fw\" style=\"font-size: 150%\"></i>\n" +
+    "            <span style=\"font-size: 150%;\">{{ ::diff_abs(serie['diff']) }}%</span></span>\n" +
+    "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "</div>"
@@ -10394,7 +10492,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
 
   $templateCache.put('views/cube/widget/widget.html',
     "<div ng-controller=\"CubesViewerWidgetController\">\n" +
-    "    <div ng-if=\"view.params.widgettype == 'max-value'\">\n" +
+    "    <div ng-if=\"view.params.widget.type == 'max-value'\">\n" +
     "\n" +
     "        <div ng-if=\"view.pendingRequests > 0\" class=\"loadingbar-content\">\n" +
     "            <span class=\"loadingbar-expand\"></span>\n" +
@@ -10404,7 +10502,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "        </div>\n" +
     "    </div>\n" +
     "\n" +
-    "    <div ng-if=\"view.params.widgettype == 'threshold'\">\n" +
+    "    <div ng-if=\"view.params.widget.type == 'threshold'\">\n" +
     "\n" +
     "        <div ng-if=\"view.pendingRequests > 0\" class=\"loadingbar-content\">\n" +
     "            <span class=\"loadingbar-expand\"></span>\n" +
@@ -10414,13 +10512,23 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "        </div>\n" +
     "    </div>\n" +
     "\n" +
-    "    <div ng-if=\"view.params.widgettype == 'movement'\">\n" +
+    "    <div ng-if=\"view.params.widget.type == 'movement'\">\n" +
     "\n" +
     "        <div ng-if=\"view.pendingRequests > 0\" class=\"loadingbar-content\">\n" +
     "            <span class=\"loadingbar-expand\"></span>\n" +
     "        </div>\n" +
     "        <div ng-controller=\"CubesViewerWidgetMovementController\">\n" +
     "            <div ng-include=\"'views/cube/widget/movement.html'\"></div>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div ng-if=\"view.params.widget.type == 'value'\">\n" +
+    "\n" +
+    "        <div ng-if=\"view.pendingRequests > 0\" class=\"loadingbar-content\">\n" +
+    "            <span class=\"loadingbar-expand\"></span>\n" +
+    "        </div>\n" +
+    "        <div ng-controller=\"CubesViewerWidgetValueController\">\n" +
+    "            <div ng-include=\"'views/cube/widget/value.html'\"></div>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "\n" +
@@ -10432,6 +10540,19 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "            Tip: use the <kbd><i class=\"fa fa-fw fa-cogs\"></i> View &gt; <i class=\"fa fa-fw fa-balance-scale\"></i>\n" +
     "            Compare dimension</kbd> menu.\n" +
     "        </p>\n" +
+    "    </div>\n" +
+    "    <div ng-if=\"view.pendingRequests == 0 && view.params.zaxis != null && view.grid.data.length == 0\"\n" +
+    "         class=\"alert alert-info\" style=\"margin-bottom: 0px;\">\n" +
+    "        <p>\n" +
+    "            Cannot present widget: <b>no rows returned</b> by the current filtering and drilldown combination.\n" +
+    "        </p>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div ng-hide=\"view.getControlsHidden()\">\n" +
+    "        <div class=\"pull-right\">Zoom: <a ng-click=\"view.params.widget.zoom=view.params.widget.zoom-5;\"><i\n" +
+    "                class=\"fa fa-minus-circle\"></i></a>\n" +
+    "            <a ng-click=\"view.params.widget.zoom=view.params.widget.zoom+5;\"><i class=\"fa fa-plus-circle\"></i></a>\n" +
+    "        </div>\n" +
     "    </div>\n" +
     "</div>"
   );

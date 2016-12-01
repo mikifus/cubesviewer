@@ -40,7 +40,7 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMaxValueController"
             };
 
             $scope.$on('gridDataUpdated', function () {
-                $scope.drawWidgetMaxDifficulty();
+                $scope.drawWidgetMaxValue();
             });
 
             $scope.$watch('view.params.widget.limit', function (newValue, oldValue) {
@@ -66,7 +66,7 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMaxValueController"
                 $scope.series = curr_series;
             };
 
-            $scope.drawWidgetMaxDifficulty = function () {
+            $scope.drawWidgetMaxValue = function () {
 
                 var view = $scope.view;
                 var dataRows = $scope.view.grid.data;

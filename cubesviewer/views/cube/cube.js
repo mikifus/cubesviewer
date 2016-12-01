@@ -463,7 +463,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
 	 * Selects widget type
 	 */
 	$scope.selectWidgetType = function(widgetType) {
-		$scope.view.params.widgettype = widgetType;
+		$scope.view.params.widget.type = widgetType;
 		$scope.refreshView();
 	};
 

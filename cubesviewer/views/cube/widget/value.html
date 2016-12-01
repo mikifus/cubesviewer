@@ -1,0 +1,16 @@
+<div class="container-fluid">
+    <div ng-style="{'font-size': view.params.widget.zoom + '%'}">
+        <div ng-repeat="serie in series" class="row" style="margin-top: 1em;">
+            <div class="col-sm-12"><h3 style="color: #337ab7;">{{ ::serie['key'] }}</h3></div>
+            <div class="col-xs-6"
+                 ng-class="(cvOptions.studioTwoColumn ? 'col-md-6 col-sm-6' : 'col-md-3 col-sm-3')"
+                 ng-init="chevron = serie['diff'] > 0 ? 'fa-chevron-up' : 'fa-chevron-down'">
+                <span style="font-size: 200%">{{ ::toFixed(serie['value'], 2) }}</span>
+                <span ng-if="serie['diff'] > 0"
+                      ng-class="{'text-success': serie['diff'] > 0, 'text-danger': serie['diff'] < 0}"><i
+                        ng-class="chevron" class="fa fa-fw" style="font-size: 150%"></i>
+            <span style="font-size: 150%;">{{ ::diff_abs(serie['diff']) }}%</span></span>
+            </div>
+        </div>
+    </div>
+</div>

@@ -884,17 +884,19 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "    <li ng-show=\"view.params.mode == 'widget'\" class=\"dropdown-submenu\">\n" +
     "        <a tabindex=\"0\"><i class=\"fa fa-fw fa-cubes\"></i> Widget type</a>\n" +
     "        <ul class=\"dropdown-menu\">\n" +
-    "            <li ng-click=\"selectWidgetType('max-value')\"><a href=\"\"><i class=\"fa fa-fw fa-sort-amount-asc\"></i> Max\n" +
+    "            <li ng-click=\"selectWidgetType('max-value')\"><a href=\"\"><i class=\"fa fa-fw fa-sort-amount-desc\"></i> Max\n" +
     "                value</a></li>\n" +
     "            <li ng-click=\"selectWidgetType('threshold')\"><a href=\"\"><i class=\"fa fa-fw fa-text-width\"></i> Threshold</a>\n" +
     "            </li>\n" +
     "            <li ng-click=\"selectWidgetType('movement')\"><a href=\"\"><i class=\"fa fa-fw fa-map-signs\"></i> Movement</a>\n" +
     "            </li>\n" +
+    "            <li ng-click=\"selectWidgetType('value')\"><a href=\"\"><i class=\"fa fa-fw fa-bolt\"></i> Value</a>\n" +
+    "            </li>\n" +
     "        </ul>\n" +
     "    </li>\n" +
     "\n" +
     "    <li class=\"dropdown-submenu\"\n" +
-    "        ng-show=\"(view.params.mode == 'chart' || view.params.mode == 'widget') && (view.params.charttype == 'lines-stacked' || view.params.charttype == 'lines')\">\n" +
+    "        ng-show=\"view.params.mode == 'chart' && (view.params.charttype == 'lines-stacked' || view.params.charttype == 'lines')\">\n" +
     "        <a href=\"\"><i class=\"fa fa-fw fa-angle-up\"></i> Curve type</a>\n" +
     "        <ul class=\"dropdown-menu\">\n" +
     "            <li ng-class=\"{'active': view.params.chartoptions.lineInterpolation == 'linear'}\"\n" +
@@ -1028,7 +1030,7 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "        </ul>\n" +
     "    </li>\n" +
     "\n" +
-    "    <li ng-show=\"view.params.mode == 'widget' && view.params.widgettype == 'max-value'\"\n" +
+    "    <li ng-show=\"view.params.mode == 'widget' && view.params.widget.type == 'max-value'\"\n" +
     "        class=\"dropdown-submenu\">\n" +
     "        <a tabindex=\"0\"><i class=\"fa fa-fw fa-filter\"></i> Limit</a>\n" +
     "        <ul class=\"dropdown-menu\">\n" +
@@ -1646,12 +1648,6 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
-    "    <div class=\"row\" ng-hide=\"view.getControlsHidden()\">\n" +
-    "        <div class=\"pull-right\">Zoom: <a ng-click=\"view.params.widget.zoom=view.params.widget.zoom-5;\"><i\n" +
-    "                class=\"fa fa-minus-circle\"></i></a>\n" +
-    "            <a ng-click=\"view.params.widget.zoom=view.params.widget.zoom+5;\"><i class=\"fa fa-plus-circle\"></i></a>\n" +
-    "        </div>\n" +
-    "    </div>\n" +
     "</div>"
   );
 
@@ -1669,12 +1665,6 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "                <span style=\"font-size: 150%; color: #777;\">({{ ::point['y'] }}<span ng-if=\"point['diff'] != 0\">\n" +
     "                <i ng-class=\"chevron\" class=\"fa fa-fw\" ng-style=\"{color: color}\"></i>{{ ::diff_abs(point['diff']) }}%</span>)</span>\n" +
     "            </div>\n" +
-    "        </div>\n" +
-    "    </div>\n" +
-    "    <div class=\"row\" ng-hide=\"view.getControlsHidden()\">\n" +
-    "        <div class=\"pull-right\">Zoom: <a ng-click=\"view.params.widget.zoom=view.params.widget.zoom-5;\"><i\n" +
-    "                class=\"fa fa-minus-circle\"></i></a>\n" +
-    "            <a ng-click=\"view.params.widget.zoom=view.params.widget.zoom+5;\"><i class=\"fa fa-plus-circle\"></i></a>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "</div>"
@@ -1714,7 +1704,7 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "</div>\n" +
     "\n" +
     "<div>\n" +
-    "    <div ng-if=\"view.params.widgettype == 'threshold'\"\n" +
+    "    <div ng-if=\"view.params.widget.type == 'threshold'\"\n" +
     "         class=\"label label-secondary cv-infopiece cv-view-viewinfo-cut text-left\"\n" +
     "         style=\"color: black; background-color: #ffdddd; text-align: left;\">\n" +
     "        <span style=\"white-space: nowrap;\"><i class=\"fa fa-fw fa-text-width\"></i> <b\n" +
@@ -1729,7 +1719,7 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "        </span>\n" +
     "    </div>\n" +
     "\n" +
-    "    <div ng-if=\"view.params.widgettype == 'movement'\"\n" +
+    "    <div ng-if=\"view.params.widget.type == 'movement'\"\n" +
     "         class=\"label label-secondary cv-infopiece cv-view-viewinfo-cut text-left\"\n" +
     "         style=\"color: black; background-color: #ffdddd; text-align: left;\">\n" +
     "        <span style=\"white-space: nowrap;\"><i class=\"fa fa-fw fa-map-signs\"></i> <b\n" +
@@ -1749,17 +1739,32 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "            <div ng-repeat=\"point in serie['values']\" class=\"col-xs-6\"\n" +
     "                 ng-if=\"compareThreshold(point['y'])\"\n" +
     "                 ng-class=\"(cvOptions.studioTwoColumn ? 'col-md-6 col-sm-6' : 'col-md-3 col-sm-3')\"\n" +
-    "                 ng-init=\"color = point['diff'] > 0 ? '#0d6d0d' : '#9e0300'; chevron = point['diff'] > 0 ? 'fa-chevron-up' : 'fa-chevron-down'\">\n" +
+    "                 ng-init=\"chevron = point['diff'] > 0 ? 'fa-chevron-up' : 'fa-chevron-down'\">\n" +
     "                <span style=\"font-size: 200%\">{{ :: point['x'] }}</span>\n" +
     "                <span style=\"font-size: 150%; opacity: .7;\">({{ ::point['y'] }}<span ng-if=\"point['diff'] != 0\">\n" +
-    "                <span ng-style=\"{color: color}\"><i ng-class=\"chevron\" class=\"fa fa-fw\"></i>{{ ::diff_abs(point['diff']) }}%</span></span>)</span>\n" +
+    "                <span ng-class=\"{'text-success': point['diff'] > 0, 'text-danger': point['diff'] < 0}\"><i\n" +
+    "                        ng-class=\"chevron\" class=\"fa fa-fw\"></i>{{ ::diff_abs(point['diff']) }}%</span></span>)</span>\n" +
     "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
-    "    <div class=\"row\" ng-hide=\"view.getControlsHidden()\">\n" +
-    "        <div class=\"pull-right\">Zoom: <a ng-click=\"view.params.widget.zoom=view.params.widget.zoom-5;\"><i\n" +
-    "                class=\"fa fa-minus-circle\"></i></a>\n" +
-    "            <a ng-click=\"view.params.widget.zoom=view.params.widget.zoom+5;\"><i class=\"fa fa-plus-circle\"></i></a>\n" +
+    "</div>"
+  );
+
+
+  $templateCache.put('views/cube/widget/value.html',
+    "<div class=\"container-fluid\">\n" +
+    "    <div ng-style=\"{'font-size': view.params.widget.zoom + '%'}\">\n" +
+    "        <div ng-repeat=\"serie in series\" class=\"row\" style=\"margin-top: 1em;\">\n" +
+    "            <div class=\"col-sm-12\"><h3 style=\"color: #337ab7;\">{{ ::serie['key'] }}</h3></div>\n" +
+    "            <div class=\"col-xs-6\"\n" +
+    "                 ng-class=\"(cvOptions.studioTwoColumn ? 'col-md-6 col-sm-6' : 'col-md-3 col-sm-3')\"\n" +
+    "                 ng-init=\"chevron = serie['diff'] > 0 ? 'fa-chevron-up' : 'fa-chevron-down'\">\n" +
+    "                <span style=\"font-size: 200%\">{{ ::toFixed(serie['value'], 2) }}</span>\n" +
+    "                <span ng-if=\"serie['diff'] > 0\"\n" +
+    "                      ng-class=\"{'text-success': serie['diff'] > 0, 'text-danger': serie['diff'] < 0}\"><i\n" +
+    "                        ng-class=\"chevron\" class=\"fa fa-fw\" style=\"font-size: 150%\"></i>\n" +
+    "            <span style=\"font-size: 150%;\">{{ ::diff_abs(serie['diff']) }}%</span></span>\n" +
+    "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "</div>"
@@ -1768,7 +1773,7 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
 
   $templateCache.put('views/cube/widget/widget.html',
     "<div ng-controller=\"CubesViewerWidgetController\">\n" +
-    "    <div ng-if=\"view.params.widgettype == 'max-value'\">\n" +
+    "    <div ng-if=\"view.params.widget.type == 'max-value'\">\n" +
     "\n" +
     "        <div ng-if=\"view.pendingRequests > 0\" class=\"loadingbar-content\">\n" +
     "            <span class=\"loadingbar-expand\"></span>\n" +
@@ -1778,7 +1783,7 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "        </div>\n" +
     "    </div>\n" +
     "\n" +
-    "    <div ng-if=\"view.params.widgettype == 'threshold'\">\n" +
+    "    <div ng-if=\"view.params.widget.type == 'threshold'\">\n" +
     "\n" +
     "        <div ng-if=\"view.pendingRequests > 0\" class=\"loadingbar-content\">\n" +
     "            <span class=\"loadingbar-expand\"></span>\n" +
@@ -1788,13 +1793,23 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "        </div>\n" +
     "    </div>\n" +
     "\n" +
-    "    <div ng-if=\"view.params.widgettype == 'movement'\">\n" +
+    "    <div ng-if=\"view.params.widget.type == 'movement'\">\n" +
     "\n" +
     "        <div ng-if=\"view.pendingRequests > 0\" class=\"loadingbar-content\">\n" +
     "            <span class=\"loadingbar-expand\"></span>\n" +
     "        </div>\n" +
     "        <div ng-controller=\"CubesViewerWidgetMovementController\">\n" +
     "            <div ng-include=\"'views/cube/widget/movement.html'\"></div>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div ng-if=\"view.params.widget.type == 'value'\">\n" +
+    "\n" +
+    "        <div ng-if=\"view.pendingRequests > 0\" class=\"loadingbar-content\">\n" +
+    "            <span class=\"loadingbar-expand\"></span>\n" +
+    "        </div>\n" +
+    "        <div ng-controller=\"CubesViewerWidgetValueController\">\n" +
+    "            <div ng-include=\"'views/cube/widget/value.html'\"></div>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "\n" +
@@ -1806,6 +1821,19 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "            Tip: use the <kbd><i class=\"fa fa-fw fa-cogs\"></i> View &gt; <i class=\"fa fa-fw fa-balance-scale\"></i>\n" +
     "            Compare dimension</kbd> menu.\n" +
     "        </p>\n" +
+    "    </div>\n" +
+    "    <div ng-if=\"view.pendingRequests == 0 && view.params.zaxis != null && view.grid.data.length == 0\"\n" +
+    "         class=\"alert alert-info\" style=\"margin-bottom: 0px;\">\n" +
+    "        <p>\n" +
+    "            Cannot present widget: <b>no rows returned</b> by the current filtering and drilldown combination.\n" +
+    "        </p>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div ng-hide=\"view.getControlsHidden()\">\n" +
+    "        <div class=\"pull-right\">Zoom: <a ng-click=\"view.params.widget.zoom=view.params.widget.zoom-5;\"><i\n" +
+    "                class=\"fa fa-minus-circle\"></i></a>\n" +
+    "            <a ng-click=\"view.params.widget.zoom=view.params.widget.zoom+5;\"><i class=\"fa fa-plus-circle\"></i></a>\n" +
+    "        </div>\n" +
     "    </div>\n" +
     "</div>"
   );

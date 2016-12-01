@@ -39,7 +39,6 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetController", ['$roo
             $scope.view.params = $.extend(
                 {},
                 {
-                    "widgettype": "max-value",
                     "zaxis": null,
                     "widget": {
                         "type": "max-value",
@@ -48,9 +47,13 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetController", ['$roo
                 },
                 $scope.view.params
             );
+            $scope.zaxis = $scope.view.params.zaxis;
+            if ($scope.view.params.widget.type == 'value') {
+                $scope.zaxis = null;
+            }
             //$scope.refreshView();
         };
-        $scope.$watch("view.params.widgettype", function () {
+        $scope.$watch("view.params.widget.type", function () {
             $scope.loadData();
         });
         $scope.$on("ViewRefresh", function (view) {
@@ -62,7 +65,7 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetController", ['$roo
                 return;
             }
             var includeXAxis = $scope.view.params.xaxis != null;
-            var includeZAxis = $scope.view.params.zaxis != null;
+            var includeZAxis = $scope.zaxis != null;
             var browser_args = cubesService.buildBrowserArgs($scope.view, includeXAxis, false, includeZAxis);
             var browser = new cubes.Browser(cubesService.cubesserver, $scope.view.cube);
             var viewStateKey = $scope.newViewStateKey();
@@ -105,13 +108,13 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetController", ['$roo
             var columnDefs = view.grid.columnDefs;
 
             // Process data
-            $scope._addRows($scope, data, view.params.zaxis);
+            $scope._addRows($scope, data, $scope.zaxis);
             seriesOperationsService.applyCalculations($scope.view, $scope.view.grid.data, view.grid.columnDefs);
 
             var drilldown = view.params.drilldown.slice(0);
 
-            if (view.params.zaxis) {
-                drilldown.splice(0, 0, view.params.zaxis);
+            if ($scope.zaxis) {
+                drilldown.splice(0, 0, $scope.zaxis);
             }
             // Join keys
             if (drilldown.length > 0) {
@@ -122,7 +125,7 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetController", ['$roo
                 $(rows).each(function (idx, e) {
                     var jointkey = [];
                     for (var i = 0; i < drilldown.length; i++) {
-                        if (drilldown[i] != view.params.zaxis) {
+                        if (drilldown[i] != $scope.zaxis) {
                             jointkey.push(e["key" + i]);
                         }
                     }
