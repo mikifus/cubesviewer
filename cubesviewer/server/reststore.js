@@ -237,7 +237,7 @@ angular.module('cv.studio').service("reststoreService", ['$rootScope', '$http', 
     reststoreService.restoreDashboard = function(dashboard){
         reststoreService.dashboard = dashboard;
         reststoreService.dashboard.views.forEach(function(v){
-            reststoreService.addSavedView(v);
+            var view = studioViewsService.addViewObject(v);
         });
     };
 
