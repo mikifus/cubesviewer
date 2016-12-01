@@ -182,14 +182,14 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
 		var orders = [];
         //Order
         if (includeZAxis && view.params.zaxis) {
-			var zaxis_order = dim_to_arr(view, view.params.zaxis);
+			var zaxis_order = cubesService.dim_to_arr(view, view.params.zaxis);
 			if (zaxis_order.length) {
 				orders.push.apply(orders, zaxis_order);
 			}
         }
 
         if (includeXAxis && view.params.xaxis) {
-			var xaxis_order = dim_to_arr(view, view.params.xaxis);
+			var xaxis_order = cubesService.dim_to_arr(view, view.params.xaxis);
 			if (xaxis_order.length) {
 				orders.push.apply(orders, xaxis_order);
 			}
@@ -385,7 +385,7 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
 	    return weekNo;
 	};
 
-    var dim_to_arr = function (view, d) {
+    this.dim_to_arr = function (view, d) {
 		var ret = [];
 		try {
 			var dimension = d.split('@')[0];

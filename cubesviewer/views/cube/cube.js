@@ -647,6 +647,10 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
         return ret;
 	 };
 
+	$scope.filterDisplay= function(val) {
+        return val.replace(/,/g, '/');
+    };
+
 	angular.element($window).on('resize', $scope.onResize);
 
 	$scope.$on("$destroy", function() {

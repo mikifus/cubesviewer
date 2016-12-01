@@ -1212,7 +1212,7 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "                                class=\"hidden-xs hidden-sm\">Filter:</b> <span\n" +
     "                                title=\"{{ view.cube.dimensionPartsFromCut(cut).label }}\">{{ view.cube.dimensionPartsFromCut(cut).labelShort }}</span> <span\n" +
     "                                ng-class=\"{ 'text-danger': cut.invert }\">{{ equality }}</span> <span\n" +
-    "                                title=\"{{ cut.value }}\">{{ cut.value }}</span></span>\n" +
+    "                                title=\"{{ filterDisplay(cut.value) }}\">{{ filterDisplay(cut.value) }}</span></span>\n" +
     "                        <button type=\"button\" class=\"btn btn-info btn-xs\"\n" +
     "                                style=\"visibility: hidden; margin-left: -20px;\"><i class=\"fa fa-fw fa-info\"></i>\n" +
     "                        </button>\n" +

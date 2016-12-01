@@ -1241,14 +1241,14 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
 		var orders = [];
         //Order
         if (includeZAxis && view.params.zaxis) {
-			var zaxis_order = dim_to_arr(view, view.params.zaxis);
+			var zaxis_order = cubesService.dim_to_arr(view, view.params.zaxis);
 			if (zaxis_order.length) {
 				orders.push.apply(orders, zaxis_order);
 			}
         }
 
         if (includeXAxis && view.params.xaxis) {
-			var xaxis_order = dim_to_arr(view, view.params.xaxis);
+			var xaxis_order = cubesService.dim_to_arr(view, view.params.xaxis);
 			if (xaxis_order.length) {
 				orders.push.apply(orders, xaxis_order);
 			}
@@ -1444,7 +1444,7 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
 	    return weekNo;
 	};
 
-    var dim_to_arr = function (view, d) {
+    this.dim_to_arr = function (view, d) {
 		var ret = [];
 		try {
 			var dimension = d.split('@')[0];
@@ -2831,6 +2831,10 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
         return ret;
 	 };
 
+	$scope.filterDisplay= function(val) {
+        return val.replace(/,/g, '/');
+    };
+
 	angular.element($window).on('resize', $scope.onResize);
 
 	$scope.$on("$destroy", function() {
@@ -3314,6 +3318,11 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeFilterDimensionC
 			"depth": $scope.parts.depth
 		};
 
+		var order = cubesService.dim_to_arr($scope.view, $scope.view.dimensionFilter);
+		if (order.length) {
+			params["order"] = order.join(',');
+		}
+
 		//view.cubesviewer.views.blockViewLoading(view);
 
 		if (! $scope.filterShowAll) {
@@ -3420,20 +3429,10 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeFilterDimensionC
 			});
 
 			dimensionValues.push({
-				'label': drilldownLevelLabels.join(' / '),
-				'value': drilldownLevelValues.join (','),
+				'label': drilldownLevelLabels.join('/'),
+				'value': drilldownLevelValues.join(','),
 				'selected': filterValues.indexOf(drilldownLevelValues.join (',')) >= 0
 			});
-
-		});
-		dimensionValues = dimensionValues.sort(function (a, b) {
-			a = a.value;
-			b = b.value;
-			if (Number(a) || Number(b)) {
-				a = Number(a);
-				b = Number(b);
-			}
-			return a > b ? 1 : a < b ? -1 : 0;
 		});
 
 		$scope.dimensionValues = dimensionValues;
@@ -9839,7 +9838,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "                                class=\"hidden-xs hidden-sm\">Filter:</b> <span\n" +
     "                                title=\"{{ view.cube.dimensionPartsFromCut(cut).label }}\">{{ view.cube.dimensionPartsFromCut(cut).labelShort }}</span> <span\n" +
     "                                ng-class=\"{ 'text-danger': cut.invert }\">{{ equality }}</span> <span\n" +
-    "                                title=\"{{ cut.value }}\">{{ cut.value }}</span></span>\n" +
+    "                                title=\"{{ filterDisplay(cut.value) }}\">{{ filterDisplay(cut.value) }}</span></span>\n" +
     "                        <button type=\"button\" class=\"btn btn-info btn-xs\"\n" +
     "                                style=\"visibility: hidden; margin-left: -20px;\"><i class=\"fa fa-fw fa-info\"></i>\n" +
     "                        </button>\n" +

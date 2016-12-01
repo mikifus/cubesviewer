@@ -83,6 +83,11 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeFilterDimensionC
 			"depth": $scope.parts.depth
 		};
 
+		var order = cubesService.dim_to_arr($scope.view, $scope.view.dimensionFilter);
+		if (order.length) {
+			params["order"] = order.join(',');
+		}
+
 		//view.cubesviewer.views.blockViewLoading(view);
 
 		if (! $scope.filterShowAll) {
@@ -189,20 +194,10 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeFilterDimensionC
 			});
 
 			dimensionValues.push({
-				'label': drilldownLevelLabels.join(' / '),
-				'value': drilldownLevelValues.join (','),
+				'label': drilldownLevelLabels.join('/'),
+				'value': drilldownLevelValues.join(','),
 				'selected': filterValues.indexOf(drilldownLevelValues.join (',')) >= 0
 			});
-
-		});
-		dimensionValues = dimensionValues.sort(function (a, b) {
-			a = a.value;
-			b = b.value;
-			if (Number(a) || Number(b)) {
-				a = Number(a);
-				b = Number(b);
-			}
-			return a > b ? 1 : a < b ? -1 : 0;
 		});
 
 		$scope.dimensionValues = dimensionValues;
