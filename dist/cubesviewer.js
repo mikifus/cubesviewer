@@ -6247,7 +6247,9 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesVarian
 				    var d_var_max = variance * quantile_maxValue;
 	                y_max_value = y_max_value < value + d_var_max ? value + d_var_max : y_max_value;
 	                y_min_value = y_min_value > value - d_var_max ? value - d_var_max : y_min_value;
-	    		}
+                } else {
+                    serie.push({"x": i, "y": 0, "variance": 0});
+                }
 	    	}
 	    	var series = { "values": serie, "key": e["key"] != "" ? e["key"] : view.params.yaxis, "fillOpacity": .2 };
 	    	if (view.params["chart-disabledseries"]) {
