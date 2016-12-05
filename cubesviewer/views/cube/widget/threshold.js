@@ -54,6 +54,16 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetThresholdController
                 $scope.drawWidgetThreshold();
             });
 
+            $scope.isSerieEmpty = function (serie) {
+                var ret = true;
+                serie.forEach(function (point) {
+                    if (ret && $scope.compareThreshold(point['y'])) {
+                        ret = false;
+                    }
+                });
+                return ret;
+            };
+
             $scope.drawWidgetThreshold = function () {
 
                 var view = $scope.view;

@@ -1646,6 +1646,9 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "                </span>&nbsp;<span>{{ ::point['x'] }})</span>\n" +
     "            </span>\n" +
     "            </div>\n" +
+    "            <div class=\"col-md-12\" ng-if=\"serie.length == 0\">\n" +
+    "                No rows to display.\n" +
+    "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "</div>"
@@ -1658,12 +1661,15 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "        <div ng-repeat=\"serie in series\" class=\"row\" style=\"margin-top: 1em;\">\n" +
     "            <div class=\"col-sm-12\"><h3 style=\"color: #337ab7;\">{{ ::serie['key'] }}</h3></div>\n" +
     "            <div ng-repeat=\"point in serie['values']\" class=\"col-xs-6\"\n" +
-    "                 ng-if=\"diff_abs(point['diff']) >= view.params.widget.movement\"\n" +
+    "                 ng-if=\"compareMovement(point['diff'])\"\n" +
     "                 ng-class=\"(cvOptions.studioTwoColumn ? 'col-md-6 col-sm-6' : 'col-md-3 col-sm-3')\"\n" +
     "                 ng-init=\"color = point['diff'] > 0 ? '#669366' : '#dba4a3'; chevron = point['diff'] > 0 ? 'fa-chevron-up' : 'fa-chevron-down'\">\n" +
     "                <span style=\"font-size: 200%\">{{ ::point['x'] }}</span>\n" +
     "                <span style=\"font-size: 150%; color: #777;\">({{ ::point['y'] }}<span ng-if=\"point['diff'] != 0\">\n" +
     "                <i ng-class=\"chevron\" class=\"fa fa-fw\" ng-style=\"{color: color}\"></i>{{ ::diff_abs(point['diff']) }}%</span>)</span>\n" +
+    "            </div>\n" +
+    "            <div class=\"col-md-12\" ng-if=\"isSerieEmpty(serie['values'])\">\n" +
+    "                No rows to display.\n" +
     "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
@@ -1745,6 +1751,9 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "                <span ng-class=\"{'text-success': point['diff'] > 0, 'text-danger': point['diff'] < 0}\"><i\n" +
     "                        ng-class=\"chevron\" class=\"fa fa-fw\"></i>{{ ::diff_abs(point['diff']) }}%</span></span>)</span>\n" +
     "            </div>\n" +
+    "            <div class=\"col-md-12\" ng-if=\"isSerieEmpty(serie['values'])\">\n" +
+    "                No rows to display.\n" +
+    "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "</div>"
@@ -1764,6 +1773,9 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "                      ng-class=\"{'text-success': serie['diff'] > 0, 'text-danger': serie['diff'] < 0}\"><i\n" +
     "                        ng-class=\"chevron\" class=\"fa fa-fw\" style=\"font-size: 150%\"></i>\n" +
     "            <span style=\"font-size: 150%;\">{{ ::diff_abs(serie['diff']) }}%</span></span>\n" +
+    "            </div>\n" +
+    "            <div class=\"col-md-12\" ng-if=\"serie['value'] == undefined\">\n" +
+    "                No rows to display.\n" +
     "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +

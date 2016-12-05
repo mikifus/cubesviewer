@@ -11,6 +11,9 @@
                         ng-class="chevron" class="fa fa-fw" style="font-size: 150%"></i>
             <span style="font-size: 150%;">{{ ::diff_abs(serie['diff']) }}%</span></span>
             </div>
+            <div class="col-md-12" ng-if="serie['value'] == undefined">
+                No rows to display.
+            </div>
         </div>
     </div>
 </div>

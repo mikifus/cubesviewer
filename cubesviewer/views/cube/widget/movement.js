@@ -49,6 +49,16 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMovementController"
                 $scope.drawWidgetMovement();
             });
 
+            $scope.isSerieEmpty = function (serie) {
+                var ret = true;
+                serie.forEach(function (point) {
+                    if (ret && $scope.compareMovement(point["diff"])) {
+                        ret = false;
+                    }
+                });
+                return ret;
+            };
+
             $scope.drawWidgetMovement = function () {
 
                 var view = $scope.view;
@@ -151,6 +161,10 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetMovementController"
                     });
                 });
                 $scope.series = curr_series;
+            };
+
+            $scope.compareMovement = function (n) {
+                return $scope.diff_abs(n) >= $scope.view.params.widget.movement;
             };
 
             $scope.initialize();

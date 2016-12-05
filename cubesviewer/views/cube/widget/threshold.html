@@ -11,6 +11,9 @@
                 <span ng-class="{'text-success': point['diff'] > 0, 'text-danger': point['diff'] < 0}"><i
                         ng-class="chevron" class="fa fa-fw"></i>{{ ::diff_abs(point['diff']) }}%</span></span>)</span>
             </div>
+            <div class="col-md-12" ng-if="isSerieEmpty(serie['values'])">
+                No rows to display.
+            </div>
         </div>
     </div>
 </div>
