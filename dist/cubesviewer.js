@@ -7862,6 +7862,7 @@ angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootSco
 	 */
 	$scope.toggleTwoColumn = function() {
 		cvOptions.studioTwoColumn = ! cvOptions.studioTwoColumn;
+		reststoreService.dashboard.options.studioTwoColumn = cvOptions.studioTwoColumn;
 		$timeout(function() {
 			$('.cv-views-container').masonry('layout');
 		}, 100);
@@ -7872,6 +7873,7 @@ angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootSco
 	 */
 	$scope.toggleHideControls = function() {
 		cvOptions.hideControls = ! cvOptions.hideControls;
+		reststoreService.dashboard.options.hideControls = cvOptions.hideControls;
 		$timeout(function() {
 			$('.cv-views-container').masonry('layout');
 		}, 100);
@@ -8508,7 +8510,11 @@ angular.module('cv.studio').service("reststoreService", ['$rootScope', '$http', 
             'views': [],
             'shared': false,
             'is_default': false,
-            'saved': false
+            'saved': false,
+            'options': {
+                'studioTwoColumn': false,
+                'hideControls': false
+            }
         }
     };
 
@@ -8517,6 +8523,7 @@ angular.module('cv.studio').service("reststoreService", ['$rootScope', '$http', 
         reststoreService.dashboard.views.forEach(function(v){
             var view = studioViewsService.addViewObject(v);
         });
+        $.extend(cvOptions, dashboard.options);
     };
 
     reststoreService.shareDashboard = function() {
