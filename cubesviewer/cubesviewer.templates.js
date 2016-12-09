@@ -1106,7 +1106,7 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "            <div class=\"panel panel-primary pull-right\"\n" +
     "                 style=\"padding: 3px; white-space: nowrap; margin-bottom: 6px; margin-left: 6px;\">\n" +
     "\n" +
-    "                <button type=\"button\" ng-click=\"applyAggregate()\" ng-disabled=\"view.pendingActions <= 0\"\n" +
+    "                <button type=\"button\" ng-click=\"applyAggregate()\"\n" +
     "                        class=\"btn btn-default btn-sm\" ng-class=\"{'btn-primary': view.pendingActions > 0}\"\n" +
     "                        title=\"Apply\"><i class=\"fa fa-fw fa-play\"></i></button>\n" +
     "\n" +
