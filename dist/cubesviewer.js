@@ -3385,6 +3385,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeFilterDimensionC
 		$($scope.dimensionValues).each(function(idx, val) {
 			if (filter(val)) val.selected = true;
 		});
+		$scope.applyFilter();
 	};
 
 	$scope.selectNone = function() {
@@ -3392,6 +3393,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeFilterDimensionC
 		$($scope.dimensionValues).each(function(idx, val) {
 			if (filter(val)) val.selected = false;
 		});
+		$scope.applyFilter();
 	};
 
 	$scope._processDimensionValuesData = function(data) {
