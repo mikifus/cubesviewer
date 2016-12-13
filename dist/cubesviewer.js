@@ -7668,7 +7668,7 @@ angular.module('cv.studio').controller("CubesViewerStudioViewController", ['$roo
 		$('.cv-views-container').masonry('layout');
 	});
 
-}]).directive("cvStudioView", function() {
+}]).directive("cvStudioView", function($rootScope) {
 	return {
 		restrict: 'A',
 		templateUrl: 'studio/panel.html',
@@ -7676,6 +7676,41 @@ angular.module('cv.studio').controller("CubesViewerStudioViewController", ['$roo
 			view: "="
 		},
         link: function( scope, elem, attrs ) {
+			angular.element(elem).attr("draggable", "true");
+
+            elem.bind("dragstart", function (e) {
+                $rootScope.$emit("VIEW-DRAG-START", e);
+                if (e.originalEvent.dataTransfer) {
+                    e.originalEvent.dataTransfer.setData('Text', this.id);
+                }
+            });
+
+            elem.bind("dragover", function (e) {
+                if (e.preventDefault) {
+                    e.preventDefault();
+                }
+                if (e.dataTransfer) {
+                    e.dataTransfer.dropEffect = 'move';
+                }
+                $(e.currentTarget).parents('.cv-view-container').css('opacity', '.3');
+
+                return false;
+            });
+
+            elem.bind("dragleave", function (e) {
+                $(e.currentTarget).parents('.cv-view-container').css('opacity', 'inherit');
+            });
+
+            elem.bind("drop", function (e) {
+                 $rootScope.$emit("VIEW-DRAG-STOP", e);
+                if (e.preventDefault) {
+                    e.preventDefault();
+                }
+                if (e.stopPropagation) {
+                    e.stopPropagation();
+                }
+                $(e.currentTarget).parents('.cv-view-container').css('opacity', 'inherit');
+            });
 
             scope.$watch( function() {
                 scope.__height = elem.height();
@@ -7738,8 +7773,8 @@ function construct_menu(menu) {
 	return r;
 }
 
-angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootScope', '$scope', '$uibModal', '$element', '$timeout', 'cvOptions', 'cubesService', 'studioViewsService', 'viewsService', 'reststoreService', 'dialogService',
-                                                                       function ($rootScope, $scope, $uibModal, $element, $timeout, cvOptions, cubesService, studioViewsService, viewsService, reststoreService, dialogService) {
+angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootScope', '$scope', '$uibModal', '$element', '$timeout', 'cvOptions', 'cubesService', 'studioViewsService', 'viewsService', 'reststoreService',
+                                                                       function ($rootScope, $scope, $uibModal, $element, $timeout, cvOptions, cubesService, studioViewsService, viewsService, reststoreService) {
 
 	$scope.cvVersion = cubesviewer.version;
 	$scope.cvOptions = cvOptions;
@@ -7979,6 +8014,30 @@ angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootSco
        }
    });
 
+   $rootScope.$on("VIEW-DRAG-START", function (e, event) {
+       $scope.drag_start_event = event;
+   });
+
+   $rootScope.$on("VIEW-DRAG-STOP", function (e, event) {
+       var start_idx = studioViewsService.views.indexOf(angular.element($scope.drag_start_event.currentTarget).scope().studioView);
+       var stop_idx = studioViewsService.views.indexOf(angular.element(event.currentTarget).scope().studioView);
+
+       if (start_idx == stop_idx) {
+           return;
+       }
+
+       // Rearrange views
+       var tmp = studioViewsService.views[start_idx];
+       studioViewsService.views[start_idx] = studioViewsService.views[stop_idx];
+       studioViewsService.views[stop_idx] = tmp;
+
+       $timeout(function () {
+           $('.cv-views-container').masonry('reloadItems').masonry('layout');
+           $timeout(function () {
+               $('.cv-views-container').masonry('reloadItems').masonry('layout');
+           }, 100);
+       }, 100);
+   });
 }]);
 
 
