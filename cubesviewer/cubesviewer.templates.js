@@ -435,8 +435,7 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "                    <li ng-repeat=\"d in reststoreService.savedDashboards | orderBy:'d.name'\"\n" +
     "                        ng-if=\"d.owner != cvOptions.user\" ng-click=\"reststoreService.restoreDashboard(d)\"><a\n" +
     "                            style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i\n" +
-    "                            class=\"fa fa-fw\"></i> {{ d.name }} <i ng-if=\"d.is_default\"\n" +
-    "                                                                  class=\"fa fa-fw fa-star-o\"></i></a></li>\n" +
+    "                            class=\"fa fa-fw\"></i> {{ d.name }}</a></li>\n" +
     "                </ul>\n" +
     "            </div>\n" +
     "            <div class=\"dropdown\" style=\"display: inline-block;\">\n" +

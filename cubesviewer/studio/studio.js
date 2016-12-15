@@ -498,7 +498,7 @@ angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootSco
        // First load
        if (newValue != oldValue && newValue.length != 0 && oldValue.length == 0) {
            reststoreService.savedDashboards.forEach(function (d) {
-               if (d.is_default) {
+               if (d.is_default && d.owner == cvOptions.user) {
                    reststoreService.dashboard = d;
                    reststoreService.restoreDashboard(d);
                    return;
