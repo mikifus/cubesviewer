@@ -161,7 +161,7 @@ angular.module('cv.studio').controller("CubesViewerStudioViewController", ['$roo
 		$('.cv-views-container').masonry('layout');
 	});
 
-}]).directive("cvStudioView", function($rootScope) {
+}]).directive("cvStudioView", ['$rootScope', function($rootScope) {
 	return {
 		restrict: 'A',
 		templateUrl: 'studio/panel.html',
@@ -212,7 +212,7 @@ angular.module('cv.studio').controller("CubesViewerStudioViewController", ['$roo
         }
 
 	};
-});
+}]);
 
 
 function get_hierarchy_menu(views_list, check_func) {
