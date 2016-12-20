@@ -15,8 +15,7 @@
 
     <div>
         <h2 ng-show="view.getControlsHidden()" style="margin-top: 5px;">
-            <i class="fa fa-fw fa-file-o"></i> <span ng-if="view.params.menu_path">{{view.params.menu_path}}&colon;&nbsp;</span>{{
-            view.params.name }}
+            <i class="fa fa-fw fa-file-o"></i> {{ view.getName() }}
         </h2>
 
         <div ng-include="'views/cube/alerts.html'"></div>

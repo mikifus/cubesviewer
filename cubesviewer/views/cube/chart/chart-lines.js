@@ -47,7 +47,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesContro
         });
 
         $scope.$watch('view.compare_view', function (newValue, oldValue) {
-            if (newValue && newValue != oldValue) {
+            if (newValue != oldValue) {
                 $scope.drawChartLines();
             }
         });

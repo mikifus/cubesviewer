@@ -35,9 +35,12 @@
             class="fa fa-fw fa-exchange"></i> Compare with</a>
         <ul class="dropdown-menu">
             <li ng-repeat="mergeView in viewsService.studioViewsService.views" ng-if="mergeView != view">
-                <a ng-click="viewsService.studioViewsService.studioScope.MergeWithView(view, mergeView)">{{
-                    ::mergeView.name }}</a>
+                <a ng-click="viewsService.studioViewsService.studioScope.MergeWithView(view, mergeView)">{{ mergeView.getName() }}</a>
             </li>
+
+            <div class="divider"></div>
+
+            <li ng-click="viewsService.studioViewsService.studioScope.MergeWithView(view, null);"><a href=""><i class="fa fa-fw fa-close"></i> None</a></li>
         </ul>
     </li>
 

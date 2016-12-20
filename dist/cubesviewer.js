@@ -2024,6 +2024,16 @@ cubesviewer.View = function(cvOptions, id, type) {
         view.params.enabled_controls[label] = ret;
     };
 
+    view.getName = function(){
+        var menu_path = view.params.menu_path;
+        var ret;
+        if (menu_path) {
+            ret = menu_path + ': ';
+        }
+        ret += view.params.name;
+        return ret;
+    };
+
     return view;
 
 };
@@ -5076,7 +5086,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesContro
         });
 
         $scope.$watch('view.compare_view', function (newValue, oldValue) {
-            if (newValue && newValue != oldValue) {
+            if (newValue != oldValue) {
                 $scope.drawChartLines();
             }
         });
@@ -9765,9 +9775,12 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "            class=\"fa fa-fw fa-exchange\"></i> Compare with</a>\n" +
     "        <ul class=\"dropdown-menu\">\n" +
     "            <li ng-repeat=\"mergeView in viewsService.studioViewsService.views\" ng-if=\"mergeView != view\">\n" +
-    "                <a ng-click=\"viewsService.studioViewsService.studioScope.MergeWithView(view, mergeView)\">{{\n" +
-    "                    ::mergeView.name }}</a>\n" +
+    "                <a ng-click=\"viewsService.studioViewsService.studioScope.MergeWithView(view, mergeView)\">{{ mergeView.getName() }}</a>\n" +
     "            </li>\n" +
+    "\n" +
+    "            <div class=\"divider\"></div>\n" +
+    "\n" +
+    "            <li ng-click=\"viewsService.studioViewsService.studioScope.MergeWithView(view, null);\"><a href=\"\"><i class=\"fa fa-fw fa-close\"></i> None</a></li>\n" +
     "        </ul>\n" +
     "    </li>\n" +
     "\n" +
@@ -10016,8 +10029,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "\n" +
     "    <div>\n" +
     "        <h2 ng-show=\"view.getControlsHidden()\" style=\"margin-top: 5px;\">\n" +
-    "            <i class=\"fa fa-fw fa-file-o\"></i> <span ng-if=\"view.params.menu_path\">{{view.params.menu_path}}&colon;&nbsp;</span>{{\n" +
-    "            view.params.name }}\n" +
+    "            <i class=\"fa fa-fw fa-file-o\"></i> {{ view.getName() }}\n" +
     "        </h2>\n" +
     "\n" +
     "        <div ng-include=\"'views/cube/alerts.html'\"></div>\n" +
