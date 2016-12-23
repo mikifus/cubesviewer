@@ -6428,7 +6428,8 @@ angular.module('cv.views.cube').controller("CubesViewerWidgetController", ['$roo
         });
 
         $scope.loadData = function () {
-            if ($scope.view.params.zaxis == null) {
+            $scope.zaxis = $scope.view.params.zaxis;
+            if ($scope.zaxis == null) {
                 return;
             }
             var includeXAxis = $scope.view.params.xaxis != null;
