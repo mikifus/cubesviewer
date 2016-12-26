@@ -880,8 +880,11 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "    <li ng-click=\"viewsService.studioViewsService.studioScope.showHelpView(view)\"><a><i\n" +
     "            class=\"fa fa-fw fa-question\"></i> Help</a></li>\n" +
     "\n" +
-    "    <div class=\"divider\" ng-if=\"view.params.mode == 'chart' && view.params.charttype == 'lines'\"></div>\n" +
-    "    <li class=\"dropdown-submenu\" ng-if=\"view.params.mode == 'chart' && view.params.charttype == 'lines'\"><a><i\n" +
+    "    <div class=\"divider\"\n" +
+    "         ng-if=\"view.params.mode == 'chart' && (view.params.charttype == 'lines' || view.params.charttype == 'lines-avg')\"></div>\n" +
+    "    <li class=\"dropdown-submenu compare_views\"\n" +
+    "        ng-if=\"view.params.mode == 'chart' && (view.params.charttype == 'lines' || view.params.charttype == 'lines-avg')\">\n" +
+    "        <a><i\n" +
     "            class=\"fa fa-fw fa-exchange\"></i> Compare with</a>\n" +
     "        <ul class=\"dropdown-menu\">\n" +
     "            <li ng-repeat=\"mergeView in viewsService.studioViewsService.views\" ng-if=\"mergeView != view\">\n" +

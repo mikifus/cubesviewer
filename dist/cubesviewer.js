@@ -2314,7 +2314,6 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
 
 	$scope.initCube = function() {
 		$scope.view.cube = null;
-		$scope.view.compare_view = null;
 
 		// Apply default cube view parameters
 		var cubeViewDefaultParams = {
@@ -4473,9 +4472,12 @@ angular.module('cv.views').service("seriesOperationsService", ['$rootScope', 'cv
  * This is an optional component, part of the cube view.
  */
 
-angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartController", ['$rootScope', '$scope', '$timeout', '$element', 'cvOptions', 'cubesService', 'viewsService', 'seriesOperationsService', 'exportService',
-                                                     function ($rootScope, $scope, $timeout, $element, cvOptions, cubesService, viewsService, seriesOperationsService, exportService) {
+angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartController", ['$rootScope', '$scope',
+    '$timeout', '$element', 'cvOptions', 'cubesService', 'viewsService', 'seriesOperationsService', 'exportService',
+    'studioViewsService',
+    function ($rootScope, $scope, $timeout, $element, cvOptions, cubesService, viewsService, seriesOperationsService, exportService, studioViewsService) {
 
+    $scope.studioViewsService = studioViewsService;
 	var chartCtrl = this;
 
 	this.chart = null;
@@ -6135,8 +6137,9 @@ function cubesviewerViewCubeDynamicChart() {
 
 "use strict";
 
-angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesAVGController", ['$rootScope', '$scope', '$element', '$timeout', 'cvOptions', 'cubesService', 'viewsService',
-                                                     function ($rootScope, $scope, $element, $timeout, cvOptions, cubesService, viewsService) {
+angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesAVGController", ['$rootScope', '$scope',
+	'$element', '$timeout', 'cvOptions', 'cubesService', 'viewsService',
+    function ($rootScope, $scope, $element, $timeout, cvOptions, cubesService, viewsService) {
 
 	$scope.chart = null;
 
@@ -6153,6 +6156,24 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesAVGCon
 		}, 0);
 	});
 
+        $scope.$watch('view.compare_view', function (newValue, oldValue) {
+            if (newValue != oldValue) {
+                $scope.drawChartLinesAVG();
+            }
+        });
+
+        $scope.$watch('view.compare_view.grid.data', function (newValue, oldValue) {
+            if (newValue && newValue.length && newValue != oldValue) {
+                $scope.drawChartLinesAVG();
+            }
+        });
+
+        $scope.$watch('view.compare_view.pendingRequests', function (newValue, oldValue) {
+            if (newValue === 0) {
+                $scope.drawChartLinesAVG();
+            }
+        });
+
 
 	/**
 	 * Draws a lines chart with AVG line.
@@ -6162,6 +6183,9 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesAVGCon
 		var view = $scope.view;
 		var dataRows = $scope.view.grid.data;
 		var columnDefs = view.grid.columnDefs;
+
+		var dRws;
+        var cDfs;
 
 		var container = $($element).find("svg").get(0);
 
@@ -6194,6 +6218,36 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesAVGCon
 	    	d.push(series);
 	    	serieCount++;
 	    });
+
+        if (view.compare_view) {
+            dRws = view.compare_view.grid.data;
+            cDfs = view.compare_view.grid.columnDefs;
+            $(dRws).each(function (idx, e) {
+                var serie = [];
+                for (var i = 1; i < cDfs.length; i++) {
+                    if (cDfs[i].field in e) {
+                        var value = e[cDfs[i].field];
+                        var data = {"x": i, "y": (value != undefined) ? value : 0};
+                        tooltip_aggregates.forEach(function (v) {
+                            data[v] = e['_cells'][cDfs[i].field][v];
+                        });
+                        serie.push(data);
+                    } else {
+                        serie.push({"x": i, "y": 0});
+                    }
+                }
+                var key = e["key"] != "" ? e["key"] : view.params.yaxis;
+                var series = {"values": serie, "key": '(C) ' + key};
+                if (view.params["chart-disabledseries"]) {
+                    if (view.params["chart-disabledseries"]["key"] == (view.params.drilldown.join(","))) {
+                        series.disabled = !!view.params["chart-disabledseries"]["disabled"][series.key];
+                    }
+                }
+                d.push(series);
+                serieCount++;
+            });
+        }
+
 	    d.sort(function(a,b) { return a.key < b.key ? -1 : (a.key > b.key ? +1 : 0) });
 
 	    var ag = $.grep(view.cube.aggregates, function(ag) { return ag.ref == view.params.yaxis })[0];
@@ -6206,11 +6260,15 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesAVGCon
 				.showLegend(!!view.params.chartoptions.showLegend)
 				.margin({left: 120});
 
-			chart.xAxis
-				.axisLabel(xAxisLabel)
-				.tickFormat(function (d, i) {
-					return (columnDefs[d].name);
-				});
+            chart.xAxis
+                .axisLabel(xAxisLabel)
+                .tickFormat(function (d, i) {
+                    if (columnDefs[d]) {
+                        return (columnDefs[d].name);
+                    } else if (cDfs && cDfs[d]) {
+                        return cDfs[d].name;
+                    }
+                });
 
 			chart.yAxis.tickFormat(function (d, i) {
 				return colFormatter(d);
@@ -7684,18 +7742,29 @@ angular.module('cv.studio').service("studioViewsService", ['$rootScope', '$ancho
 		// Check at least JSON is valid to avoid creating an unusable view from Studio
 		if (typeof data == "string") {
 			try {
-				$.parseJSON(data);
+				data = $.parseJSON(data);
 			} catch (err) {
 				dialogService.show('Could not process serialized data: JSON parse error.')
 				return;
 			}
 		}
+		var compare_view = null;
 
 		var view = viewsService.createView("cube", data);
+		if (data.compare_view) {
+			compare_view = viewsService.createView("cube", data.compare_view);
+			if (compare_view) {
+				this.views.unshift(compare_view);
+				view.compare_view = compare_view;
+			}
+		}
 		this.views.unshift(view);
 
 		$timeout(function() {
 			$('.cv-views-container').masonry('prepended', $('.cv-views-container').find(".sv" + view.id).show());
+			if (compare_view) {
+				$('.cv-views-container').masonry('appended', $('.cv-views-container').find(".sv" + compare_view.id).show());
+			}
 			//$('.cv-views-container').masonry('reloadItems');
 			//$('.cv-views-container').masonry('layout');
 			$timeout(function() { $anchorScroll("cvView" + view.id); }, 500);
@@ -8069,6 +8138,11 @@ angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootSco
 	 */
 	$scope.MergeWithView = function(baseview, mergeView) {
 		baseview.compare_view = mergeView;
+		if (mergeView) {
+			baseview.params.compare_view = $.parseJSON(viewsService.serializeView(mergeView));
+		} else {
+			baseview.params.compare_view = null;
+		}
 	};
 
     $scope.$watch('reststoreService.savedViews', function (newValue, oldValue) {
@@ -9770,8 +9844,11 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "    <li ng-click=\"viewsService.studioViewsService.studioScope.showHelpView(view)\"><a><i\n" +
     "            class=\"fa fa-fw fa-question\"></i> Help</a></li>\n" +
     "\n" +
-    "    <div class=\"divider\" ng-if=\"view.params.mode == 'chart' && view.params.charttype == 'lines'\"></div>\n" +
-    "    <li class=\"dropdown-submenu\" ng-if=\"view.params.mode == 'chart' && view.params.charttype == 'lines'\"><a><i\n" +
+    "    <div class=\"divider\"\n" +
+    "         ng-if=\"view.params.mode == 'chart' && (view.params.charttype == 'lines' || view.params.charttype == 'lines-avg')\"></div>\n" +
+    "    <li class=\"dropdown-submenu compare_views\"\n" +
+    "        ng-if=\"view.params.mode == 'chart' && (view.params.charttype == 'lines' || view.params.charttype == 'lines-avg')\">\n" +
+    "        <a><i\n" +
     "            class=\"fa fa-fw fa-exchange\"></i> Compare with</a>\n" +
     "        <ul class=\"dropdown-menu\">\n" +
     "            <li ng-repeat=\"mergeView in viewsService.studioViewsService.views\" ng-if=\"mergeView != view\">\n" +

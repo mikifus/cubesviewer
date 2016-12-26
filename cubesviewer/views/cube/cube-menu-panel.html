@@ -30,8 +30,11 @@
     <li ng-click="viewsService.studioViewsService.studioScope.showHelpView(view)"><a><i
             class="fa fa-fw fa-question"></i> Help</a></li>
 
-    <div class="divider" ng-if="view.params.mode == 'chart' && view.params.charttype == 'lines'"></div>
-    <li class="dropdown-submenu" ng-if="view.params.mode == 'chart' && view.params.charttype == 'lines'"><a><i
+    <div class="divider"
+         ng-if="view.params.mode == 'chart' && (view.params.charttype == 'lines' || view.params.charttype == 'lines-avg')"></div>
+    <li class="dropdown-submenu compare_views"
+        ng-if="view.params.mode == 'chart' && (view.params.charttype == 'lines' || view.params.charttype == 'lines-avg')">
+        <a><i
             class="fa fa-fw fa-exchange"></i> Compare with</a>
         <ul class="dropdown-menu">
             <li ng-repeat="mergeView in viewsService.studioViewsService.views" ng-if="mergeView != view">

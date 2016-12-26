@@ -120,7 +120,6 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
 
 	$scope.initCube = function() {
 		$scope.view.cube = null;
-		$scope.view.compare_view = null;
 
 		// Apply default cube view parameters
 		var cubeViewDefaultParams = {

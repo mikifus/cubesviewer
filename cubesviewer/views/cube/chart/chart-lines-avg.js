@@ -28,8 +28,9 @@
 
 "use strict";
 
-angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesAVGController", ['$rootScope', '$scope', '$element', '$timeout', 'cvOptions', 'cubesService', 'viewsService',
-                                                     function ($rootScope, $scope, $element, $timeout, cvOptions, cubesService, viewsService) {
+angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesAVGController", ['$rootScope', '$scope',
+	'$element', '$timeout', 'cvOptions', 'cubesService', 'viewsService',
+    function ($rootScope, $scope, $element, $timeout, cvOptions, cubesService, viewsService) {
 
 	$scope.chart = null;
 
@@ -46,6 +47,24 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesAVGCon
 		}, 0);
 	});
 
+        $scope.$watch('view.compare_view', function (newValue, oldValue) {
+            if (newValue != oldValue) {
+                $scope.drawChartLinesAVG();
+            }
+        });
+
+        $scope.$watch('view.compare_view.grid.data', function (newValue, oldValue) {
+            if (newValue && newValue.length && newValue != oldValue) {
+                $scope.drawChartLinesAVG();
+            }
+        });
+
+        $scope.$watch('view.compare_view.pendingRequests', function (newValue, oldValue) {
+            if (newValue === 0) {
+                $scope.drawChartLinesAVG();
+            }
+        });
+
 
 	/**
 	 * Draws a lines chart with AVG line.
@@ -55,6 +74,9 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesAVGCon
 		var view = $scope.view;
 		var dataRows = $scope.view.grid.data;
 		var columnDefs = view.grid.columnDefs;
+
+		var dRws;
+        var cDfs;
 
 		var container = $($element).find("svg").get(0);
 
@@ -89,6 +111,36 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesAVGCon
 	    	d.push(series);
 	    	serieCount++;
 	    });
+
+        if (view.compare_view) {
+            dRws = view.compare_view.grid.data;
+            cDfs = view.compare_view.grid.columnDefs;
+            $(dRws).each(function (idx, e) {
+                var serie = [];
+                for (var i = 1; i < cDfs.length; i++) {
+                    if (cDfs[i].field in e) {
+                        var value = e[cDfs[i].field];
+                        var data = {"x": i, "y": (value != undefined) ? value : 0};
+                        tooltip_aggregates.forEach(function (v) {
+                            data[v] = e['_cells'][cDfs[i].field][v];
+                        });
+                        serie.push(data);
+                    } else {
+                        serie.push({"x": i, "y": 0});
+                    }
+                }
+                var key = e["key"] != "" ? e["key"] : view.params.yaxis;
+                var series = {"values": serie, "key": '(C) ' + key};
+                if (view.params["chart-disabledseries"]) {
+                    if (view.params["chart-disabledseries"]["key"] == (view.params.drilldown.join(","))) {
+                        series.disabled = !!view.params["chart-disabledseries"]["disabled"][series.key];
+                    }
+                }
+                d.push(series);
+                serieCount++;
+            });
+        }
+
 	    d.sort(function(a,b) { return a.key < b.key ? -1 : (a.key > b.key ? +1 : 0) });
 
 	    var ag = $.grep(view.cube.aggregates, function(ag) { return ag.ref == view.params.yaxis })[0];
@@ -101,11 +153,15 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesAVGCon
 				.showLegend(!!view.params.chartoptions.showLegend)
 				.margin({left: 120});
 
-			chart.xAxis
-				.axisLabel(xAxisLabel)
-				.tickFormat(function (d, i) {
-					return (columnDefs[d].name);
-				});
+            chart.xAxis
+                .axisLabel(xAxisLabel)
+                .tickFormat(function (d, i) {
+                    if (columnDefs[d]) {
+                        return (columnDefs[d].name);
+                    } else if (cDfs && cDfs[d]) {
+                        return cDfs[d].name;
+                    }
+                });
 
 			chart.yAxis.tickFormat(function (d, i) {
 				return colFormatter(d);

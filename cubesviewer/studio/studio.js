@@ -94,18 +94,29 @@ angular.module('cv.studio').service("studioViewsService", ['$rootScope', '$ancho
 		// Check at least JSON is valid to avoid creating an unusable view from Studio
 		if (typeof data == "string") {
 			try {
-				$.parseJSON(data);
+				data = $.parseJSON(data);
 			} catch (err) {
 				dialogService.show('Could not process serialized data: JSON parse error.')
 				return;
 			}
 		}
+		var compare_view = null;
 
 		var view = viewsService.createView("cube", data);
+		if (data.compare_view) {
+			compare_view = viewsService.createView("cube", data.compare_view);
+			if (compare_view) {
+				this.views.unshift(compare_view);
+				view.compare_view = compare_view;
+			}
+		}
 		this.views.unshift(view);
 
 		$timeout(function() {
 			$('.cv-views-container').masonry('prepended', $('.cv-views-container').find(".sv" + view.id).show());
+			if (compare_view) {
+				$('.cv-views-container').masonry('appended', $('.cv-views-container').find(".sv" + compare_view.id).show());
+			}
 			//$('.cv-views-container').masonry('reloadItems');
 			//$('.cv-views-container').masonry('layout');
 			$timeout(function() { $anchorScroll("cvView" + view.id); }, 500);
@@ -481,6 +492,11 @@ angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootSco
 	 */
 	$scope.MergeWithView = function(baseview, mergeView) {
 		baseview.compare_view = mergeView;
+		if (mergeView) {
+			baseview.params.compare_view = $.parseJSON(viewsService.serializeView(mergeView));
+		} else {
+			baseview.params.compare_view = null;
+		}
 	};
 
     $scope.$watch('reststoreService.savedViews', function (newValue, oldValue) {
