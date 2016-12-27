@@ -41,10 +41,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesAVGCon
 	};
 
 	$scope.$on('gridDataUpdated', function() {
-		$scope.chartCtrl.cleanupNvd3();
-		$timeout(function() {
-			$scope.drawChartLinesAVG();
-		}, 0);
+		$scope.drawChartLinesAVG();
 	});
 
         $scope.$watch('view.compare_view', function (newValue, oldValue) {
@@ -70,6 +67,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesAVGCon
 	 * Draws a lines chart with AVG line.
 	 */
 	$scope.drawChartLinesAVG = function () {
+		$scope.chartCtrl.cleanupNvd3();
 
 		var view = $scope.view;
 		var dataRows = $scope.view.grid.data;
