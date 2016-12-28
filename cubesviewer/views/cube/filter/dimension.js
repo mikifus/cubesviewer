@@ -100,6 +100,12 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeFilterDimensionC
 				buildQueryCutsStrings = $.grep(buildQueryCutsStrings, function(cs) {
 					return ((cs.indexOf(parts.dimension.name) != 0) && (cs.indexOf("!" + parts.dimension.name) != 0));
 				});
+				// Remove datefilters
+                $($scope.view.params.datefilters).each(function (idx, e) {
+                  	buildQueryCutsStrings = $.grep(buildQueryCutsStrings, function(cs) {
+					return ((cs.indexOf(e.dimension) != 0) && (cs.indexOf("!" + e.dimension) != 0));
+				});
+                });
 
 				params["cut"] = buildQueryCutsStrings.join(cubes.CUT_STRING_SEPARATOR_CHAR);
 			}
