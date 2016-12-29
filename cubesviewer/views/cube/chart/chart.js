@@ -142,9 +142,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartController"
 		//$($element).find("svg").empty();
 		$($element).find("svg").parent().children().not("svg").remove();
 
-		if (chartCtrl.chart) {
-			$("#" + chartCtrl.chart.tooltip.id()).remove(); // div.nvtooltip
-		}
+        this.cleanupTooltip();
 
 		//$scope.chart = null;
 
@@ -157,6 +155,15 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartController"
 			}
 		}
 		*/
+	};
+
+	this.cleanupTooltip = function() {
+		if (chartCtrl.chart) {
+			$("#" + chartCtrl.chart.tooltip.id()).remove(); // div.nvtooltip
+			if (chartCtrl.chart.interactiveLayer && chartCtrl.chart.interactiveLayer.tooltip) {
+				$("#" + chartCtrl.chart.interactiveLayer.tooltip.id()).remove(); // div.nvtooltip
+			}
+		}
 	};
 
 	$scope.$watch('cvOptions.studioTwoColumn', function() {

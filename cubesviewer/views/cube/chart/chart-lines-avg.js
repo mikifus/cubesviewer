@@ -78,7 +78,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesAVGCon
 
 		var container = $($element).find("svg").get(0);
 
-		var xAxisLabel = ( (view.params.xaxis != null) ? view.cube.dimensionParts(view.params.xaxis).label : "None");
+		var xAxisLabel = ( (!!view.params.xaxis) ? view.cube.dimensionParts(view.params.xaxis).label : "None");
 
 		var tooltip_aggregates = $scope.getTooltipTemplateAggregates(view);
 
@@ -164,12 +164,13 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesAVGCon
 			chart.yAxis.tickFormat(function (d, i) {
 				return colFormatter(d);
 			});
-
 			$scope.modify_tooltip(chart);
 
 			d3.select(container)
 				.datum(d)
 				.call(chart);
+
+            $scope.chartCtrl.cleanupTooltip();
 
 
 			// Handler for state change
