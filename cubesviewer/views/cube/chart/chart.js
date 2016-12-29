@@ -253,6 +253,15 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartController"
 		 }
 	 };
 
+	$scope.$watch('view.params.chartoptions.showLegend', function (newValue, oldValue) {
+		if (!newValue) {
+			var legend = $($element).find('.nv-legendWrap');
+			if (legend.length) {
+				legend.attr('transform', 'translate(0, -500)');
+			}
+		}
+	});
+
 	$scope.$on("$destroy", function() {
 		chartCtrl.cleanupNvd3();
 		$scope.view.grid.data = [];
