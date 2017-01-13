@@ -403,12 +403,14 @@ angular.module('cv.studio').controller("CubesViewerStudioController", ['$rootSco
 		var viewObject = $.parseJSON(viewsService.serializeView(view));
 		viewObject.name = "Clone of " + viewObject.name;
 
+		var help = view.help;
 		var view = studioViewsService.addViewObject(viewObject);
 
 		// TODO: These belong to plugins
 		view.savedId = 0;
 		view.owner = cvOptions.user;
 		view.shared = false;
+		view.help = help;
 	};
 
 	/**
