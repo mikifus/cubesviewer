@@ -235,16 +235,17 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartController"
 	 $scope.modify_tooltip = function (chart) {
 		 var view = $scope.view;
 		 if (view.params.tooltip_template) {
+             var tooltip_replaces = get_tooltip_replaces(view.params.tooltip_template);
 			 var tooltipContentGenerator = chart.interactiveLayer.tooltip.contentGenerator();
 			 chart.interactiveLayer.tooltip.contentGenerator(function (i) {
 				 var idx = i.value;
 				 $.each(i.series, function (_, serie) {
-					 var tooltip_template = view.params.tooltip_template;
-					 for (var key in serie.data) {
-						 if (serie.data.hasOwnProperty(key)) {
-							 tooltip_template = tooltip_template.replace('%' + key + '%', serie.data[key]);
-						 }
-					 }
+			 		var tooltip_template = view.params.tooltip_template;
+				     for (var i=0; i < tooltip_replaces.length; i++) {
+				         var key = tooltip_replaces[i];
+				         var val = serie.data[key] === undefined ? 0 : serie.data[key];
+                         tooltip_template = tooltip_template.replace('%' + key + '%', val);
+                     }
 					 serie['key'] += '&nbsp;&nbsp;<span style="color: #777;">(' + tooltip_template + ')</span>';
 				 });
 
@@ -269,6 +270,25 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartController"
 	});
 
 	this.initialize();
+
+	function get_tooltip_replaces(template) {
+		var tooltip_replaces = [];
+	 	const regex = /(?:%([\w-]+)%)/g;
+	 	var m;
+
+	 	while ((m = regex.exec(template)) !== null) {
+	 		// This is necessary to avoid infinite loops with zero-width matches
+		 	if (m.index === regex.lastIndex) {
+			 	regex.lastIndex++;
+		 	}
+		 	m.forEach(function (match, groupIndex) {
+			 	if (groupIndex === 1) {
+			 		tooltip_replaces.push(match);
+			 	}
+		 	});
+	 	}
+	 return tooltip_replaces;
+	}
 
 }]);
 
