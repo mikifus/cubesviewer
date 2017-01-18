@@ -1060,6 +1060,23 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "        </ul>\n" +
     "    </li>\n" +
     "\n" +
+    "    <li ng-show=\"view.params.mode == 'chart'\"\n" +
+    "        class=\"dropdown-submenu\">\n" +
+    "        <a tabindex=\"0\"><i class=\"fa fa-fw fa-forward\"></i> Group X</a>\n" +
+    "        <ul class=\"dropdown-menu\">\n" +
+    "            <li ng-click=\"SetGroupXMethod('Sum')\">\n" +
+    "                <a href=\"\">Sum</a>\n" +
+    "            </li>\n" +
+    "            <li ng-click=\"SetGroupXMethod('Avg')\">\n" +
+    "                <a href=\"\">Avg</a>\n" +
+    "            </li>\n" +
+    "            <div class=\"divider\"></div>\n" +
+    "            <li ng-repeat=\"l in [1,5,10,25,50,100]\" ng-click=\"SetGroupX(l)\">\n" +
+    "                <a href=\"\">{{ l }}</a>\n" +
+    "            </li>\n" +
+    "        </ul>\n" +
+    "    </li>\n" +
+    "\n" +
     "    <div ng-show=\"cvOptions.seriesOperationsEnabled && (view.params.mode == 'series' || view.params.mode == 'chart' || view.params.mode == 'widget')\"\n" +
     "         class=\"divider\"></div>\n" +
     "\n" +

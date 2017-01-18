@@ -58,21 +58,20 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesContro
 
 		var container = $($element).find("svg").get(0);
 
-		var xAxisLabel = ( (view.params.xaxis != null) ? view.cube.dimensionParts(view.params.xaxis).label : "None");
+		var xAxisLabel = ( (view.params.xaxis !== null) ? view.cube.dimensionParts(view.params.xaxis).label : "None");
 
 		var tooltip_aggregates = $scope.getTooltipTemplateAggregates(view);
 
 	    // TODO: Check there's only one value column
 
 		var d = [];
-	    var numRows = dataRows.length;
 	    var serieCount = 0;
 	    $(dataRows).each(function(idx, e) {
 	    	var serie = [];
 	    	for (var i = 1; i < columnDefs.length; i++) {
 	    		if (columnDefs[i].field in e) {
 	    			var value = e[columnDefs[i].field];
-	    			var data = {"x": i, "y":  (value != undefined) ? value : 0};
+	    			var data = {"x": i, "y":  (value !== undefined) ? value : 0};
                     tooltip_aggregates.forEach(function(v){
                         data[v] = e['_cells'][columnDefs[i].field][v];
                     });
@@ -81,9 +80,13 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesContro
 					serie.push( { "x": i, "y":  0 } );
 	    		}
 	    	}
-	    	var series = { "values": serie, "key": e["key"] != "" ? e["key"] : view.params.yaxis };
+
+            serie = $scope.group_x(serie, tooltip_aggregates, $scope.view.params.chart_group_x,
+                $scope.view.params.chart_group_x_method);
+
+	    	var series = { "values": serie, "key": e["key"] !== "" ? e["key"] : view.params.yaxis };
 	    	if (view.params["chart-disabledseries"]) {
-	    		if (view.params["chart-disabledseries"]["key"] == (view.params.drilldown.join(","))) {
+	    		if (view.params["chart-disabledseries"]["key"] === (view.params.drilldown.join(","))) {
 	    			series.disabled = !! view.params["chart-disabledseries"]["disabled"][series.key];
 	    		}
 	    	}
@@ -91,12 +94,6 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesContro
 	    	serieCount++;
 	    });
 	    d.sort(function(a,b) { return a.key < b.key ? -1 : (a.key > b.key ? +1 : 0) });
-	    /*
-	    xticks = [];
-	    for (var i = 1; i < colNames.length; i++) {
-    		xticks.push([ i, colNames[i] ]);
-	    }
-	    */
 
 	    var ag = $.grep(view.cube.aggregates, function(ag) { return ag.ref == view.params.yaxis })[0];
 	    var colFormatter = $scope.columnFormatFunction(ag);
@@ -145,8 +142,6 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesContro
 
 		    nv.addGraph(function() {
 	    	  var chart = nv.models.stackedAreaChart()
-	    	                //.x(function(d) { return d[0] })
-	    	                //.y(function(d) { return "y" in d ? d.y : 0 })
 	    	  				.showLegend(!!view.params.chartoptions.showLegend)
 	    	  				.interpolate($scope.view.params.chartoptions.lineInterpolation)
 	    	  				.margin({left: 130})
@@ -157,7 +152,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesContro
 	    		  chart.style ( view.params["chart-stackedarea-style"] );
 	    	  }
 
-	    	  chart.xAxis	        //chart.xAxis.axisLabel(xAxisLabel).showMaxMin(true).tickFormat(d3.format(',0f'));
+	    	  chart.xAxis
 	    	  	  .axisLabel(xAxisLabel)
 	    	      .showMaxMin(false)
 	    	      .tickFormat(function(d, i) {
@@ -193,78 +188,6 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesContro
 	    }
 
 	};
-
-
-
-	/**
-	 */
-	/*
-	this.drawChartLinesCumulative = function (view, colNames, dataRows, dataTotals) {
-
-		var container = $('#seriesChart-' + view.id).find("svg").get(0);
-		var xAxisLabel = ( (view.params.xaxis != null) ? view.cube.getDimensionParts(view.params.xaxis).label : "None")
-
-	    var d = [];
-
-
-	    numRows = dataRows.length;
-	    var serieCount = 1;
-	    $(dataRows).each(function(idx, e) {
-	    	serie = [];
-	    	for (var i = 1; i < colNames.length; i++) {
-	    		if ( (colNames[i] in e) && (e[colNames[i]] != null) && (e[colNames[i]]) ) {
-	    			var value = e[colNames[i]];
-	    			serie.push( { "x": i, "y": parseFloat(value) } );
-	    		} else {
-	    			serie.push( { "x": i, "y": 0 } );
-	    		}
-	    	}
-	    	d.push({ "values": serie, "key": e["key"] != "" ? e["key"] : view.params.yaxis });
-	    });
-	    d.sort(function(a,b) { return a.key < b.key ? -1 : (a.key > b.key ? +1 : 0) });
-
-	    nv.addGraph(function() {
-	        var chart = nv.models.cumulativeLineChart()
-                          //.x(function(d) { return d.x })
-		                  //.y(function(d) { return d.y })
-		                  .showLegend(!!view.params.chartoptions.showLegend)
-		                  .color(d3.scale.category20().range())
-	                      //.color(d3.scale.category10().range())
-		                  .useInteractiveGuideline(true)
-	                      ;
-
-	         chart.xAxis
-	            .axisLabel(xAxisLabel)
-			      .tickFormat(function(d,i) {
-			                return (colNames[d]);
-			       })	;
-
-	         chart.yAxis
-	         .tickFormat(d3.format(',.2f'));
-
-	        d3.select(container)
-	            .datum(d)
-	          .transition().duration(500)
-	            .call(chart);
-
-    	  // Handler for state change
-	          chart.dispatch.on('stateChange', function(newState) {
-	        	  view.params["chart-stackedarea-style"] = newState.style;
-	        	  view.params["chart-disabledseries"] = {
-	        			  "key": view.params.drilldown.join(","),
-	        			  "disabled": newState.disabled
-	        	  };
-	          });
-
-	        //TODO: Figure out a good way to do this automatically
-	        nv.utils.windowResize(chart.update);
-
-	        return chart;
-      });
-
-	};
-	*/
-
 
 	$scope.initialize();
 

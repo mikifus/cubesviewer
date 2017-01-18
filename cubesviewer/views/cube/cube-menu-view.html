@@ -184,6 +184,23 @@
         </ul>
     </li>
 
+    <li ng-show="view.params.mode == 'chart'"
+        class="dropdown-submenu">
+        <a tabindex="0"><i class="fa fa-fw fa-forward"></i> Group X</a>
+        <ul class="dropdown-menu">
+            <li ng-click="SetGroupXMethod('Sum')">
+                <a href="">Sum</a>
+            </li>
+            <li ng-click="SetGroupXMethod('Avg')">
+                <a href="">Avg</a>
+            </li>
+            <div class="divider"></div>
+            <li ng-repeat="l in [1,5,10,25,50,100]" ng-click="SetGroupX(l)">
+                <a href="">{{ l }}</a>
+            </li>
+        </ul>
+    </li>
+
     <div ng-show="cvOptions.seriesOperationsEnabled && (view.params.mode == 'series' || view.params.mode == 'chart' || view.params.mode == 'widget')"
          class="divider"></div>
 

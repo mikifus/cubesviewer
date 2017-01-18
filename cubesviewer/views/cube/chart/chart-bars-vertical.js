@@ -55,16 +55,23 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartBarsVertica
 		var container = $($element).find("svg").get(0);
 		var xAxisLabel = ( (view.params.xaxis != null) ? view.cube.dimensionParts(view.params.xaxis).label : "None")
 
+        var tooltip_aggregates = $scope.getTooltipTemplateAggregates(view);
+
 	    var d = [];
 
-	    var numRows = dataRows.length;
 	    var serieCount = 0;
 	    $(dataRows).each(function(idx, e) {
 	    	var serie = [];
 	    	for (var i = 1; i < columnDefs.length; i++) {
 	    		var value = e[columnDefs[i].name];
-	    		serie.push( { "x": columnDefs[i].name, "y":  (value != undefined) ? value : 0 } );
+	    		var data = { "x": columnDefs[i].name, "y":  (value != undefined) ? value : 0 }
+                tooltip_aggregates.forEach(function(v){
+                    data[v] = e['_cells'][columnDefs[i].field][v];
+                });
+	    		serie.push(data);
 	    	}
+            serie = $scope.group_x(serie, tooltip_aggregates, $scope.view.params.chart_group_x,
+                $scope.view.params.chart_group_x_method);
 	    	var series = { "values": serie, "key": e["key"] != "" ? e["key"] : view.params.yaxis };
 	    	if (view.params["chart-disabledseries"]) {
 	    		if (view.params["chart-disabledseries"]["key"] == (view.params.drilldown.join(","))) {

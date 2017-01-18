@@ -52,11 +52,11 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartBarsHorizon
 		var columnDefs = view.grid.columnDefs;
 
 		var container = $($element).find("svg").get(0);
-		var xAxisLabel = ( (view.params.xaxis != null) ? view.cube.dimensionParts(view.params.xaxis).label : "None")
+
+        var tooltip_aggregates = $scope.getTooltipTemplateAggregates(view);
 
 	    var d = [];
 
-	    var numRows = dataRows.length;
 	    var serieCount = 0;
 	    $(dataRows).each(function(idx, e) {
 	    	var serie = [];
@@ -65,14 +65,19 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartBarsHorizon
 
 	    		// If second serie is reversed
 	    		if (dataRows.length == 2 && serieCount == 1 && view.params.chartoptions.mirrorSerie2) value = (value != undefined) ? -value : 0;
+	    		var data = { "x": columnDefs[i].name, "y":  (value != undefined) ? value : 0 };
+                tooltip_aggregates.forEach(function(v){
+                    data[v] = e['_cells'][columnDefs[i].field][v];
+                });
 
-	    		serie.push( { "x": columnDefs[i].name, "y":  (value != undefined) ? value : 0 } );
+	    		serie.push(data);
 	    	}
 
 	    	// Reverse horizontal dimension to make series start from the base
 	    	serie.reverse();
-
-	    	var series = { "values": serie, "key": e["key"] != "" ? e["key"] : view.params.yaxis };
+            serie = $scope.group_x(serie, tooltip_aggregates, $scope.view.params.chart_group_x,
+				$scope.view.params.chart_group_x_method);
+            var series = {"values": serie, "key": e["key"] != "" ? e["key"] : view.params.yaxis};
 	    	if (view.params["chart-disabledseries"]) {
 	    		if (view.params["chart-disabledseries"]["key"] == (view.params.drilldown.join(","))) {
 	    			series.disabled = !! view.params["chart-disabledseries"]["disabled"][series.key];

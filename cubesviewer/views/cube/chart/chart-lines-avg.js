@@ -78,6 +78,8 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesAVGCon
 					serie.push( { "x": i, "y":  0 } );
 	    		}
 	    	}
+            serie = $scope.group_x(serie, tooltip_aggregates, $scope.view.params.chart_group_x,
+                $scope.view.params.chart_group_x_method);
 	    	var series = { "values": serie, "key": e["key"] != "" ? e["key"] : view.params.yaxis };
 	    	if (view.params["chart-disabledseries"]) {
 	    		if (view.params["chart-disabledseries"]["key"] == (view.params.drilldown.join(","))) {

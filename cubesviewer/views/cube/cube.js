@@ -451,6 +451,22 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
 		$scope.view.params.widget.limit = limit;
 	};
 
+    /*
+	 * Set group_x value.
+	 */
+   	$scope.SetGroupX = function(step){
+	   	$scope.view.params.chart_group_x = parseInt(step);
+        $scope.refreshView();
+   	};
+
+	/*
+	* Set group_x method.
+	*/
+	$scope.SetGroupXMethod = function(method){
+	$scope.view.params.chart_group_x_method = method.toLowerCase();
+	$scope.refreshView();
+	};
+
 	/*
 	 * Selects chart type
 	 */

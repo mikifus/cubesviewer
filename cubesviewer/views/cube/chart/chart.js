@@ -39,7 +39,12 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartController"
 		// Add chart view parameters to view definition
 		$scope.view.params = $.extend(
 			{},
-			{ "charttype" : "bars-vertical", "chartoptions": { showLegend: true } },
+            {
+            	"charttype": "bars-vertical",
+                "chartoptions": {showLegend: true},
+                "chart_group_x": 1,
+                "chart_group_x_method": "sum"
+            },
 			$scope.view.params
 		);
 		//$scope.refreshView();
@@ -252,6 +257,36 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartController"
 				 return tooltipContentGenerator(i);
 			 });
 		 }
+	 };
+
+	 $scope.group_x = function(serie, tooltip_aggregates, step, method){
+	 	if (step === undefined) {
+	 		step = 5;
+		}
+		tooltip_aggregates.push('y');
+		var sum = {};
+	 	var j = 1;
+	 	var ret = [];
+	 	for (var i=0; i < serie.length; i++) {
+	 		tooltip_aggregates.forEach(function(t){
+                sum[t] = sum[t] === undefined ? 0 : sum[t];
+	 			sum[t] += serie[i][t];
+			});
+			if (j < step) {
+				j += 1;
+			} else {
+                tooltip_aggregates.forEach(function(t){
+					serie[i][t] = sum[t];
+                });
+                if (method === 'avg') {
+                	serie[i]['y'] /= step;
+				}
+				ret.push(serie[i]);
+				j = 1;
+				sum = {};
+			}
+		}
+		return ret;
 	 };
 
 	$scope.$watch('view.params.chartoptions.showLegend', function (newValue, oldValue) {
