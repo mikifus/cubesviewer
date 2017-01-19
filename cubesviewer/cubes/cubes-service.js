@@ -216,6 +216,21 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
             });
         }
 
+        // Include plan
+        if (view.params.charttype == 'lines-plan') {
+            var aggregate_name = view.params.yaxis + '.plan';
+            view.cube.aggregates.forEach(function (ag) {
+                if (ag.name == aggregate_name) {
+                    if (args.aggregates) {
+                        args.aggregates.push(aggregate_name);
+                    }
+                    else {
+                        args.aggregates = [aggregate_name];
+                    }
+                }
+            });
+        }
+
         // Include tooltip template values
 		if (view.params.tooltip_template) {
             if (!args.aggregates) {

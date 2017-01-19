@@ -34,6 +34,7 @@ module.exports = function(grunt) {
               'cubesviewer/views/cube/chart/chart-sunburst.js',
               'cubesviewer/views/cube/chart/chart-lines-avg.js',
               'cubesviewer/views/cube/chart/chart-lines-variance.js',
+              'cubesviewer/views/cube/chart/chart-lines-plan.js',
               'cubesviewer/views/cube/widget/widget.js',
               'cubesviewer/views/cube/widget/max-value.js',
               'cubesviewer/views/cube/widget/threshold.js',
