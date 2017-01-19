@@ -719,6 +719,18 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "        </div>\n" +
     "    </div>\n" +
     "\n" +
+    "    <div ng-if=\"view.params.charttype == 'lines-plan'\">\n" +
+    "        <h3><i class=\"fa fa-fw fa-area-chart\"></i> Chart\n" +
+    "            <i ng-show=\"view.pendingRequests > 0\" class=\"fa fa-circle-o-notch fa-spin fa-fw margin-bottom text-info pull-right\"></i>\n" +
+    "        </h3>\n" +
+    "        <div ng-if=\"view.pendingRequests > 0\" class=\"loadingbar-content\">\n" +
+    "            <span class=\"loadingbar-expand\"></span>\n" +
+    "        </div>\n" +
+    "        <div ng-controller=\"CubesViewerViewsCubeChartLinesPlanController\">\n" +
+    "            <div ng-include=\"'views/cube/chart/chart-common.html'\"></div>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "\n" +
     "</div>\n"
   );
 
@@ -894,10 +906,13 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "            <li ng-click=\"selectChartType('lines-stacked')\"><a href=\"\"><i class=\"fa fa-fw fa-area-chart\"></i> Areas</a>\n" +
     "            </li>\n" +
     "            <li ng-click=\"selectChartType('radar')\"><a href=\"\"><i class=\"fa fa-fw fa-bullseye\"></i> Radar</a></li>\n" +
-    "            <li ng-click=\"selectChartType('lines-avg')\"><a href=\"\"><i class=\"fa fa-fw fa-bullseye\"></i> Lines AVG</a>\n" +
+    "            <li ng-click=\"selectChartType('lines-avg')\"><a href=\"\"><i class=\"fa fa-fw fa-bullseye\"></i> Lines with\n" +
+    "                AVG</a>\n" +
     "            </li>\n" +
-    "            <li ng-click=\"selectChartType('variance')\"><a href=\"\"><i class=\"fa fa-fw fa-bullseye\"></i> Lines\n" +
+    "            <li ng-click=\"selectChartType('variance')\"><a href=\"\"><i class=\"fa fa-fw fa-bullseye\"></i> Lines with\n" +
     "                Variance</a></li>\n" +
+    "            <li ng-click=\"selectChartType('lines-plan')\"><a href=\"\"><i class=\"fa fa-fw fa-bullseye\"></i> Lines with\n" +
+    "                Plan</a></li>\n" +
     "        </ul>\n" +
     "    </li>\n" +
     "\n" +
