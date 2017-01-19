@@ -259,10 +259,11 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartController"
 		 }
 	 };
 
-	 $scope.group_x = function(serie, tooltip_aggregates, step, method){
+	 $scope.group_x = function(serie, ta, step, method){
 	 	if (step === undefined) {
 	 		step = 5;
 		}
+		var tooltip_aggregates = ta.slice(0);
 		tooltip_aggregates.push('y');
 		var sum = {};
 	 	var j = 1;
