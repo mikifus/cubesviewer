@@ -4737,7 +4737,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartController"
 	 	for (var i=0; i < serie.length; i++) {
 	 		tooltip_aggregates.forEach(function(t){
                 sum[t] = sum[t] === undefined ? 0 : sum[t];
-	 			sum[t] += serie[i][t];
+	 			sum[t] += serie[i][t] === undefined ? 0 : serie[i][t];
 			});
 			if (j < step) {
 				j += 1;
