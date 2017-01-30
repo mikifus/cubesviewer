@@ -172,7 +172,7 @@ cubesviewer.View = function(cvOptions, id, type) {
 
     view.getName = function(){
         var menu_path = view.params.menu_path;
-        var ret;
+        var ret = '';
         if (menu_path) {
             ret = menu_path + ': ';
         }

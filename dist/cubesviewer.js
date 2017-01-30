@@ -2041,9 +2041,10 @@ cubesviewer.View = function(cvOptions, id, type) {
 
     view.getName = function(){
         var menu_path = view.params.menu_path;
-        var ret;
+        var ret = '';
         if (menu_path) {
             ret = menu_path + ': ';
+            console.log(menu_path, typeof  menu_path, view.params.name, ret);
         }
         ret += view.params.name;
         return ret;
@@ -5278,6 +5279,8 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesContro
                         }
                     }
                     var key = e["key"] != "" ? e["key"] : view.params.yaxis;
+                    serie = $scope.group_x(serie, tooltip_aggregates, $scope.view.params.chart_group_x,
+                        $scope.view.params.chart_group_x_method);
                     var series = {"values": serie, "key": '(C) ' + key};
                     if (view.params["chart-disabledseries"]) {
                         if (view.params["chart-disabledseries"]["key"] == (view.params.drilldown.join(","))) {
@@ -6269,6 +6272,8 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesAVGCon
                     }
                 }
                 var key = e["key"] != "" ? e["key"] : view.params.yaxis;
+                serie = $scope.group_x(serie, tooltip_aggregates, $scope.view.params.chart_group_x,
+                    $scope.view.params.chart_group_x_method);
                 var series = {"values": serie, "key": '(C) ' + key};
                 if (view.params["chart-disabledseries"]) {
                     if (view.params["chart-disabledseries"]["key"] == (view.params.drilldown.join(","))) {

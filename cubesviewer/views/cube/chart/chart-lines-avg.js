@@ -128,6 +128,8 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesAVGCon
                     }
                 }
                 var key = e["key"] != "" ? e["key"] : view.params.yaxis;
+                serie = $scope.group_x(serie, tooltip_aggregates, $scope.view.params.chart_group_x,
+                    $scope.view.params.chart_group_x_method);
                 var series = {"values": serie, "key": '(C) ' + key};
                 if (view.params["chart-disabledseries"]) {
                     if (view.params["chart-disabledseries"]["key"] == (view.params.drilldown.join(","))) {
