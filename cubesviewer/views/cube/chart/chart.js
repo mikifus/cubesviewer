@@ -28,9 +28,12 @@
  * This is an optional component, part of the cube view.
  */
 
-angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartController", ['$rootScope', '$scope', '$timeout', '$element', 'cvOptions', 'cubesService', 'viewsService', 'seriesOperationsService', 'exportService',
-                                                     function ($rootScope, $scope, $timeout, $element, cvOptions, cubesService, viewsService, seriesOperationsService, exportService) {
+angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartController", ['$rootScope', '$scope',
+    '$timeout', '$element', 'cvOptions', 'cubesService', 'viewsService', 'seriesOperationsService', 'exportService',
+    'studioViewsService',
+    function ($rootScope, $scope, $timeout, $element, cvOptions, cubesService, viewsService, seriesOperationsService, exportService, studioViewsService) {
 
+    $scope.studioViewsService = studioViewsService;
 	var chartCtrl = this;
 
 	this.chart = null;
@@ -139,9 +142,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartController"
 		//$($element).find("svg").empty();
 		$($element).find("svg").parent().children().not("svg").remove();
 
-		if (chartCtrl.chart) {
-			$("#" + chartCtrl.chart.tooltip.id()).remove(); // div.nvtooltip
-		}
+        this.cleanupTooltip();
 
 		//$scope.chart = null;
 
@@ -154,6 +155,15 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartController"
 			}
 		}
 		*/
+	};
+
+	this.cleanupTooltip = function() {
+		if (chartCtrl.chart) {
+			$("#" + chartCtrl.chart.tooltip.id()).remove(); // div.nvtooltip
+			if (chartCtrl.chart.interactiveLayer && chartCtrl.chart.interactiveLayer.tooltip) {
+				$("#" + chartCtrl.chart.interactiveLayer.tooltip.id()).remove(); // div.nvtooltip
+			}
+		}
 	};
 
 	$scope.$watch('cvOptions.studioTwoColumn', function() {

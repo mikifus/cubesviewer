@@ -879,6 +879,24 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "    <div class=\"divider\"></div>\n" +
     "    <li ng-click=\"viewsService.studioViewsService.studioScope.showHelpView(view)\"><a><i\n" +
     "            class=\"fa fa-fw fa-question\"></i> Help</a></li>\n" +
+    "\n" +
+    "    <div class=\"divider\"\n" +
+    "         ng-if=\"view.params.mode == 'chart' && (view.params.charttype == 'lines' || view.params.charttype == 'lines-avg')\"></div>\n" +
+    "    <li class=\"dropdown-submenu compare_views\"\n" +
+    "        ng-if=\"view.params.mode == 'chart' && (view.params.charttype == 'lines' || view.params.charttype == 'lines-avg')\">\n" +
+    "        <a><i\n" +
+    "            class=\"fa fa-fw fa-exchange\"></i> Compare with</a>\n" +
+    "        <ul class=\"dropdown-menu\">\n" +
+    "            <li ng-repeat=\"mergeView in viewsService.studioViewsService.views\" ng-if=\"mergeView != view\">\n" +
+    "                <a ng-click=\"viewsService.studioViewsService.studioScope.MergeWithView(view, mergeView)\">{{ mergeView.getName() }}</a>\n" +
+    "            </li>\n" +
+    "\n" +
+    "            <div class=\"divider\"></div>\n" +
+    "\n" +
+    "            <li ng-click=\"viewsService.studioViewsService.studioScope.MergeWithView(view, null);\"><a href=\"\"><i class=\"fa fa-fw fa-close\"></i> None</a></li>\n" +
+    "        </ul>\n" +
+    "    </li>\n" +
+    "\n" +
     "    <div class=\"divider\"></div>\n" +
     "    <li ng-click=\"viewsService.studioViewsService.closeView(view)\"><a><i class=\"fa fa-fw fa-close\"></i> Close</a></li>\n" +
     "</ul>\n"
@@ -1144,8 +1162,7 @@ angular.module('cv').run(['$templateCache', function($templateCache) {
     "\n" +
     "    <div>\n" +
     "        <h2 ng-show=\"view.getControlsHidden()\" style=\"margin-top: 5px;\">\n" +
-    "            <i class=\"fa fa-fw fa-file-o\"></i> <span ng-if=\"view.params.menu_path\">{{view.params.menu_path}}&colon;&nbsp;</span>{{\n" +
-    "            view.params.name }}\n" +
+    "            <i class=\"fa fa-fw fa-file-o\"></i> {{ view.getName() }}\n" +
     "        </h2>\n" +
     "\n" +
     "        <div ng-include=\"'views/cube/alerts.html'\"></div>\n" +

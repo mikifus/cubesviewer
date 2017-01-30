@@ -170,6 +170,16 @@ cubesviewer.View = function(cvOptions, id, type) {
         view.params.enabled_controls[label] = ret;
     };
 
+    view.getName = function(){
+        var menu_path = view.params.menu_path;
+        var ret = '';
+        if (menu_path) {
+            ret = menu_path + ': ';
+        }
+        ret += view.params.name;
+        return ret;
+    };
+
     return view;
 
 };
