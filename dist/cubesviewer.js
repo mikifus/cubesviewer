@@ -8933,7 +8933,10 @@ angular.module('cv.studio').service("reststoreService", ['$rootScope', '$http', 
             var month_ago = new Date();
             // Month before.
             month_ago.setMonth(month_ago.getMonth() - 1);
-            reststoreService.news = reststoreService.news.filter(function(n){return n.date > d.setMonth(d.getMonth() - 3);});
+            reststoreService.news = reststoreService.news.filter(function (n) {
+                return +new Date(n.date) > +month_ago;
+            });
+            reststoreService.news.reverse();
         };
 
         reststoreService.initialize();
