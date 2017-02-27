@@ -175,7 +175,19 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
 		if (cuts.length > 0) args.cut = new cubes.Cell(view.cube, cuts);
 
         //Order
-        if (includeXAxis && view.params.xaxis) {
+        if (view.params.order) {
+            var orders = [];
+            
+            // Make order strings
+            for(var column in view.params.order) {
+                orders.push( column +':'+ view.params.order[column] );
+            }
+            
+            // Include order array
+            args.order = orders.join(',');
+        
+        // Fallback to order by  xaxis
+        } else if (includeXAxis && view.params.xaxis) {
             var orders = [];
             try {
                 var dimension = view.params.xaxis.split('@')[0];
