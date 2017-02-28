@@ -1223,12 +1223,16 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
         if (view.params.order) {
             var orders = [];
             
+            // Make order strings
             for(var column in view.params.order) {
                 orders.push( column +':'+ view.params.order[column] );
             }
             
+            // Include order array
             args.order = orders.join(',');
-        }else if (includeXAxis && view.params.xaxis) {
+        
+        // Fallback to order by  xaxis
+        } else if (includeXAxis && view.params.xaxis) {
             var orders = [];
             try {
                 var dimension = view.params.xaxis.split('@')[0];
@@ -1262,6 +1266,14 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
             if (orders.length) {
                 args.order = orders.join(',');
             }
+        }
+        
+        // Pagination
+        if (!isNaN(parseFloat(view.params.page)) && isFinite(view.params.page)) {
+            args.page = view.params.page;
+        }
+        if (!isNaN(parseFloat(view.params.pagesize)) && isFinite(view.params.pagesize)) {
+            args.pagesize = view.params.pagesize;
         }
 
 		return args;
@@ -4482,7 +4494,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartBarsHorizon
 	    	}
 
 	    	// Reverse horizontal dimension to make series start from the base
-	    	serie.reverse();
+	    	//serie.reverse();
 
 	    	var series = { "values": serie, "key": e["key"] != "" ? e["key"] : view.params.yaxis };
 	    	if (view.params["chart-disabledseries"]) {

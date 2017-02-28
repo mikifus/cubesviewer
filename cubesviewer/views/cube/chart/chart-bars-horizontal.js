@@ -70,7 +70,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartBarsHorizon
 	    	}
 
 	    	// Reverse horizontal dimension to make series start from the base
-	    	serie.reverse();
+	    	//serie.reverse();
 
 	    	var series = { "values": serie, "key": e["key"] != "" ? e["key"] : view.params.yaxis };
 	    	if (view.params["chart-disabledseries"]) {
