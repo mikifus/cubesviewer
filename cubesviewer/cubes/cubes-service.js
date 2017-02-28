@@ -222,6 +222,14 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
                 args.order = orders.join(',');
             }
         }
+        
+        // Pagination
+        if (!isNaN(parseFloat(view.params.page)) && isFinite(view.params.page)) {
+            args.page = view.params.page;
+        }
+        if (!isNaN(parseFloat(view.params.pagesize)) && isFinite(view.params.pagesize)) {
+            args.pagesize = view.params.pagesize;
+        }
 
 		return args;
 
