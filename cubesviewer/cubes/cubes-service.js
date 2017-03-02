@@ -208,6 +208,10 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
                 })[0].hierarchies[hierarchy_name].levels;
                 for (var j = 0; j < levels.length; j++) {
                     orders.push(dimension + '.' + levels[j]._key);
+                    if( hierarchy_combo && hierarchy_combo == hierarchy_name + ':' + levels[j].name ) {
+                        // Reached max drilldown level
+                        break;
+                    }
                 }
             }
             catch (e) {
