@@ -1,6 +1,14 @@
 CubesViewer - OLAP Visual Viewer and Explore Tool
 =================================================
 
+Fork features
+-------------
+
+This fork has some specific features that might or might not be implemented in the main repo:
+
+* By default the data is sorted following the horizontal dimension. An order parameter is now accepted. Example: {"order":{"record_count":"desc"}}
+* The chartoptions object allows to choose colors for the chart. Example: {"chartoptions":{"showLegend":true,"colors":["#03CE03", "#FFF600", "#FF0000"]}}
+
 About
 -----
 
