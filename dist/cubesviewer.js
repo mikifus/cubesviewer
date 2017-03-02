@@ -1222,15 +1222,15 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
         //Order
         if (view.params.order) {
             var orders = [];
-            
+
             // Make order strings
             for(var column in view.params.order) {
                 orders.push( column +':'+ view.params.order[column] );
             }
-            
+
             // Include order array
             args.order = orders.join(',');
-        
+
         // Fallback to order by  xaxis
         } else if (includeXAxis && view.params.xaxis) {
             var orders = [];
@@ -1252,11 +1252,7 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
                     return e['name'] === dimension
                 })[0].hierarchies[hierarchy_name].levels;
                 for (var j = 0; j < levels.length; j++) {
-                    if (dimension == levels[j].name) {
-                        orders.push(levels[j].name);
-                    } else {
-                        orders.push(dimension + '.' + levels[j].name);
-                    }
+                    orders.push(dimension + '.' + levels[j]._key);
                 }
             }
             catch (e) {
@@ -1267,7 +1263,7 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
                 args.order = orders.join(',');
             }
         }
-        
+
         // Pagination
         if (!isNaN(parseFloat(view.params.page)) && isFinite(view.params.page)) {
             args.page = view.params.page;
