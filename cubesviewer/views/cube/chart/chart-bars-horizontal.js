@@ -112,6 +112,11 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartBarsHorizon
 		          //.transitionDuration(350)
 		          .showControls(true);        //Allow user to switch between "Grouped" and "Stacked" mode.
 
+            // User defined color array
+            if( view.params.chartoptions.colors ) {
+                chart.color(view.params.chartoptions.colors);
+            }
+
 	    	if (view.params["chart-barsvertical-stacked"]) {
 	    		chart.stacked ( view.params["chart-barsvertical-stacked"] );
 	    	}

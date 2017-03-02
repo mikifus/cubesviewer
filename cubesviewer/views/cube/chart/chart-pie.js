@@ -100,6 +100,11 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartPieControll
 	            .labelType("percent");
 	            //.donut(true);
 
+            // User defined color array
+            if( view.params.chartoptions.colors ) {
+                chart.color(view.params.chartoptions.colors);
+            }
+
 	        /*
 		    chart.pie
 		        .startAngle(function(d) { return d.startAngle/2 -Math.PI/2 })

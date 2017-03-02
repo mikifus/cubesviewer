@@ -93,6 +93,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartRadarContro
 	    	HtmlText: false,
 	    	shadowSize: 2,
 	    	height: 350,
+            colors: view.params.chartoptions.colors ? view.params.chartoptions.colors : null,
 	        radar: {
 	            show: true,
 	            fill: numRows < 4,

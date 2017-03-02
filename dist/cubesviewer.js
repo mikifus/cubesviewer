@@ -1253,6 +1253,10 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
                 })[0].hierarchies[hierarchy_name].levels;
                 for (var j = 0; j < levels.length; j++) {
                     orders.push(dimension + '.' + levels[j]._key);
+                    if( hierarchy_combo && hierarchy_combo == hierarchy_name + ':' + levels[j].name ) {
+                        // Reached max drilldown level
+                        break;
+                    }
                 }
             }
             catch (e) {
@@ -4369,6 +4373,11 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartBarsVertica
 		          .showLegend(!!view.params.chartoptions.showLegend)
 		          .margin({left: 120});
 
+            // User defined color array
+            if( view.params.chartoptions.colors ) {
+                chart.color(view.params.chartoptions.colors);
+            }
+
 	    	if (view.params["chart-barsvertical-stacked"]) {
 	    		chart.stacked ( view.params["chart-barsvertical-stacked"] );
 	    	}
@@ -4532,6 +4541,11 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartBarsHorizon
 		          //.transitionDuration(350)
 		          .showControls(true);        //Allow user to switch between "Grouped" and "Stacked" mode.
 
+            // User defined color array
+            if( view.params.chartoptions.colors ) {
+                chart.color(view.params.chartoptions.colors);
+            }
+
 	    	if (view.params["chart-barsvertical-stacked"]) {
 	    		chart.stacked ( view.params["chart-barsvertical-stacked"] );
 	    	}
@@ -4691,6 +4705,11 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesContro
 		    		.interpolate($scope.view.params.chartoptions.lineInterpolation)
 		    		.showLegend(!!view.params.chartoptions.showLegend)
 		    		.margin({left: 120});
+
+                // User defined color array
+                if( view.params.chartoptions.colors ) {
+                    chart.color(view.params.chartoptions.colors);
+                }
 
 		    	chart.xAxis
 		    		.axisLabel(xAxisLabel)
@@ -4951,6 +4970,11 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartPieControll
 	            .labelType("percent");
 	            //.donut(true);
 
+            // User defined color array
+            if( view.params.chartoptions.colors ) {
+                chart.color(view.params.chartoptions.colors);
+            }
+
 	        /*
 		    chart.pie
 		        .startAngle(function(d) { return d.startAngle/2 -Math.PI/2 })
@@ -5087,6 +5111,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartRadarContro
 	    	HtmlText: false,
 	    	shadowSize: 2,
 	    	height: 350,
+            colors: view.params.chartoptions.colors ? view.params.chartoptions.colors : null,
 	        radar: {
 	            show: true,
 	            fill: numRows < 4,

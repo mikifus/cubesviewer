@@ -108,6 +108,11 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartLinesContro
 		    		.showLegend(!!view.params.chartoptions.showLegend)
 		    		.margin({left: 120});
 
+                // User defined color array
+                if( view.params.chartoptions.colors ) {
+                    chart.color(view.params.chartoptions.colors);
+                }
+
 		    	chart.xAxis
 		    		.axisLabel(xAxisLabel)
 		    		.tickFormat(function(d,i) {

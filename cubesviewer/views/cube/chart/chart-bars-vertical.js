@@ -100,6 +100,11 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeChartBarsVertica
 		          .showLegend(!!view.params.chartoptions.showLegend)
 		          .margin({left: 120});
 
+            // User defined color array
+            if( view.params.chartoptions.colors ) {
+                chart.color(view.params.chartoptions.colors);
+            }
+
 	    	if (view.params["chart-barsvertical-stacked"]) {
 	    		chart.stacked ( view.params["chart-barsvertical-stacked"] );
 	    	}
